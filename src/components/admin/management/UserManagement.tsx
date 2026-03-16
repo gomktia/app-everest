@@ -43,7 +43,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { MoreHorizontal, PlusCircle, Search, Edit, Trash2, UserX, UserCheck, RefreshCw, GraduationCap, Users as UsersIcon, Loader2 } from 'lucide-react'
+import { MoreHorizontal, PlusCircle, Search, Edit, Trash2, UserX, UserCheck, RefreshCw, GraduationCap, Users as UsersIcon, Loader2, Circle } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { getUsers, updateUser, type User, getUsersWithClasses, type UserWithClasses } from '@/services/adminUserService'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/use-toast'
@@ -294,15 +295,54 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
     }
   }
 
+  const isOnline = (lastSeen: string | null) => {
+    if (!lastSeen) return false
+    const diff = Date.now() - new Date(lastSeen).getTime()
+    return diff < 5 * 60 * 1000 // online if seen in last 5 minutes
+  }
+
+  const formatLastSeen = (lastSeen: string | null) => {
+    if (!lastSeen) return 'Nunca acessou'
+    const date = new Date(lastSeen)
+    const now = Date.now()
+    const diffMs = now - date.getTime()
+    const diffMin = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMin < 1) return 'Agora'
+    if (diffMin < 60) return `${diffMin}min atrás`
+    if (diffHours < 24) return `${diffHours}h atrás`
+    if (diffDays < 7) return `${diffDays}d atrás`
+    return date.toLocaleDateString('pt-BR')
+  }
+
+  const onlineCount = users.filter(u => isOnline(u.last_seen_at)).length
+
   const tastingCount = users.filter(u => u.isInTastingClass).length
   const regularCount = users.filter(u => !u.isInTastingClass && u.role === 'student' && u.classes && u.classes.length > 0).length
   const noClassCount = users.filter(u => u.role === 'student' && (!u.classes || u.classes.length === 0)).length
 
   return (
     <>
-      {/* Stats Cards */}
-      {tastingCount > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      {/* Online Now Card */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card className="border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/30">
+          <CardHeader className="pb-3">
+            <CardDescription className="text-emerald-700 dark:text-emerald-400">Online Agora</CardDescription>
+            <CardTitle className="text-3xl text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
+              <Circle className="h-3 w-3 fill-emerald-500 text-emerald-500 animate-pulse" />
+              {onlineCount}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">
+              Usuários ativos nos últimos 5 min
+            </p>
+          </CardContent>
+        </Card>
+        {tastingCount > 0 && (
+          <>
           <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/30">
             <CardHeader className="pb-3">
               <CardDescription className="text-amber-700 dark:text-amber-400">Aguardando Aprovação</CardDescription>
@@ -312,7 +352,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
             </CardHeader>
             <CardContent>
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                🍰 Alunos na turma Degustação
+                Alunos na turma Degustação
               </p>
               <Button
                 variant="outline"
@@ -333,7 +373,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
             </CardHeader>
             <CardContent>
               <p className="text-xs text-green-600 dark:text-green-400">
-                ✅ Em turmas regulares
+                Em turmas regulares
               </p>
             </CardContent>
           </Card>
@@ -346,12 +386,13 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
             </CardHeader>
             <CardContent>
               <p className="text-xs text-red-600 dark:text-red-400">
-                ⚠️ Alunos sem nenhuma turma
+                Alunos sem nenhuma turma
               </p>
             </CardContent>
           </Card>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       <Card>
         <CardHeader>
@@ -389,8 +430,8 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
         <div className="flex items-center gap-3 mt-4">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar por nome ou email..." 
+            <Input
+              placeholder="Buscar por nome ou email..."
               className="pl-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -426,15 +467,16 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as turmas</SelectItem>
-                <SelectItem value="tasting">🍰 Na Degustação</SelectItem>
-                <SelectItem value="not_tasting">✅ Em turma regular</SelectItem>
-                <SelectItem value="no_class">⚠️ Sem turma</SelectItem>
+                <SelectItem value="tasting">Na Degustação</SelectItem>
+                <SelectItem value="not_tasting">Em turma regular</SelectItem>
+                <SelectItem value="no_class">Sem turma</SelectItem>
               </SelectContent>
             </Select>
           )}
         </div>
       </CardHeader>
       <CardContent>
+        <TooltipProvider>
         <Table>
           <TableHeader>
             <TableRow>
@@ -443,7 +485,8 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
               <TableHead>Função</TableHead>
               <TableHead>Turmas</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Data de Criação</TableHead>
+              <TableHead>Cadastro</TableHead>
+              <TableHead>Último Acesso</TableHead>
               <TableHead>
                 <span className="sr-only">Ações</span>
               </TableHead>
@@ -453,40 +496,43 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
             {isLoading
               ? Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-32" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-48" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-24 rounded-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-16 rounded-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-24" />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Skeleton className="h-8 w-8 rounded-md ml-auto" />
-                    </TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
                   </TableRow>
                 ))
               : filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       Nenhum usuário encontrado com os filtros aplicados.
                     </TableCell>
                   </TableRow>
                 )
-              : filteredUsers.map((user) => (
+              : filteredUsers.map((user) => {
+                  const userOnline = isOnline(user.last_seen_at)
+                  return (
                   <TableRow key={user.id} className="group hover:bg-primary/5">
                     <TableCell className="font-medium group-hover:text-primary transition-colors">
-                      {user.first_name} {user.last_name}
+                      <div className="flex items-center gap-2">
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Circle className={`h-2.5 w-2.5 flex-shrink-0 ${
+                              userOnline
+                                ? 'fill-emerald-500 text-emerald-500'
+                                : 'fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600'
+                            }`} />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {userOnline ? 'Online agora' : formatLastSeen(user.last_seen_at)}
+                          </TooltipContent>
+                        </Tooltip>
+                        {user.first_name} {user.last_name}
+                      </div>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
@@ -500,7 +546,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
                           <>
                             {user.isInTastingClass ? (
                               <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-700">
-                                🍰 Degustação
+                                Degustação
                               </Badge>
                             ) : user.classes && user.classes.length > 0 ? (
                               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 dark:bg-green-950/30 dark:text-green-400 dark:border-green-700">
@@ -508,7 +554,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-950/30 dark:text-red-400 dark:border-red-700">
-                                ⚠️ Sem turma
+                                Sem turma
                               </Badge>
                             )}
                           </>
@@ -527,6 +573,20 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      <Tooltip>
+                        <TooltipTrigger className="cursor-default">
+                          <span className={userOnline ? 'text-emerald-600 dark:text-emerald-400 font-medium' : ''}>
+                            {formatLastSeen(user.last_seen_at)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {user.last_seen_at
+                            ? new Date(user.last_seen_at).toLocaleString('pt-BR')
+                            : 'Nunca acessou a plataforma'}
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -578,9 +638,11 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                  )
+                })}
           </TableBody>
         </Table>
+        </TooltipProvider>
       </CardContent>
     </Card>
     {/* Create User Dialog */}

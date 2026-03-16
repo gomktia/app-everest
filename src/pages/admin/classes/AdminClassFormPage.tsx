@@ -27,8 +27,9 @@ import {
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
-import { ArrowLeft, GraduationCap, Save } from 'lucide-react'
-import { getModuleRulesForClass, saveAllModuleRules, checkCircularDependency } from '@/services/moduleRulesService'
+import { ArrowLeft, GraduationCap, Save, ChevronDown, ChevronRight, PlayCircle } from 'lucide-react'
+import { getModuleRulesForClass, saveAllModuleRules, checkCircularDependency, getLessonRulesForClass, upsertLessonRule, deleteLessonRule, type LessonRule } from '@/services/moduleRulesService'
+import { Badge } from '@/components/ui/badge'
 import { getAllContentAccessForClass, saveContentAccess } from '@/services/contentAccessService'
 
 const classSchema = z.object({
@@ -59,6 +60,9 @@ export default function AdminClassFormPage() {
   const [allTopics, setAllTopics] = useState<any[]>([])
   const [allSubjects, setAllSubjects] = useState<any[]>([])
   const [allSimulations, setAllSimulations] = useState<any[]>([])
+  const [lessonRules, setLessonRules] = useState<Record<string, { rule_type: string; rule_value: string }>>({})
+  const [moduleLessons, setModuleLessons] = useState<Record<string, { id: string; title: string; order_index: number }[]>>({})
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
   const [contentToggles, setContentToggles] = useState({
     flashcard_topic: true,
     quiz_topic: true,
@@ -158,7 +162,7 @@ export default function AdminClassFormPage() {
       // Fetch modules from courses linked to this class
       const { data: linkedCourses } = await supabase
         .from('class_courses')
-        .select('video_courses(id, name, video_modules(id, name, order_index))')
+        .select('video_courses(id, name, video_modules(id, name, order_index, video_lessons(id, title, order_index)))')
         .eq('class_id', classId)
 
       const allModules = (linkedCourses || []).flatMap((lc: any) =>
@@ -170,11 +174,26 @@ export default function AdminClassFormPage() {
 
       setModules(allModules)
 
-      // Fetch existing rules
+      // Build lessons map per module
+      const lessonsMap: Record<string, { id: string; title: string; order_index: number }[]> = {}
+      allModules.forEach((mod: any) => {
+        if (mod.video_lessons) {
+          lessonsMap[mod.id] = [...mod.video_lessons].sort((a: any, b: any) => a.order_index - b.order_index)
+        }
+      })
+      setModuleLessons(lessonsMap)
+
+      // Fetch existing module rules
       const rules = await getModuleRulesForClass(classId!)
       const rulesMap: Record<string, any> = {}
       rules.forEach(r => { rulesMap[r.module_id] = { rule_type: r.rule_type, rule_value: r.rule_value || '' } })
       setModuleRules(rulesMap)
+
+      // Fetch existing lesson rules
+      const lRules = await getLessonRulesForClass(classId!)
+      const lRulesMap: Record<string, any> = {}
+      lRules.forEach(r => { lRulesMap[r.lesson_id] = { rule_type: r.rule_type, rule_value: r.rule_value || '' } })
+      setLessonRules(lRulesMap)
 
       // Load topics for flashcards/quizzes
       const { data: subjects } = await supabase.from('subjects').select('id, name')
@@ -238,6 +257,18 @@ export default function AdminClassFormPage() {
           }))
         await saveAllModuleRules(classId!, rulesToSave)
 
+        // Save lesson rules
+        // First delete all existing lesson rules, then insert non-free ones
+        const allLessonIds = Object.values(moduleLessons).flat().map(l => l.id)
+        for (const lessonId of allLessonIds) {
+          const lr = lessonRules[lessonId]
+          if (lr && lr.rule_type !== 'inherit') {
+            await upsertLessonRule({ class_id: classId!, lesson_id: lessonId, rule_type: lr.rule_type as any, rule_value: lr.rule_value || null })
+          } else {
+            await deleteLessonRule(classId!, lessonId)
+          }
+        }
+
         // Save content access
         if (!contentToggles.flashcard_topic) await saveContentAccess(classId!, 'flashcard_topic', contentAccess.flashcard_topic || [])
         else await saveContentAccess(classId!, 'flashcard_topic', [])
@@ -286,6 +317,13 @@ export default function AdminClassFormPage() {
               rule_value: r.rule_value || null
             }))
           await saveAllModuleRules(insertedData.id, rulesToSave)
+
+          // Save lesson rules
+          for (const [lessonId, lr] of Object.entries(lessonRules)) {
+            if (lr.rule_type !== 'inherit') {
+              await upsertLessonRule({ class_id: insertedData.id, lesson_id: lessonId, rule_type: lr.rule_type as any, rule_value: lr.rule_value || null })
+            }
+          }
 
           // Save content access
           const newClassId = insertedData.id
@@ -547,68 +585,136 @@ export default function AdminClassFormPage() {
               {modules.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Regras de Liberacao de Modulos</CardTitle>
-                    <CardDescription>Defina quando cada modulo sera liberado para os alunos desta turma</CardDescription>
+                    <CardTitle>Regras de Liberacao de Modulos e Aulas</CardTitle>
+                    <CardDescription>Defina quando cada modulo sera liberado. Clique no modulo para configurar aulas individuais.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
-                        <span>NOME DO MODULO</span>
-                        <span>SELECIONE REGRA</span>
+                    <div className="space-y-1">
+                      <div className="grid grid-cols-[1fr_1fr] gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
+                        <span>NOME DO MODULO / AULA</span>
+                        <span>REGRA DE ACESSO</span>
                       </div>
                       {modules.map(mod => {
                         const rule = moduleRules[mod.id] || { rule_type: 'free', rule_value: '' }
+                        const isExpanded = expandedModules.has(mod.id)
+                        const lessons = moduleLessons[mod.id] || []
+                        const lessonOverrideCount = lessons.filter(l => lessonRules[l.id] && lessonRules[l.id].rule_type !== 'inherit').length
                         return (
-                          <div key={mod.id} className="grid grid-cols-2 gap-4 items-center py-2 border-b border-border/50">
-                            <div>
-                              <p className="text-sm font-medium">{mod.name}</p>
-                              <p className="text-xs text-muted-foreground">{mod.courseName}</p>
-                            </div>
-                            <div className="flex gap-2">
-                              <select
-                                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-                                value={rule.rule_type}
-                                onChange={e => {
-                                  setModuleRules(prev => ({
-                                    ...prev,
-                                    [mod.id]: { ...prev[mod.id], rule_type: e.target.value, rule_value: '' }
-                                  }))
+                          <div key={mod.id}>
+                            <div className="grid grid-cols-[1fr_1fr] gap-4 items-center py-2 border-b border-border/50">
+                              <div
+                                className="flex items-center gap-2 cursor-pointer select-none"
+                                onClick={() => {
+                                  setExpandedModules(prev => {
+                                    const next = new Set(prev)
+                                    if (next.has(mod.id)) next.delete(mod.id)
+                                    else next.add(mod.id)
+                                    return next
+                                  })
                                 }}
                               >
-                                <option value="free">Acesso Livre</option>
-                                <option value="scheduled_date">Data programada</option>
-                                <option value="days_after_enrollment">Dias apos compra</option>
-                                <option value="hidden">Oculto</option>
-                                <option value="blocked">Bloqueado</option>
-                                <option value="module_completed">Modulo concluido</option>
-                              </select>
-                              {rule.rule_type === 'scheduled_date' && (
-                                <Input type="date" value={rule.rule_value} onChange={e => setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))} className="w-40" />
-                              )}
-                              {rule.rule_type === 'days_after_enrollment' && (
-                                <Input type="number" value={rule.rule_value} onChange={e => setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))} placeholder="dias" className="w-24" />
-                              )}
-                              {rule.rule_type === 'module_completed' && (
+                                {lessons.length > 0 ? (
+                                  isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                ) : <span className="w-4" />}
+                                <div>
+                                  <p className="text-sm font-medium">{mod.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {mod.courseName}
+                                    {lessons.length > 0 && <span> &middot; {lessons.length} aulas</span>}
+                                    {lessonOverrideCount > 0 && (
+                                      <Badge variant="outline" className="ml-2 text-xs py-0 px-1.5 bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-700">
+                                        {lessonOverrideCount} com regra propria
+                                      </Badge>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
                                 <select
                                   className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-                                  value={rule.rule_value}
+                                  value={rule.rule_type}
                                   onChange={e => {
-                                    // Check circular dependency
-                                    const allRules = Object.entries(moduleRules).map(([mid, r]) => ({ module_id: mid, class_id: classId!, rule_type: r.rule_type as any, rule_value: r.rule_value }))
-                                    if (checkCircularDependency(allRules, mod.id, e.target.value)) {
-                                      toast({ title: 'Dependencia circular detectada!', variant: 'destructive' })
-                                      return
-                                    }
-                                    setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))
+                                    setModuleRules(prev => ({
+                                      ...prev,
+                                      [mod.id]: { ...prev[mod.id], rule_type: e.target.value, rule_value: '' }
+                                    }))
                                   }}
                                 >
-                                  <option value="">Selecione...</option>
-                                  {modules.filter(m => m.id !== mod.id).map(m => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                  ))}
+                                  <option value="free">Acesso Livre</option>
+                                  <option value="scheduled_date">Data programada</option>
+                                  <option value="days_after_enrollment">Dias apos compra</option>
+                                  <option value="hidden">Oculto</option>
+                                  <option value="blocked">Bloqueado</option>
+                                  <option value="module_completed">Modulo concluido</option>
                                 </select>
-                              )}
+                                {rule.rule_type === 'scheduled_date' && (
+                                  <Input type="date" value={rule.rule_value} onChange={e => setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))} className="w-40" />
+                                )}
+                                {rule.rule_type === 'days_after_enrollment' && (
+                                  <Input type="number" value={rule.rule_value} onChange={e => setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))} placeholder="dias" className="w-24" />
+                                )}
+                                {rule.rule_type === 'module_completed' && (
+                                  <select
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                                    value={rule.rule_value}
+                                    onChange={e => {
+                                      const allRules = Object.entries(moduleRules).map(([mid, r]) => ({ module_id: mid, class_id: classId!, rule_type: r.rule_type as any, rule_value: r.rule_value }))
+                                      if (checkCircularDependency(allRules, mod.id, e.target.value)) {
+                                        toast({ title: 'Dependencia circular detectada!', variant: 'destructive' })
+                                        return
+                                      }
+                                      setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))
+                                    }}
+                                  >
+                                    <option value="">Selecione...</option>
+                                    {modules.filter(m => m.id !== mod.id).map(m => (
+                                      <option key={m.id} value={m.id}>{m.name}</option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
                             </div>
+                            {/* Expanded lessons */}
+                            {isExpanded && lessons.length > 0 && (
+                              <div className="ml-6 border-l-2 border-border/50">
+                                {lessons.map(lesson => {
+                                  const lr = lessonRules[lesson.id] || { rule_type: 'inherit', rule_value: '' }
+                                  return (
+                                    <div key={lesson.id} className="grid grid-cols-[1fr_1fr] gap-4 items-center py-1.5 pl-4 border-b border-border/30">
+                                      <div className="flex items-center gap-2">
+                                        <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                        <p className="text-sm text-muted-foreground">{lesson.title}</p>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <select
+                                          className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs"
+                                          value={lr.rule_type}
+                                          onChange={e => {
+                                            setLessonRules(prev => ({
+                                              ...prev,
+                                              [lesson.id]: { rule_type: e.target.value, rule_value: '' }
+                                            }))
+                                          }}
+                                        >
+                                          <option value="inherit">Herdar do modulo</option>
+                                          <option value="free">Acesso Livre</option>
+                                          <option value="scheduled_date">Data programada</option>
+                                          <option value="days_after_enrollment">Dias apos compra</option>
+                                          <option value="hidden">Oculto</option>
+                                          <option value="blocked">Bloqueado</option>
+                                        </select>
+                                        {lr.rule_type === 'scheduled_date' && (
+                                          <Input type="date" value={lr.rule_value} onChange={e => setLessonRules(prev => ({...prev, [lesson.id]: {...prev[lesson.id], rule_value: e.target.value}}))} className="w-40 h-8 text-xs" />
+                                        )}
+                                        {lr.rule_type === 'days_after_enrollment' && (
+                                          <Input type="number" value={lr.rule_value} onChange={e => setLessonRules(prev => ({...prev, [lesson.id]: {...prev[lesson.id], rule_value: e.target.value}}))} placeholder="dias" className="w-24 h-8 text-xs" />
+                                        )}
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )}
                           </div>
                         )
                       })}
