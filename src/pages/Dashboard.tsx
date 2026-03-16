@@ -57,7 +57,7 @@ const eventColors = {
 }
 
 export default function DashboardPage() {
-  const { user, profile } = useAuth()
+  const { user, profile, effectiveUserId, impersonatedStudent } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState({
     activeCourses: 0,
@@ -108,7 +108,7 @@ export default function DashboardPage() {
   // Load all data
   useEffect(() => {
     const loadDashboard = async () => {
-      const userId = user?.id
+      const userId = effectiveUserId
       if (!userId) {
         setIsLoading(false)
         return
@@ -163,7 +163,7 @@ export default function DashboardPage() {
     }
 
     loadDashboard()
-  }, [user?.id])
+  }, [effectiveUserId])
 
   if (isLoading) {
     return <SectionLoader />

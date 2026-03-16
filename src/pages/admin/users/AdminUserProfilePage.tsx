@@ -38,7 +38,9 @@ import {
   Settings,
   Lock,
   MessageSquare,
+  Eye,
 } from 'lucide-react'
+import { useViewMode } from '@/contexts/view-mode-context'
 
 interface CourseRow {
   id: string
@@ -73,6 +75,7 @@ export default function AdminUserProfilePage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { startImpersonating } = useViewMode()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -330,23 +333,39 @@ export default function AdminUserProfilePage() {
         {/* Header Card */}
         <Card className="border-border shadow-sm">
           <CardContent className="p-5">
-            <div className="flex items-center gap-3 mb-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/admin/management')}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-muted/50">
-                  <User className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Editar Membro</h2>
-                  <p className="text-sm text-muted-foreground">{email}</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate('/admin/management')}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-muted/50">
+                    <User className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Editar Membro</h2>
+                    <p className="text-sm text-muted-foreground">{email}</p>
+                  </div>
                 </div>
               </div>
+              {role === 'student' && userId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex gap-1.5 text-xs border-primary/30 hover:bg-primary/10"
+                  onClick={() => {
+                    startImpersonating({ id: userId, name: fullName || email, email })
+                    navigate('/dashboard')
+                  }}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  Ver como este aluno
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

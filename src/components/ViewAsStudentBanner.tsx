@@ -1,11 +1,11 @@
-import { Eye, X } from 'lucide-react'
+import { Eye, X, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useViewMode } from '@/contexts/view-mode-context'
 import { useAuth } from '@/hooks/use-auth'
 
 export function ViewAsStudentBanner() {
-  const { viewingAsStudent, exitStudentView } = useViewMode()
+  const { viewingAsStudent, impersonatedStudent, exitStudentView } = useViewMode()
   const { realRole } = useAuth()
   const navigate = useNavigate()
 
@@ -13,7 +13,6 @@ export function ViewAsStudentBanner() {
 
   const handleExit = () => {
     exitStudentView()
-    // Redirect to admin dashboard based on real role
     if (realRole === 'administrator' || realRole === 'teacher') {
       navigate('/admin')
     }
@@ -22,7 +21,15 @@ export function ViewAsStudentBanner() {
   return (
     <div className="sticky top-0 z-50 flex items-center justify-center gap-3 bg-primary px-4 py-2 text-primary-foreground text-sm">
       <Eye className="h-4 w-4" />
-      <span className="font-medium">Visualizando como aluno</span>
+      {impersonatedStudent ? (
+        <span className="font-medium flex items-center gap-1.5">
+          <User className="h-3.5 w-3.5" />
+          Visualizando como <strong>{impersonatedStudent.name}</strong>
+          <span className="opacity-70">({impersonatedStudent.email})</span>
+        </span>
+      ) : (
+        <span className="font-medium">Visualizando como aluno</span>
+      )}
       <Button
         size="sm"
         variant="secondary"

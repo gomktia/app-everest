@@ -10,7 +10,7 @@ import { useViewMode } from '@/contexts/view-mode-context'
 
 export const useAuth = () => {
   const auth = useAuthContext()
-  const { viewingAsStudent } = useViewMode()
+  const { viewingAsStudent, impersonatedStudent } = useViewMode()
 
   // When viewing as student, override role checks
   const effectiveRole = viewingAsStudent && auth.profile?.role !== 'student'
@@ -24,6 +24,8 @@ export const useAuth = () => {
   const isTeacher = effectiveRole === 'teacher'
   const isStudent = effectiveRole === 'student'
   const realRole = auth.profile?.role
+  // When impersonating a specific student, use their ID for data queries
+  const effectiveUserId = impersonatedStudent?.id || auth.profile?.id || null
 
   // Helper functions
   const hasRole = (role: string | string[]) => {
@@ -86,6 +88,8 @@ export const useAuth = () => {
     isStudent,
     realRole,
     viewingAsStudent,
+    impersonatedStudent,
+    effectiveUserId,
 
     // Helper functions
     hasRole,

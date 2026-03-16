@@ -12,20 +12,22 @@ import { SidebarTrigger } from './ui/sidebar'
 
 export const Header = () => {
   const { profile, realRole, viewingAsStudent } = useAuth()
-  const { toggleViewAsStudent } = useViewMode()
+  const { toggleViewAsStudent, exitStudentView } = useViewMode()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleToggleViewMode = useCallback(() => {
-    const entering = !viewingAsStudent
-    // Write to sessionStorage BEFORE toggling state so it persists across navigation
-    try { sessionStorage.setItem('everest-view-as-student', String(entering)) } catch {}
-    toggleViewAsStudent()
-    // Navigate to appropriate dashboard
-    setTimeout(() => {
-      navigate(entering ? '/dashboard' : '/admin')
-    }, 0)
-  }, [toggleViewAsStudent, viewingAsStudent, navigate])
+    if (viewingAsStudent) {
+      // Exiting student mode
+      exitStudentView()
+      setTimeout(() => navigate('/admin'), 0)
+    } else {
+      // Entering generic student mode
+      try { sessionStorage.setItem('everest-view-as-student', 'true') } catch {}
+      toggleViewAsStudent()
+      setTimeout(() => navigate('/dashboard'), 0)
+    }
+  }, [toggleViewAsStudent, exitStudentView, viewingAsStudent, navigate])
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border/40 bg-card px-4 md:px-6">

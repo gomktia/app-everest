@@ -99,7 +99,7 @@ type ViewMode = 'card' | 'list'
 
 export default function CourseDetailPage() {
   const { courseId } = useParams()
-  const { user } = useAuth()
+  const { user, effectiveUserId } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { isTrialUser } = useTrialLimits()
@@ -116,14 +116,14 @@ export default function CourseDetailPage() {
   // ---- Enrollment check ----
   useEffect(() => {
     async function checkEnrollment() {
-      if (!user?.id || !courseId) {
+      if (!effectiveUserId || !courseId) {
         setEnrollmentChecked(true)
         return
       }
       const { data } = await supabase
         .from('student_classes')
         .select('id, class_id, enrollment_date, classes!inner(class_courses!inner(course_id))')
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
 
       const enrolledCourseIds = (data || []).flatMap((sc: any) =>
         sc.classes?.class_courses?.map((cc: any) => cc.course_id) || []
@@ -142,7 +142,7 @@ export default function CourseDetailPage() {
       setEnrollmentChecked(true)
     }
     checkEnrollment()
-  }, [user?.id, courseId])
+  }, [effectiveUserId, courseId])
 
   // ---- Module rules for the student's class ----
   useEffect(() => {
@@ -171,11 +171,11 @@ export default function CourseDetailPage() {
   // ---- Data fetching ----
   useEffect(() => {
     const fetchCourseDetails = async () => {
-      if (!courseId || !user?.id) return
+      if (!courseId || !effectiveUserId) return
 
       try {
         setIsLoading(true)
-        const data = await courseService.getCourseWithModulesAndProgress(courseId, user.id)
+        const data = await courseService.getCourseWithModulesAndProgress(courseId, effectiveUserId)
         if (data) {
           setCourse({
             id: data.id,
@@ -214,7 +214,7 @@ export default function CourseDetailPage() {
     }
 
     fetchCourseDetails()
-  }, [courseId, user?.id])
+  }, [courseId, effectiveUserId])
 
   // ---- Module access check helper ----
   const getModuleAccess = (moduleId: string): { accessible: boolean; hidden: boolean; message: string } => {
