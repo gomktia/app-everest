@@ -9,6 +9,7 @@ import {
   ReactNode,
 } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
+import * as Sentry from '@sentry/react'
 import { supabase } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/lib/logger'
@@ -238,6 +239,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const userProfile = await fetchUserProfile(newSession.user.id)
         setProfile(userProfile)
+        // Set Sentry user context for error tracking
+        if (userProfile) {
+          Sentry.setUser({ id: userProfile.id, email: userProfile.email, username: `${userProfile.first_name} ${userProfile.last_name}`.trim() })
+        }
       } catch (error) {
         logger.error('❌ Failed to fetch profile in handleSessionChange:', error)
         setProfile(null)
@@ -440,6 +445,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setProfile(null)
       setProfileFetchAttempted(false)
+      Sentry.setUser(null)
 
       return { error }
     } finally {
