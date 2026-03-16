@@ -187,21 +187,37 @@ export default function LessonPlayerPage() {
   const [autoPlayCountdown, setAutoPlayCountdown] = useState<number | null>(null)
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // Access rules
+  const [blockedModuleIds, setBlockedModuleIds] = useState<Set<string>>(new Set())
+  const [blockedLessonIds, setBlockedLessonIds] = useState<Set<string>>(new Set())
+  const [freeLessonIds, setFreeLessonIds] = useState<Set<string>>(new Set())
+
   // Search in sidebar
   const [lessonSearch, setLessonSearch] = useState('')
 
   const currentLessonRef = useRef<HTMLAnchorElement>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
 
-  /* ---- flat lesson list for prev / next ---- */
+  /* ---- flat lesson list for prev / next (respects access rules) ---- */
   const flatLessons = useMemo(() => {
     if (!courseData) return []
     return courseData.modules
       .sort((a, b) => a.order_index - b.order_index)
-      .flatMap((m) =>
-        [...m.lessons].sort((a, b) => a.order_index - b.order_index),
-      )
-  }, [courseData])
+      .flatMap((m) => {
+        const moduleBlocked = blockedModuleIds.has(m.id)
+        return [...m.lessons]
+          .sort((a, b) => a.order_index - b.order_index)
+          .filter((l) => {
+            // If lesson has explicit free rule, always include
+            if (freeLessonIds.has(l.id)) return true
+            // If lesson is explicitly blocked, exclude
+            if (blockedLessonIds.has(l.id)) return false
+            // If module is blocked and lesson has no override, exclude
+            if (moduleBlocked) return false
+            return true
+          })
+      })
+  }, [courseData, blockedModuleIds, blockedLessonIds, freeLessonIds])
 
   const currentIndex = useMemo(
     () => flatLessons.findIndex((l) => l.id === lessonId),
@@ -254,6 +270,49 @@ export default function LessonPlayerPage() {
           return
         }
 
+        // Find student's class for this course to check access rules
+        const matchingEnrollment = (enrollment || []).find((sc: any) =>
+          sc.classes?.class_courses?.some((cc: any) => cc.course_id === courseId)
+        )
+        const studentClassId = matchingEnrollment?.class_id || null
+        const enrollmentDate = matchingEnrollment?.enrollment_date || null
+
+        // Load module & lesson rules for this class
+        const blocked = new Set<string>()
+        const blockedLessons = new Set<string>()
+        const freeLessons = new Set<string>()
+
+        if (studentClassId) {
+          const [{ data: modRules }, { data: lesRules }] = await Promise.all([
+            supabase.from('class_module_rules').select('module_id, rule_type, rule_value').eq('class_id', studentClassId),
+            supabase.from('class_lesson_rules').select('lesson_id, rule_type, rule_value').eq('class_id', studentClassId),
+          ])
+
+          for (const r of (modRules || [])) {
+            if (r.rule_type === 'blocked' || r.rule_type === 'hidden') {
+              blocked.add(r.module_id)
+            } else if (r.rule_type === 'scheduled_date' && r.rule_value) {
+              if (new Date(r.rule_value) > new Date()) blocked.add(r.module_id)
+            } else if (r.rule_type === 'days_after_enrollment' && r.rule_value && enrollmentDate) {
+              const unlockDate = new Date(enrollmentDate)
+              unlockDate.setDate(unlockDate.getDate() + parseInt(r.rule_value))
+              if (unlockDate > new Date()) blocked.add(r.module_id)
+            }
+          }
+
+          for (const r of (lesRules || [])) {
+            if (r.rule_type === 'free') {
+              freeLessons.add(r.lesson_id)
+            } else if (r.rule_type === 'blocked' || r.rule_type === 'hidden') {
+              blockedLessons.add(r.lesson_id)
+            }
+          }
+        }
+
+        setBlockedModuleIds(blocked)
+        setBlockedLessonIds(blockedLessons)
+        setFreeLessonIds(freeLessons)
+
         const course = await courseService.getCourseWithModulesAndProgress(courseId, user.id)
         if (!course) {
           toast({ title: 'Curso não encontrado', variant: 'destructive' })
@@ -278,6 +337,24 @@ export default function LessonPlayerPage() {
           toast({ title: 'Aula não encontrada', variant: 'destructive' })
           navigate(`/courses/${courseId}`)
           return
+        }
+
+        // Check if this specific lesson is accessible (use local vars, not state)
+        const lessonModuleId = (course.modules || []).find((m: ModuleData) =>
+          m.lessons.some((l) => l.id === lessonId)
+        )?.id
+
+        if (lessonModuleId && studentClassId) {
+          const isModuleBlocked = blocked.has(lessonModuleId)
+          const isLessonFree = freeLessons.has(lessonId!)
+          const isLessonBlocked = blockedLessons.has(lessonId!)
+          const isPreview = foundLesson.is_preview
+
+          if ((isModuleBlocked && !isLessonFree && !isPreview) || isLessonBlocked) {
+            toast({ title: 'Aula bloqueada', description: 'Esta aula ainda não foi liberada para sua turma.', variant: 'destructive' })
+            navigate(`/courses/${courseId}`)
+            return
+          }
         }
 
         setLessonData(foundLesson)
