@@ -5,25 +5,22 @@ import App from './App.tsx'
 import './main.css'
 
 // Initialize Sentry error monitoring
-const sentryDsn = import.meta.env.VITE_SENTRY_DSN
-if (sentryDsn) {
-  Sentry.init({
-    dsn: sentryDsn,
-    environment: import.meta.env.MODE,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({ maskAllText: false, blockAllMedia: false }),
-    ],
-    tracesSampleRate: 0.2,
-    replaysSessionSampleRate: 0.05,
-    replaysOnErrorSampleRate: 1.0,
-    beforeSend(event) {
-      // Don't send in development
-      if (import.meta.env.DEV) return null
-      return event
-    },
-  })
-}
+Sentry.init({
+  dsn: 'https://2b5f1b9967a93c8048aa0705b601f896@o4511056120971264.ingest.us.sentry.io/4511056128311296',
+  environment: import.meta.env.MODE,
+  sendDefaultPii: true,
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration({ maskAllText: false, blockAllMedia: false }),
+  ],
+  tracesSampleRate: 0.2,
+  replaysSessionSampleRate: 0.05,
+  replaysOnErrorSampleRate: 1.0,
+  beforeSend(event) {
+    if (import.meta.env.DEV) return null
+    return event
+  },
+})
 
 // Register PWA Service Worker
 import { registerSW } from 'virtual:pwa-register'
