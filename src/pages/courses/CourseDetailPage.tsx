@@ -103,6 +103,7 @@ export default function CourseDetailPage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [enrollmentChecked, setEnrollmentChecked] = useState(false)
   const [moduleRules, setModuleRules] = useState<Record<string, { rule_type: string; rule_value: string | null }>>({})
+  const [lessonRules, setLessonRules] = useState<Record<string, { rule_type: string; rule_value: string | null }>>({})
   const [studentClassId, setStudentClassId] = useState<string | null>(null)
   const [enrollmentDate, setEnrollmentDate] = useState<string | null>(null)
 
@@ -139,22 +140,26 @@ export default function CourseDetailPage() {
 
   // ---- Module rules for the student's class ----
   useEffect(() => {
-    async function fetchModuleRules() {
+    async function fetchRules() {
       if (!studentClassId) return
-      const { data } = await supabase
-        .from('class_module_rules')
-        .select('module_id, rule_type, rule_value')
-        .eq('class_id', studentClassId)
 
-      if (data) {
+      const [{ data: modRules }, { data: lesRules }] = await Promise.all([
+        supabase.from('class_module_rules').select('module_id, rule_type, rule_value').eq('class_id', studentClassId),
+        supabase.from('class_lesson_rules').select('lesson_id, rule_type, rule_value').eq('class_id', studentClassId),
+      ])
+
+      if (modRules) {
         const rules: Record<string, { rule_type: string; rule_value: string | null }> = {}
-        for (const r of data) {
-          rules[r.module_id] = { rule_type: r.rule_type, rule_value: r.rule_value }
-        }
+        for (const r of modRules) rules[r.module_id] = { rule_type: r.rule_type, rule_value: r.rule_value }
         setModuleRules(rules)
       }
+      if (lesRules) {
+        const rules: Record<string, { rule_type: string; rule_value: string | null }> = {}
+        for (const r of lesRules) rules[r.lesson_id] = { rule_type: r.rule_type, rule_value: r.rule_value }
+        setLessonRules(rules)
+      }
     }
-    fetchModuleRules()
+    fetchRules()
   }, [studentClassId])
 
   // ---- Data fetching ----
@@ -230,6 +235,25 @@ export default function CourseDetailPage() {
       default:
         return { accessible: true, hidden: false, message: '' }
     }
+  }
+
+  // ---- Lesson access check (overrides module rule) ----
+  const getLessonAccess = (lessonId: string, moduleAccess: { accessible: boolean }): { accessible: boolean; message: string } => {
+    const rule = lessonRules[lessonId]
+    if (!rule) {
+      // No lesson-specific rule → inherit module access
+      return { accessible: moduleAccess.accessible, message: '' }
+    }
+    // Lesson rule overrides module rule
+    if (rule.rule_type === 'free') return { accessible: true, message: '' }
+    if (rule.rule_type === 'hidden') return { accessible: false, message: '' }
+    if (rule.rule_type === 'blocked') return { accessible: false, message: 'Aula bloqueada' }
+    if (rule.rule_type === 'scheduled_date') {
+      const date = new Date(rule.rule_value!)
+      if (date <= new Date()) return { accessible: true, message: '' }
+      return { accessible: false, message: `Disponível em ${date.toLocaleDateString('pt-BR')}` }
+    }
+    return { accessible: moduleAccess.accessible, message: '' }
   }
 
   // ---- Computed stats ----
@@ -463,15 +487,25 @@ export default function CourseDetailPage() {
           </div>
         </div>
 
-        {/* ── Modules Content (filtered by module rules) ── */}
+        {/* ── Modules Content (filtered by module rules, with lesson overrides) ── */}
         {(() => {
           const filteredCourse = {
             ...course,
             modules: course.modules
               .filter(m => !getModuleAccess(m.id).hidden)
               .map(m => {
-                const access = getModuleAccess(m.id)
-                return { ...m, _locked: !access.accessible, _lockMessage: access.message }
+                const modAccess = getModuleAccess(m.id)
+                return {
+                  ...m,
+                  _locked: !modAccess.accessible,
+                  _lockMessage: modAccess.message,
+                  lessons: m.lessons
+                    .filter(l => lessonRules[l.id]?.rule_type !== 'hidden')
+                    .map(l => {
+                      const lesAccess = getLessonAccess(l.id, modAccess)
+                      return { ...l, _locked: !lesAccess.accessible, _lockMessage: lesAccess.message }
+                    })
+                }
               })
           }
           return viewMode === 'card' ? (
@@ -602,7 +636,8 @@ function ModuleCardView({
             <ul className="mt-4 flex-1 space-y-1.5">
               {previewLessons.map((lesson) => {
                 const isHighlighted = lesson.id === firstIncompleteLessonId
-                const isLocked = !isEnrolled && !lesson.is_preview
+                const lessonLocked = (lesson as any)._locked
+                const isLocked = lessonLocked || (!isEnrolled && !lesson.is_preview)
                 return (
                   <li key={lesson.id} className="flex items-center gap-2 min-w-0">
                     {isLocked ? (
@@ -637,9 +672,19 @@ function ModuleCardView({
             </ul>
 
             {/* View module link */}
-            {isEnrolled ? (
+            {(module as any)._locked ? (
+              <div className="mt-4 text-center">
+                <div className={cn(
+                  'inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold',
+                  'bg-muted text-muted-foreground'
+                )}>
+                  <Lock className="h-4 w-4" />
+                  {(module as any)._lockMessage || 'Bloqueado'}
+                </div>
+              </div>
+            ) : isEnrolled ? (
               <Link
-                to={`/courses/${courseId}/lessons/${(module.lessons.find(l => !l.completed) || module.lessons[0])?.id ?? ''}`}
+                to={`/courses/${courseId}/lessons/${(module.lessons.find(l => !(l as any)._locked && !l.completed) || module.lessons.find(l => !(l as any)._locked) || module.lessons[0])?.id ?? ''}`}
                 className={cn(
                   'mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200',
                   'bg-primary text-primary-foreground hover:bg-green-600 hover:shadow-md'
@@ -701,7 +746,8 @@ function ModuleListView({
         const allCompleted = totalInModule > 0 && completedInModule === totalInModule
         const moduleProgress =
           totalInModule > 0 ? Math.round((completedInModule / totalInModule) * 100) : 0
-        const isModuleLocked = !isEnrolled && !modulesWithPreview.has(module.id)
+        const isModuleLocked = (module as any)._locked || (!isEnrolled && !modulesWithPreview.has(module.id))
+        const moduleLockMessage = (module as any)._lockMessage
 
         return (
           <AccordionItem
@@ -766,7 +812,7 @@ function ModuleListView({
                   )}
                   {isModuleLocked && (
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {totalInModule} aula{totalInModule !== 1 ? 's' : ''} · Bloqueado
+                      {totalInModule} aula{totalInModule !== 1 ? 's' : ''} · {moduleLockMessage || 'Bloqueado'}
                     </span>
                   )}
                 </div>
@@ -778,7 +824,8 @@ function ModuleListView({
                 {module.lessons.map((lesson, lessonIndex) => {
                   const isFirstIncomplete = lesson.id === firstIncompleteLessonId
                   const duration = formatDuration(lesson.duration_seconds)
-                  const isLocked = !isEnrolled && !lesson.is_preview
+                  const lessonLocked = (lesson as any)._locked
+                  const isLocked = lessonLocked || (!isEnrolled && !lesson.is_preview)
 
                   const rowClasses = cn(
                     'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',

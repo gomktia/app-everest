@@ -223,6 +223,9 @@ const MemberkitImportPage = lazy(
 const AdminIntegrationsPage = lazy(
   () => import('@/pages/admin/integrations/AdminIntegrationsPage'),
 )
+const AdminKiwifyProductsPage = lazy(
+  () => import('@/pages/admin/integrations/AdminKiwifyProductsPage'),
+)
 const AudioLessonPlayerPage = lazy(
   () => import('@/pages/AudioLessonPlayerPage'),
 )
@@ -425,6 +428,7 @@ const App = () => (
                     <Route path="permissions" element={<AdminClassPermissionsPage />} />
                     <Route path="integrations" element={<AdminIntegrationsPage />} />
                     <Route path="integrations/memberkit-import" element={<MemberkitImportPage />} />
+                    <Route path="integrations/kiwify" element={<AdminKiwifyProductsPage />} />
                     <Route path="settings" element={<AdminSettingsPage />} />
                     <Route path="invites" element={<AdminInvitesPage />} />
                     <Route path="invites/new" element={<AdminInviteFormPage />} />
