@@ -552,9 +552,35 @@ export default function LessonPlayerPage() {
     return currentModuleLessons.filter(l => l.title.toLowerCase().includes(q))
   }, [currentModuleLessons, lessonSearch])
 
-  const openPdfViewer = (url: string, type: 'pdf' | 'office' = 'pdf') => {
-    if (pdfViewerUrl === url) { setPdfViewerUrl(null) }
-    else { setPdfViewerUrl(url); setSplitViewerType(type); setSplitRatio(55) }
+  const openPdfViewer = async (url: string, type: 'pdf' | 'office' = 'pdf') => {
+    if (pdfViewerUrl === url) { setPdfViewerUrl(null); return }
+
+    // Office files use Microsoft's viewer (always works via embed)
+    if (type === 'office') {
+      setPdfViewerUrl(url); setSplitViewerType('office'); setSplitRatio(55)
+      return
+    }
+
+    // For PDFs: try to proxy via fetch+blob to bypass X-Frame-Options
+    // External URLs (e.g. MemberKit) block iframe embedding
+    const isExternal = !url.includes('supabase.co')
+    if (isExternal) {
+      try {
+        toast({ title: 'Carregando PDF...' })
+        const res = await fetch(url)
+        if (!res.ok) throw new Error('Fetch failed')
+        const blob = await res.blob()
+        const blobUrl = URL.createObjectURL(blob)
+        setPdfViewerUrl(blobUrl); setSplitViewerType('pdf'); setSplitRatio(55)
+        return
+      } catch {
+        // Fallback: open in new tab if fetch fails (CORS)
+        window.open(url, '_blank')
+        return
+      }
+    }
+
+    setPdfViewerUrl(url); setSplitViewerType('pdf'); setSplitRatio(55)
   }
 
   const videoEmbedUrl = useMemo(() => {
