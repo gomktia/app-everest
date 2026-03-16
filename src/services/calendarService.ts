@@ -28,14 +28,37 @@ export const getCalendarEvents = async (
     .single()
 
   // Buscar turmas do aluno (se for aluno)
-  let userClassIds: string[] = []
+  let visibleClassIds: string[] = []
   if (userProfile?.role === 'student') {
     const { data: studentClasses } = await supabase
       .from('student_classes')
       .select('class_id')
       .eq('user_id', user.id)
 
-    userClassIds = studentClasses?.map(sc => sc.class_id) || []
+    const enrolledClassIds = studentClasses?.map(sc => sc.class_id) || []
+    visibleClassIds = [...enrolledClassIds]
+
+    // For trial students: also show events from other classes that share the same courses
+    // This lets degustacao students see the Extensivo EAOF schedule
+    if (enrolledClassIds.length > 0) {
+      const { data: enrolledCourses } = await supabase
+        .from('class_courses')
+        .select('course_id')
+        .in('class_id', enrolledClassIds)
+
+      const courseIds = enrolledCourses?.map(cc => cc.course_id) || []
+      if (courseIds.length > 0) {
+        const { data: siblingClasses } = await supabase
+          .from('class_courses')
+          .select('class_id')
+          .in('course_id', courseIds)
+
+        const siblingIds = siblingClasses?.map(cc => cc.class_id) || []
+        for (const id of siblingIds) {
+          if (!visibleClassIds.includes(id)) visibleClassIds.push(id)
+        }
+      }
+    }
   }
 
   // Buscar eventos do mês
@@ -46,13 +69,12 @@ export const getCalendarEvents = async (
     .lte('start_time', lastDayOfMonth)
 
   // Se for aluno, filtrar por:
-  // - Eventos das turmas do aluno
+  // - Eventos das turmas do aluno + turmas irmas (mesmo curso)
   // - OU eventos globais (class_id NULL)
   if (userProfile?.role === 'student') {
-    if (userClassIds.length > 0) {
-      query = query.or(`class_id.in.(${userClassIds.join(',')}),class_id.is.null`)
+    if (visibleClassIds.length > 0) {
+      query = query.or(`class_id.in.(${visibleClassIds.join(',')}),class_id.is.null`)
     } else {
-      // Se aluno não tem turma, ver apenas eventos globais
       query = query.is('class_id', null)
     }
   }
