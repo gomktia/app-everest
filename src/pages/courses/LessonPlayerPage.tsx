@@ -566,6 +566,8 @@ export default function LessonPlayerPage() {
   }, [currentModuleLessons, lessonSearch])
 
   const openPdfViewer = async (url: string, type: 'pdf' | 'office' = 'pdf') => {
+    // Revoke previous blob URL to prevent memory leaks
+    if (pdfViewerUrl?.startsWith('blob:')) URL.revokeObjectURL(pdfViewerUrl)
     if (pdfViewerUrl === url) { setPdfViewerUrl(null); return }
 
     // Office files use Microsoft's viewer (always works via embed)

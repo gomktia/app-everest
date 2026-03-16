@@ -116,10 +116,9 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
         return null
       }
 
-      // Create a basic profile (respect role from user_metadata if set by admin)
-      const metadataRole = user.user_metadata?.role
-      const validRoles = ['student', 'teacher', 'administrator']
-      const role = (metadataRole && validRoles.includes(metadataRole)) ? metadataRole : 'student'
+      // Always default to 'student' - role promotion only via admin panel or edge functions
+      // SECURITY: Never trust user_metadata.role from client-side signUp
+      const role = 'student'
 
       const newProfile = {
         id: userId,

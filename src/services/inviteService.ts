@@ -131,55 +131,17 @@ export async function registerForInvite(inviteId: string, userData: {
     is_active: true
   })
 
-  // 5. Enroll in class
-  if (invite.class_id) {
-    const expiresAt = invite.access_duration_days
-      ? new Date(Date.now() + invite.access_duration_days * 86400000).toISOString()
-      : null
-
-    await supabase.from('student_classes').upsert({
-      user_id: userId,
-      class_id: invite.class_id,
-      source: 'invite',
-      enrollment_date: new Date().toISOString(),
-      subscription_expires_at: expiresAt
-    }, { onConflict: 'user_id,class_id' }).catch(() => {
-      // Ignore if already enrolled
-    })
-
-    // 5b. Ensure course is linked to class (class_courses)
-    if (invite.course_id) {
-      await supabase.from('class_courses').upsert({
-        class_id: invite.class_id,
-        course_id: invite.course_id
-      }, { onConflict: 'class_id,course_id' }).catch(() => {
-        // Ignore if already linked
-      })
-    }
-  }
-
-  // 6. Track registration (atomic slot check + insert via RPC)
+  // 5. Atomic slot check + enrollment via SECURITY DEFINER RPC
+  // The RPC handles: invite_registrations, student_classes, and class_courses
+  // This bypasses RLS restrictions that prevent students from self-enrolling
   const { data: slotOk, error: slotError } = await supabase.rpc('register_invite_slot', {
     p_invite_id: inviteId,
     p_user_id: userId
   })
 
   if (slotError) {
-    // RPC failed - do NOT fallback silently as it could bypass slot limits
     logger.error('register_invite_slot RPC failed:', slotError)
-    // Try direct insert only if there's no max_slots (unlimited invite)
-    const { data: inviteCheck } = await supabase
-      .from('invites')
-      .select('max_slots')
-      .eq('id', inviteId)
-      .single()
-    if (inviteCheck?.max_slots) {
-      throw new Error('Erro ao registrar. Tente novamente.')
-    }
-    await supabase.from('invite_registrations').insert({
-      invite_id: inviteId,
-      user_id: userId
-    }).catch(() => {})
+    throw new Error('Erro ao registrar. Tente novamente.')
   } else if (slotOk === false) {
     throw new Error('Vagas esgotadas')
   }

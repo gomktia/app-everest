@@ -94,6 +94,11 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
     )
   }
 
+  // Wait for must_change_password check to complete before rendering anything
+  if (mustChangePassword === null && profile?.id) {
+    return <PageLoader />
+  }
+
   // Force password change on first access
   if (mustChangePassword) {
     return (
