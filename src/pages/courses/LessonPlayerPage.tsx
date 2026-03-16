@@ -360,8 +360,10 @@ export default function LessonPlayerPage() {
   }, [])
 
   /* ---- mark complete ---- */
+  const [isMarkingComplete, setIsMarkingComplete] = useState(false)
   const handleMarkComplete = useCallback(async () => {
-    if (!user?.id || !lessonId || !lessonData) return
+    if (!user?.id || !lessonId || !lessonData || lessonData.completed || isMarkingComplete) return
+    setIsMarkingComplete(true)
     try {
       const { error } = await supabase.from('video_progress').upsert({
         user_id: user.id, lesson_id: lessonId,
@@ -370,11 +372,20 @@ export default function LessonPlayerPage() {
       })
       if (error) throw error
 
-      // Award XP and check achievements
-      await rankingService.addUserScore(user.id, 'video_lesson', 10, lessonId)
-      rankingService.checkAndGrantAchievements(user.id).catch(() => {})
-      setShowXpAnimation(true)
-      setTimeout(() => setShowXpAnimation(false), 2000)
+      // Award XP only if not already completed (check DB to prevent double XP)
+      const { data: existing } = await supabase.from('scores')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('activity_type', 'video_lesson')
+        .eq('activity_id', lessonId)
+        .limit(1)
+
+      if (!existing || existing.length === 0) {
+        await rankingService.addUserScore(user.id, 'video_lesson', 10, lessonId)
+        rankingService.checkAndGrantAchievements(user.id).catch(() => {})
+        setShowXpAnimation(true)
+        setTimeout(() => setShowXpAnimation(false), 2000)
+      }
 
       setLessonData({ ...lessonData, completed: true, progress: 100 })
       setCourseData((prev) => {
@@ -390,8 +401,10 @@ export default function LessonPlayerPage() {
     } catch (error) {
       logger.error('Erro ao marcar aula como concluída:', error)
       toast({ title: 'Erro', description: 'Não foi possível marcar a aula como concluída.', variant: 'destructive' })
+    } finally {
+      setIsMarkingComplete(false)
     }
-  }, [user?.id, lessonId, lessonData, toast, nextLesson, courseId, navigate])
+  }, [user?.id, lessonId, lessonData, toast, nextLesson, courseId, navigate, isMarkingComplete])
 
   /* ---- comment & rating handlers ---- */
   const handleSubmitComment = useCallback(async (parentId?: string) => {
@@ -1144,7 +1157,7 @@ export default function LessonPlayerPage() {
                     </button>
 
                     {/* Mark complete */}
-                    <button onClick={handleMarkComplete} disabled={lessonData.completed}
+                    <button onClick={handleMarkComplete} disabled={lessonData.completed || isMarkingComplete}
                       className={cn(
                         "flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px]",
                         lessonData.completed
