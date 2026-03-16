@@ -17,15 +17,14 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleToggleViewMode = useCallback(() => {
+    const entering = !viewingAsStudent
+    // Write to sessionStorage BEFORE toggling state so it persists across navigation
+    try { sessionStorage.setItem('everest-view-as-student', String(entering)) } catch {}
     toggleViewAsStudent()
-    // Navigate to appropriate dashboard after toggling
-    if (!viewingAsStudent) {
-      // Entering student mode → go to student dashboard
-      navigate('/dashboard')
-    } else {
-      // Exiting student mode → go back to admin
-      navigate('/admin')
-    }
+    // Navigate to appropriate dashboard
+    setTimeout(() => {
+      navigate(entering ? '/dashboard' : '/admin')
+    }, 0)
   }, [toggleViewAsStudent, viewingAsStudent, navigate])
 
   return (
