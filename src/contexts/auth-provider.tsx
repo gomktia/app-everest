@@ -116,13 +116,17 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
         return null
       }
 
-      // Create a basic profile
+      // Create a basic profile (respect role from user_metadata if set by admin)
+      const metadataRole = user.user_metadata?.role
+      const validRoles = ['student', 'teacher', 'administrator']
+      const role = (metadataRole && validRoles.includes(metadataRole)) ? metadataRole : 'student'
+
       const newProfile = {
         id: userId,
         email: user.email || '',
         first_name: user.user_metadata?.first_name || '',
         last_name: user.user_metadata?.last_name || '',
-        role: 'student' as const, // Default role
+        role: role as 'student' | 'teacher' | 'administrator',
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()

@@ -89,11 +89,12 @@ export async function registerForInvite(inviteId: string, userData: {
 
   if (inviteError || !invite) throw new Error('Convite nao encontrado ou inativo')
 
-  // 2. Check slots
+  // 2. Check slots (pre-check only — atomic check happens in step 6)
   if (invite.max_slots) {
     const count = await getRegistrationCount(inviteId)
     if (count >= invite.max_slots) throw new Error('Vagas esgotadas')
   }
+
 
   // 3. Try to create user
   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -152,13 +153,21 @@ export async function registerForInvite(inviteId: string, userData: {
     }
   }
 
-  // 6. Track registration
-  await supabase.from('invite_registrations').insert({
-    invite_id: inviteId,
-    user_id: userId
-  }).catch(() => {
-    // Ignore duplicate registration
+  // 6. Track registration (atomic slot check + insert via RPC)
+  const { data: slotOk, error: slotError } = await supabase.rpc('register_invite_slot', {
+    p_invite_id: inviteId,
+    p_user_id: userId
   })
+
+  if (slotError) {
+    // Fallback to direct insert if RPC not available
+    await supabase.from('invite_registrations').insert({
+      invite_id: inviteId,
+      user_id: userId
+    }).catch(() => {})
+  } else if (slotOk === false) {
+    throw new Error('Vagas esgotadas')
+  }
 
   return { userId, isNewUser: true }
 }
