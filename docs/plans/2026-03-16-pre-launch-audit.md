@@ -140,7 +140,41 @@ TypeScript: 0 erros
 
 ---
 
-## 5. Bugs Corrigidos Nesta Sessao
+## 5. Vulnerabilidades Criticas Encontradas e Corrigidas
+
+### 5.1 CRITICO: Role Elevation via user_metadata
+- **Problema:** `auth-provider.tsx` lia `user_metadata.role` do JWT e usava como role do perfil. Qualquer pessoa podia se registrar como `administrator` passando `role: 'administrator'` no `signUp()`
+- **Solucao:** Removido logica de `metadataRole`. Todo usuario auto-registrado e `student`. Promocao de role somente via admin panel
+- **Commit:** `18244d9`
+
+### 5.2 CRITICO: Invite Enrollment Bloqueado por RLS
+- **Problema:** `inviteService.ts` fazia `upsert` em `student_classes` com o token do aluno recem-criado, mas a policy `sc_admin_insert` so permitia `administrator`. O `.catch(() => {})` engolia o erro silenciosamente. Resultado: aluno registrava mas nao tinha curso nenhum
+- **Solucao:** Expandido RPC `register_invite_slot` (SECURITY DEFINER) para tambem inserir em `student_classes` e `class_courses`. Removido upserts client-side
+- **Migration:** `20260316210000_fix_invite_enrollment_rls.sql`
+- **Commit:** `18244d9`
+
+### 5.3 ALTO: Flash de Conteudo Antes de Verificar must_change_password
+- **Problema:** `ProtectedRoute.tsx` inicializava `mustChangePassword` como `null` e enquanto a query rodava, o conteudo aparecia brevemente
+- **Solucao:** Adicionado guard que mostra `<PageLoader />` enquanto `mustChangePassword === null`
+- **Commit:** `18244d9`
+
+### 5.4 ALTO: Memory Leak de Blob URLs no PDF Viewer
+- **Problema:** `LessonPlayerPage.tsx` criava `URL.createObjectURL()` para cada PDF mas nunca chamava `revokeObjectURL()`
+- **Solucao:** Revoga blob anterior antes de criar novo
+- **Commit:** `18244d9`
+
+### 5.5 Issues Pendentes (Baixa Prioridade)
+| Issue | Severidade | Status |
+|-------|-----------|--------|
+| lesson_comments/ratings SELECT leaks across courses | MEDIO | Pendente (nao afeta lancamento - sem dados sensiveis) |
+| Password minimo 6 chars | MEDIO | Pendente (Supabase default) |
+| saveDrawing pode apagar notes | MEDIO | Pendente (feature pouco usada) |
+| Note auto-save pode gravar na aula errada | ALTO | Pendente (edge case raro) |
+| Extra DB query por rota para must_change_password | BAIXO | Pendente (otimizacao) |
+
+---
+
+## 6. Bugs Corrigidos Nesta Sessao
 
 ### 5.1 XP Duplicado ao Concluir Aula
 - **Problema:** Botao "Concluir aula" sem protecao contra duplo-clique, RPC `add_user_score` faz INSERT puro
