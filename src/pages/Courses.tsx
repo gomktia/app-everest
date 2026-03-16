@@ -26,7 +26,7 @@ export default function CoursesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        if (!user?.id) return
+        if (!user?.id) { setIsLoading(false); return }
 
         const trails = await courseService.getUserCoursesByTrail(user.id)
         setCourseTrails(trails)

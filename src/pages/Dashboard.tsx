@@ -321,7 +321,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                        {userPosition.first_name[0]}{userPosition.last_name[0]}
+                        {userPosition.first_name?.[0]}{userPosition.last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -364,7 +364,7 @@ export default function DashboardPage() {
                   </span>
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="text-xs">
-                      {rankedUser.first_name[0]}{rankedUser.last_name[0]}
+                      {rankedUser.first_name?.[0]}{rankedUser.last_name?.[0]}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
