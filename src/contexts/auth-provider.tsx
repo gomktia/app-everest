@@ -345,7 +345,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 },
                 body: JSON.stringify({ maxSessions: 2 }),
               }
-            ).catch(() => {
+            ).then(async (res) => {
+              if (res.ok) {
+                const data = await res.json()
+                if (data.removedSessions > 0) {
+                  toast({
+                    title: 'Sessao anterior encerrada',
+                    description: `Voce tinha ${data.removedSessions + data.activeSessions} dispositivo(s) conectado(s). O mais antigo foi desconectado. Limite: ${data.maxSessions} dispositivos.`,
+                  })
+                }
+              }
+            }).catch(() => {
               // Não bloqueia login se session-guard falhar
             })
           }
