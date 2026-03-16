@@ -496,7 +496,12 @@ export default function QuestionBankPage() {
 
             {/* Options */}
             <div className="grid gap-2">
-              {currentQuestion.options?.map((option, optIndex) => {
+              {(Array.isArray(currentQuestion.options)
+                ? currentQuestion.options
+                : typeof currentQuestion.options === 'string'
+                  ? (() => { try { return JSON.parse(currentQuestion.options) } catch { return [] } })()
+                  : []
+              ).map((option: string, optIndex: number) => {
                 let optionStyle = 'border-border/50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm'
                 let icon = null
 
