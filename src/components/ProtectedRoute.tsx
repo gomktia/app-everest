@@ -1,8 +1,11 @@
+import { useState, useEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useAccessExpiration } from '@/hooks/use-access-expiration'
 import { PageLoader } from '@/components/PageLoader'
+import { ForcePasswordChangeModal } from '@/components/ForcePasswordChangeModal'
 import type { UserProfile } from '@/contexts/auth-provider'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
 interface ProtectedRouteProps {
@@ -17,9 +20,22 @@ interface ProtectedRouteProps {
  * Handles all edge cases properly and provides clear feedback.
  */
 export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps) => {
-  const { profile, loading, session, profileFetchAttempted, getRedirectPath, viewingAsStudent } = useAuth()
+  const { profile, loading, session, profileFetchAttempted, getRedirectPath, viewingAsStudent, refreshProfile } = useAuth()
   const location = useLocation()
   const { expired, expirationLoading } = useAccessExpiration()
+  const [mustChangePassword, setMustChangePassword] = useState<boolean | null>(null)
+
+  // Check must_change_password flag
+  useEffect(() => {
+    if (!profile?.id) { setMustChangePassword(null); return }
+    supabase
+      .from('users')
+      .select('must_change_password')
+      .eq('id', profile.id)
+      .single()
+      .then(({ data }) => setMustChangePassword(data?.must_change_password === true))
+      .catch(() => setMustChangePassword(false))
+  }, [profile?.id])
 
   // Show loading while authentication is being determined
   if (loading) {
@@ -75,6 +91,16 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
           </p>
         </div>
       </div>
+    )
+  }
+
+  // Force password change on first access
+  if (mustChangePassword) {
+    return (
+      <ForcePasswordChangeModal
+        userId={profile.id}
+        onSuccess={() => setMustChangePassword(false)}
+      />
     )
   }
 
