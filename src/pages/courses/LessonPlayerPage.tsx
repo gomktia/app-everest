@@ -143,8 +143,9 @@ export default function LessonPlayerPage() {
   // Theater mode
   const [theaterMode, setTheaterMode] = useState(false)
 
-  // PDF split view
+  // Split view (PDF / Office)
   const [pdfViewerUrl, setPdfViewerUrl] = useState<string | null>(null)
+  const [splitViewerType, setSplitViewerType] = useState<'pdf' | 'office'>('pdf')
   const [splitRatio, setSplitRatio] = useState(55)
   const isDragging = useRef(false)
   const splitContainerRef = useRef<HTMLDivElement>(null)
@@ -551,9 +552,9 @@ export default function LessonPlayerPage() {
     return currentModuleLessons.filter(l => l.title.toLowerCase().includes(q))
   }, [currentModuleLessons, lessonSearch])
 
-  const openPdfViewer = (url: string) => {
+  const openPdfViewer = (url: string, type: 'pdf' | 'office' = 'pdf') => {
     if (pdfViewerUrl === url) { setPdfViewerUrl(null) }
-    else { setPdfViewerUrl(url); setSplitRatio(55) }
+    else { setPdfViewerUrl(url); setSplitViewerType(type); setSplitRatio(55) }
   }
 
   const videoEmbedUrl = useMemo(() => {
@@ -980,13 +981,13 @@ export default function LessonPlayerPage() {
                       <div className="flex-1 flex flex-col min-w-0 bg-card">
                         <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
                           <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <FileText className={cn("h-3.5 w-3.5 shrink-0", splitViewerType === 'office' ? "text-orange-500" : "text-primary")} />
                             <span className="text-xs text-muted-foreground truncate">
-                              {pdfAttachments.find(p => p.file_url === pdfViewerUrl)?.file_name || 'PDF'}
+                              {attachments.find(p => p.file_url === pdfViewerUrl)?.file_name || (splitViewerType === 'office' ? 'Documento' : 'PDF')}
                             </span>
                           </div>
                           <div className="flex items-center gap-0.5 shrink-0">
-                            <a href={pdfViewerUrl} download target="_blank" rel="noopener noreferrer"
+                            <a href={pdfViewerUrl!} download target="_blank" rel="noopener noreferrer"
                               className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
                               <Download className="h-3.5 w-3.5" />
                             </a>
@@ -997,7 +998,13 @@ export default function LessonPlayerPage() {
                           </div>
                         </div>
                         <div className="flex-1 relative">
-                          <iframe src={pdfViewerUrl} title="PDF" className="absolute inset-0 w-full h-full border-0" />
+                          <iframe
+                            src={splitViewerType === 'office'
+                              ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(pdfViewerUrl!)}`
+                              : pdfViewerUrl!}
+                            title={splitViewerType === 'office' ? 'Documento' : 'PDF'}
+                            className="absolute inset-0 w-full h-full border-0"
+                          />
                         </div>
                       </div>
                     </div>
@@ -1013,9 +1020,9 @@ export default function LessonPlayerPage() {
                       <div className="border-t border-border">
                         <div className="flex items-center justify-between px-3 py-2 bg-card border-b border-border">
                           <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="h-3.5 w-3.5 text-primary" />
+                            <FileText className={cn("h-3.5 w-3.5", splitViewerType === 'office' ? "text-orange-500" : "text-primary")} />
                             <span className="text-xs text-muted-foreground truncate">
-                              {pdfAttachments.find(p => p.file_url === pdfViewerUrl)?.file_name || 'PDF'}
+                              {attachments.find(p => p.file_url === pdfViewerUrl)?.file_name || (splitViewerType === 'office' ? 'Documento' : 'PDF')}
                             </span>
                           </div>
                           <button onClick={() => setPdfViewerUrl(null)} className="p-1.5 rounded text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] flex items-center justify-center">
@@ -1023,7 +1030,13 @@ export default function LessonPlayerPage() {
                           </button>
                         </div>
                         <div style={{ height: '50vh' }}>
-                          <iframe src={pdfViewerUrl} title="PDF" className="w-full h-full border-0" />
+                          <iframe
+                            src={splitViewerType === 'office'
+                              ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(pdfViewerUrl!)}`
+                              : pdfViewerUrl!}
+                            title={splitViewerType === 'office' ? 'Documento' : 'PDF'}
+                            className="w-full h-full border-0"
+                          />
                         </div>
                       </div>
                     </div>
@@ -1474,12 +1487,11 @@ export default function LessonPlayerPage() {
                                     </button>
                                   )}
                                   {isOffice && (
-                                    <a href={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(att.file_url)}`}
-                                      target="_blank" rel="noopener noreferrer"
+                                    <button onClick={() => { openPdfViewer(att.file_url, 'office'); setDrawerOpen(false) }}
                                       className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-sm">
                                       <Eye className="h-3.5 w-3.5" />
                                       Visualizar
-                                    </a>
+                                    </button>
                                   )}
                                   <a href={att.file_url} download target="_blank" rel="noopener noreferrer"
                                     className={cn(
