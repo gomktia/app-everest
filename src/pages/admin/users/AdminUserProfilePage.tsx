@@ -37,6 +37,7 @@ import {
   UserX,
   Settings,
   Lock,
+  MessageSquare,
 } from 'lucide-react'
 
 interface CourseRow {
@@ -387,12 +388,30 @@ export default function AdminUserProfilePage() {
 
               <div>
                 <label className="text-sm font-semibold">Telefone</label>
-                <Input
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  placeholder="(00) 00000-0000"
-                  className="mt-1"
-                />
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                    className="flex-1"
+                  />
+                  {phone && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="outline"
+                      className="shrink-0 border-green-500/50 text-green-600 hover:bg-green-500/10"
+                      onClick={() => {
+                        const digits = phone.replace(/\D/g, '')
+                        const number = digits.startsWith('55') ? digits : `55${digits}`
+                        window.open(`https://wa.me/${number}`, '_blank')
+                      }}
+                      title="Chamar no WhatsApp"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="md:col-span-2">

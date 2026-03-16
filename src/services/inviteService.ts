@@ -78,6 +78,8 @@ export function generateSlug(title: string): string {
 export async function registerForInvite(inviteId: string, userData: {
   name: string
   email: string
+  phone?: string
+  cpf_cnpj?: string
   password: string
 }): Promise<{ userId: string; isNewUser: boolean }> {
   // 1. Get invite details
@@ -123,6 +125,8 @@ export async function registerForInvite(inviteId: string, userData: {
     email: userData.email,
     first_name: nameParts[0],
     last_name: nameParts.slice(1).join(' ') || null,
+    phone: userData.phone || null,
+    cpf_cnpj: userData.cpf_cnpj || null,
     role: 'student',
     is_active: true
   })

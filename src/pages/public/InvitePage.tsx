@@ -18,7 +18,7 @@ export default function InvitePage() {
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState(false)
   const [registrationCount, setRegistrationCount] = useState(0)
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', cpf: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -51,6 +51,8 @@ export default function InvitePage() {
       await registerForInvite(invite.id, {
         name: form.name,
         email: form.email,
+        phone: form.phone || undefined,
+        cpf_cnpj: form.cpf || undefined,
         password: form.password,
       })
       toast({ title: 'Conta criada!', description: 'Faca login para acessar o conteudo.' })
@@ -163,6 +165,23 @@ export default function InvitePage() {
                     required
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>WhatsApp (opcional)</Label>
+                  <Input
+                    type="tel"
+                    placeholder="(00) 00000-0000"
+                    value={form.phone}
+                    onChange={e => setForm({ ...form, phone: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>CPF/CNPJ (opcional)</Label>
+                  <Input
+                    placeholder="000.000.000-00"
+                    value={form.cpf}
+                    onChange={e => setForm({ ...form, cpf: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
