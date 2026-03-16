@@ -437,6 +437,7 @@ const App = () => (
                     <Route path="invites/new" element={<AdminInviteFormPage />} />
                     <Route path="invites/:inviteId/edit" element={<AdminInviteFormPage />} />
                     <Route path="convites/novo" element={<TrialClassWizard />} />
+                    <Route path="turmas/wizard" element={<TrialClassWizard />} />
                     <Route path="broadcast" element={<AdminBroadcastPage />} />
                     <Route path="courses" element={<AdminCoursesPage />} />
                     <Route path="courses/new" element={<AdminCourseEditorPage />} />

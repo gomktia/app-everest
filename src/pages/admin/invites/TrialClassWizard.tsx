@@ -47,6 +47,7 @@ import {
 
 interface WizardState {
   // Step 1
+  classType: 'trial' | 'standard'
   classId: string | null
   className: string
   classDescription: string
@@ -162,6 +163,7 @@ const MODULE_RULE_OPTIONS = [
 
 function initialState(): WizardState {
   return {
+    classType: 'standard',
     classId: null,
     className: '',
     classDescription: '',
@@ -362,7 +364,7 @@ export default function TrialClassWizard() {
             start_date: state.startDate || null,
             end_date: state.endDate || null,
             access_duration_days: state.accessDays ? Number(state.accessDays) : null,
-            class_type: 'trial',
+            class_type: state.classType,
             status: 'active',
             created_by: profile?.id || null,
           })
@@ -543,7 +545,9 @@ export default function TrialClassWizard() {
 
   async function saveStep5() {
     if (!state.classId) return false
+    // Skip invite creation if standard class and no title provided
     if (!state.inviteTitle.trim()) {
+      if (state.classType === 'standard') return true
       toast({ title: 'Titulo do convite e obrigatorio', variant: 'destructive' })
       return false
     }
@@ -603,10 +607,12 @@ export default function TrialClassWizard() {
     }
     if (currentStep < 6) {
       setCurrentStep(prev => prev + 1)
-      // Auto-fill invite title on step 6
+      // Auto-fill invite title on step 5 (convite)
       if (currentStep === 4) {
         if (!state.inviteTitle) {
-          const title = `${state.className} - Degustacao`
+          const title = state.classType === 'trial'
+            ? `${state.className} - Degustacao`
+            : state.className
           patch({ inviteTitle: title, inviteSlug: generateSlug(title) })
         }
       }
@@ -696,11 +702,44 @@ export default function TrialClassWizard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Tipo de turma */}
+          <div>
+            <Label>Tipo de turma *</Label>
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => patch({ classType: 'standard' })}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                  state.classType === 'standard'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover:border-primary/30'
+                }`}
+              >
+                <GraduationCap className="w-6 h-6" />
+                <span className="font-semibold text-sm">Turma Padrao</span>
+                <span className="text-xs text-muted-foreground text-center">Acesso completo, alunos matriculados</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => patch({ classType: 'trial' })}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                  state.classType === 'trial'
+                    ? 'border-orange-500 bg-orange-500/5 text-orange-600'
+                    : 'border-border hover:border-orange-500/30'
+                }`}
+              >
+                <Sparkles className="w-6 h-6" />
+                <span className="font-semibold text-sm">Degustacao / Trial</span>
+                <span className="text-xs text-muted-foreground text-center">Acesso limitado, link de convite</span>
+              </button>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="className">Nome da turma *</Label>
             <Input
               id="className"
-              placeholder="Ex: Degustacao EAOF 2026"
+              placeholder={state.classType === 'trial' ? 'Ex: Degustacao EAOF 2026' : 'Ex: Turma A - EAOF 2027'}
               value={state.className}
               onChange={e => patch({ className: e.target.value })}
             />
@@ -709,7 +748,7 @@ export default function TrialClassWizard() {
             <Label htmlFor="classDesc">Descricao (opcional)</Label>
             <Textarea
               id="classDesc"
-              placeholder="Descricao da turma de degustacao..."
+              placeholder={state.classType === 'trial' ? 'Descricao da turma de degustacao...' : 'Descricao da turma...'}
               value={state.classDescription}
               onChange={e => patch({ classDescription: e.target.value })}
               rows={3}
@@ -1282,15 +1321,33 @@ export default function TrialClassWizard() {
 
   // ---- STEP 5: Link de Convite ----
   function renderStep5() {
+    const [skipInvite, setSkipInvite] = useState(false)
+
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <LinkIcon className="w-5 h-5" />
             Link de Convite
+            {state.classType === 'standard' && (
+              <span className="text-xs font-normal text-muted-foreground ml-2">(opcional)</span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {state.classType === 'standard' && (
+            <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+              <Switch
+                checked={!skipInvite}
+                onCheckedChange={checked => setSkipInvite(!checked)}
+              />
+              <div>
+                <p className="text-sm font-medium">Criar link de convite</p>
+                <p className="text-xs text-muted-foreground">Para turmas padrao, o convite e opcional. Alunos podem ser matriculados manualmente ou via Kiwify.</p>
+              </div>
+            </div>
+          )}
+          {(state.classType === 'trial' || !skipInvite) && (<>
           <div>
             <Label htmlFor="inviteTitle">Titulo do convite *</Label>
             <Input
@@ -1334,6 +1391,7 @@ export default function TrialClassWizard() {
               </p>
             </div>
           )}
+          </>)}
         </CardContent>
       </Card>
     )
@@ -1352,20 +1410,24 @@ export default function TrialClassWizard() {
             <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
               <Sparkles className="w-10 h-10 text-green-500" />
             </div>
-            <h2 className="text-2xl font-bold">Turma de Degustacao Criada!</h2>
+            <h2 className="text-2xl font-bold">Turma Criada com Sucesso!</h2>
             <p className="text-muted-foreground">
-              Tudo configurado. Compartilhe o link abaixo com os alunos.
+              {state.inviteId
+                ? 'Tudo configurado. Compartilhe o link abaixo com os alunos.'
+                : 'Turma criada e configurada. Alunos podem ser matriculados manualmente ou via Kiwify.'}
             </p>
-            <div className="flex items-center justify-center gap-2 p-4 border rounded-lg bg-muted/30 max-w-lg mx-auto">
-              <p className="font-mono text-sm break-all">{getInviteUrl()}</p>
-              <Button variant="outline" size="icon" onClick={copyInviteUrl}>
-                <Copy className="w-4 h-4" />
-              </Button>
-            </div>
+            {state.inviteId && (
+              <div className="flex items-center justify-center gap-2 p-4 border rounded-lg bg-muted/30 max-w-lg mx-auto">
+                <p className="font-mono text-sm break-all">{getInviteUrl()}</p>
+                <Button variant="outline" size="icon" onClick={copyInviteUrl}>
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
             <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => navigate('/admin/invites')}>
+              <Button variant="outline" onClick={() => navigate('/admin/classes')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar para Convites
+                Voltar para Turmas
               </Button>
               <Button
                 onClick={() => {
@@ -1396,7 +1458,7 @@ export default function TrialClassWizard() {
             {state.startDate && <p><strong>Inicio:</strong> {state.startDate}</p>}
             {state.endDate && <p><strong>Fim:</strong> {state.endDate}</p>}
             <p><strong>Acesso:</strong> {state.accessDays ? `${state.accessDays} dias` : 'Ilimitado'}</p>
-            <p><strong>Tipo:</strong> trial | <strong>Status:</strong> active</p>
+            <p><strong>Tipo:</strong> {state.classType === 'trial' ? 'Degustacao' : 'Padrao'} | <strong>Status:</strong> active</p>
           </CardContent>
         </Card>
 
@@ -1525,7 +1587,7 @@ export default function TrialClassWizard() {
           disabled={saving}
         >
           <Sparkles className="w-5 h-5 mr-2" />
-          Criar Turma de Degustacao
+          Criar Turma
         </Button>
       </div>
     )
@@ -1552,7 +1614,7 @@ export default function TrialClassWizard() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Nova Turma de Degustacao</h1>
+          <h1 className="text-2xl font-bold">Nova Turma</h1>
           <p className="text-sm text-muted-foreground">
             Wizard completo: 7 passos para criar e configurar uma turma trial
           </p>
