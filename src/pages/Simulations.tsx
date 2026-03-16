@@ -104,7 +104,7 @@ export default function SimulationsPage() {
       let attempts: any[] | null = null
       if (allQuizIds.length > 0) {
         const { data, error } = await supabase
-          .from('quiz_attempts').select('*').eq('user_id', user.id).in('quiz_id', allQuizIds).order('started_at', { ascending: false })
+          .from('quiz_attempts').select('*').eq('user_id', user.id).in('quiz_id', allQuizIds).order('created_at', { ascending: false })
         if (error) throw error
         attempts = data
       }
