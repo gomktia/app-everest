@@ -343,7 +343,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   'Authorization': `Bearer ${newSession.access_token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ maxSessions: 2 }),
+                body: JSON.stringify({ maxSessions: 1 }),
               }
             ).then(async (res) => {
               if (res.ok) {
