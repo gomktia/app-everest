@@ -15,6 +15,9 @@ import {
   Lock,
   ExternalLink,
   MessageSquare,
+  ShoppingCart,
+  Crown,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -28,6 +31,7 @@ import {
 } from '@/components/ui/accordion'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { useTrialLimits } from '@/hooks/use-trial-limits'
 import { courseService } from '@/services/courseService'
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -97,6 +101,7 @@ export default function CourseDetailPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { isTrialUser } = useTrialLimits()
   const [course, setCourse] = useState<CourseData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('card')
@@ -373,6 +378,39 @@ export default function CourseDetailPage() {
           </div>
         )}
 
+        {/* ── Trial Upgrade Banner (enrolled but trial) ── */}
+        {isEnrolled && isTrialUser && course && (
+          <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-2 border-amber-500/30 rounded-xl p-5">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shrink-0">
+                <Sparkles className="h-6 w-6 text-amber-500" />
+              </div>
+              <div className="flex-1 space-y-1 text-center sm:text-left">
+                <h2 className="text-base font-bold text-foreground">Você está na degustação!</h2>
+                <p className="text-muted-foreground text-sm">
+                  Gostou do conteúdo? Adquira o acesso completo para desbloquear todos os módulos e aulas.
+                </p>
+              </div>
+              <div className="shrink-0">
+                {course.sales_url ? (
+                  <Button asChild size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg gap-2">
+                    <a href={course.sales_url} target="_blank" rel="noopener noreferrer">
+                      <ShoppingCart className="h-4 w-4" />
+                      Adquirir acesso completo
+                    </a>
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="outline" className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 gap-2"
+                    onClick={() => window.open('https://wa.me/5555999999999?text=Olá! Tenho interesse no curso ' + encodeURIComponent(course.name), '_blank')}>
+                    <MessageSquare className="h-4 w-4" />
+                    Falar com o suporte
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Hero / Course Header ── */}
         <section className="rounded-2xl border border-border bg-card shadow-sm">
           <div className="p-6 md:p-8 space-y-6">
@@ -508,13 +546,31 @@ export default function CourseDetailPage() {
                 }
               })
           }
+
+          const handleLockedClick = () => {
+            if (isTrialUser) {
+              if (course.sales_url) {
+                window.open(course.sales_url, '_blank')
+              } else {
+                toast({
+                  title: 'Conteúdo exclusivo para assinantes',
+                  description: 'Entre em contato para adquirir o acesso completo.',
+                })
+              }
+            } else {
+              toast({ title: 'Adquira o curso para acessar este conteúdo', variant: 'destructive' })
+            }
+          }
+
           return viewMode === 'card' ? (
             <ModuleCardView
               course={filteredCourse}
               courseId={courseId!}
               firstIncompleteLessonId={firstIncompleteLesson?.lessonId ?? null}
               isEnrolled={isEnrolled}
-              onLockedClick={() => toast({ title: 'Adquira o curso para acessar este conteudo', variant: 'destructive' })}
+              isTrialUser={isTrialUser}
+              salesUrl={course.sales_url}
+              onLockedClick={handleLockedClick}
             />
           ) : (
             <ModuleListView
@@ -523,7 +579,9 @@ export default function CourseDetailPage() {
               firstIncompleteLessonId={firstIncompleteLesson?.lessonId ?? null}
               defaultOpenModule={defaultOpenModule}
               isEnrolled={isEnrolled}
-              onLockedClick={() => toast({ title: 'Adquira o curso para acessar este conteudo', variant: 'destructive' })}
+              isTrialUser={isTrialUser}
+              salesUrl={course.sales_url}
+              onLockedClick={handleLockedClick}
             />
           )
         })()}
@@ -568,12 +626,16 @@ function ModuleCardView({
   courseId,
   firstIncompleteLessonId,
   isEnrolled,
+  isTrialUser,
+  salesUrl,
   onLockedClick,
 }: {
   course: CourseData
   courseId: string
   firstIncompleteLessonId: string | null
   isEnrolled: boolean
+  isTrialUser: boolean
+  salesUrl: string | null
   onLockedClick: () => void
 }) {
   return (
@@ -673,7 +735,7 @@ function ModuleCardView({
 
             {/* View module link */}
             {(module as any)._locked ? (
-              <div className="mt-4 text-center">
+              <div className="mt-4 space-y-2 text-center">
                 <div className={cn(
                   'inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold',
                   'bg-muted text-muted-foreground'
@@ -681,6 +743,20 @@ function ModuleCardView({
                   <Lock className="h-4 w-4" />
                   {(module as any)._lockMessage || 'Bloqueado'}
                 </div>
+                {isTrialUser && salesUrl && (
+                  <a
+                    href={salesUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200',
+                      'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-sm hover:shadow-md'
+                    )}
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    Adquirir acesso
+                  </a>
+                )}
               </div>
             ) : isEnrolled ? (
               <Link
@@ -722,6 +798,8 @@ function ModuleListView({
   firstIncompleteLessonId,
   defaultOpenModule,
   isEnrolled,
+  isTrialUser,
+  salesUrl,
   onLockedClick,
 }: {
   course: CourseData
@@ -729,6 +807,8 @@ function ModuleListView({
   firstIncompleteLessonId: string | null
   defaultOpenModule: string[]
   isEnrolled: boolean
+  isTrialUser: boolean
+  salesUrl: string | null
   onLockedClick: () => void
 }) {
   // When not enrolled, check which modules have any preview lessons
@@ -811,9 +891,23 @@ function ModuleListView({
                     </>
                   )}
                   {isModuleLocked && (
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {totalInModule} aula{totalInModule !== 1 ? 's' : ''} · {moduleLockMessage || 'Bloqueado'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {totalInModule} aula{totalInModule !== 1 ? 's' : ''} · {moduleLockMessage || 'Bloqueado'}
+                      </span>
+                      {isTrialUser && salesUrl && (
+                        <a
+                          href={salesUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-all"
+                        >
+                          <ShoppingCart className="h-3 w-3" />
+                          Comprar
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

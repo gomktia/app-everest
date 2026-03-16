@@ -12,6 +12,7 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import { courseService } from '@/services/courseService'
 import { useAuth } from '@/hooks/use-auth'
+import { useTrialLimits } from '@/hooks/use-trial-limits'
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { rankingService } from '@/services/rankingService'
@@ -48,6 +49,8 @@ import {
   Search,
   BookOpen,
   SkipForward,
+  ShoppingCart,
+  Sparkles,
 } from 'lucide-react'
 
 /* ------------------------------------------------------------------ */
@@ -84,6 +87,7 @@ interface CourseData {
   id: string
   name: string
   description?: string
+  sales_url?: string | null
   modules: ModuleData[]
 }
 
@@ -126,6 +130,7 @@ export default function LessonPlayerPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { user, loading: authLoading } = useAuth()
+  const { isTrialUser } = useTrialLimits()
 
   const [courseData, setCourseData] = useState<CourseData | null>(null)
   const [lessonData, setLessonData] = useState<LessonData | null>(null)
@@ -906,6 +911,36 @@ export default function LessonPlayerPage() {
             </>
           )}
         </header>
+
+        {/* ── Trial upgrade banner ── */}
+        {isTrialUser && !theaterMode && (
+          <div className="flex items-center justify-between gap-3 px-4 py-2 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-b border-amber-500/20">
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+              <span className="text-sm text-amber-700 dark:text-amber-400 truncate">
+                Você está na degustação — adquira o acesso completo para desbloquear todo o conteúdo
+              </span>
+            </div>
+            {courseData?.sales_url ? (
+              <a
+                href={courseData.sales_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-all shrink-0"
+              >
+                <ShoppingCart className="h-3.5 w-3.5" />
+                Comprar
+              </a>
+            ) : (
+              <button
+                onClick={() => window.open('https://wa.me/5555999999999?text=Olá! Tenho interesse no acesso completo.', '_blank')}
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border border-amber-500/50 text-amber-600 hover:bg-amber-500/10 transition-all shrink-0"
+              >
+                Falar com suporte
+              </button>
+            )}
+          </div>
+        )}
 
         {/* ============================================================ */}
         {/* Main layout                                                    */}
