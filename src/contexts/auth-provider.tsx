@@ -260,45 +260,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        // Get initial session - use getSession() as the primary method.
-        // This reads from localStorage first, so it resolves fast on page reload.
-        // Use a generous timeout (30s) to avoid falsely logging users out on slow connections.
-        const { data: { session: initialSession } } = await Promise.race([
-          supabase.auth.getSession(),
-          new Promise<any>((_, reject) =>
-            setTimeout(() => reject(new Error('Auth timeout')), 30000)
-          )
-        ])
+        // Get initial session - getSession() reads localStorage first (fast).
+        // Race with a SHORT timeout (5s) to stop the loading spinner quickly.
+        // If session fetch takes longer, onAuthStateChange will handle it.
+        let initialSession: Session | null = null
+        try {
+          const result = await Promise.race([
+            supabase.auth.getSession(),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('Auth timeout')), 5000)
+            )
+          ])
+          initialSession = result.data.session
+        } catch {
+          // Timeout — stop loading spinner immediately, let onAuthStateChange catch up
+          if (mounted) {
+            initCompleteRef.current = true
+            setLoading(false)
+          }
+          return
+        }
 
         if (!mounted) return
 
-        await handleSessionChange(initialSession)
+        if (initialSession?.user) {
+          // Set session immediately so UI renders (stops loading spinner)
+          setSession(initialSession)
 
-        // Token refresh is handled automatically by Supabase's onAuthStateChange
-        // (TOKEN_REFRESHED event) - no manual interval needed
+          // Fetch profile in background — don't block the UI
+          handleSessionChange(initialSession).catch(err => {
+            logger.error('Background profile fetch failed:', err)
+          })
+        } else {
+          // No session — user is not logged in
+          setSession(null)
+          setProfile(null)
+          setProfileFetchAttempted(true)
+        }
 
       } catch (error) {
         if (!mounted) return
-
         logger.error('Auth initialization failed:', error)
-
-        const isTimeout = error instanceof Error && error.message.includes('timeout')
-
-        if (!isTimeout) {
-          toast({
-            title: 'Erro de Conexão',
-            description: 'Problemas na conexão. Tente recarregar a página.',
-            variant: 'destructive',
-          })
-        }
-
-        // On timeout, do NOT clear session — the user may still be authenticated.
-        // Only clear if it was a non-timeout error (actual auth failure).
-        if (!isTimeout) {
-          setSession(null)
-          setProfile(null)
-        }
-        // For timeouts, leave current state as-is and let onAuthStateChange handle it
+        setSession(null)
+        setProfile(null)
       } finally {
         if (mounted) {
           initCompleteRef.current = true
