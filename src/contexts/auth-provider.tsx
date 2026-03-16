@@ -72,6 +72,8 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
           last_name,
           role,
           is_active,
+          bio,
+          avatar_url,
           created_at,
           updated_at
         `)

@@ -285,7 +285,7 @@ export default function SettingsPage() {
     try {
       // Atualizar o perfil do usuário na tabela user_profiles
       const { error } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({
           first_name: settings.profile.firstName.trim(),
           last_name: settings.profile.lastName.trim(),
@@ -337,12 +337,12 @@ export default function SettingsPage() {
     setShowAvatarDialog(false)
 
     try {
-      const gravatarUrl = getGravatarUrl(profile.email)
+      const gravatarUrl = await getGravatarUrl(profile.email)
       logger.debug('Usando Gravatar:', gravatarUrl)
 
       // Atualizar no banco de dados
       const { error: updateError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({
           avatar_url: gravatarUrl,
           updated_at: new Date().toISOString()
@@ -410,7 +410,7 @@ export default function SettingsPage() {
 
       // Atualizar no banco de dados
       const { error: updateError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({
           avatar_url: avatarUrl.trim(),
           updated_at: new Date().toISOString()
@@ -500,7 +500,7 @@ export default function SettingsPage() {
       }
 
       const { error: updateError } = await supabase
-        .from('user_profiles')
+        .from('users')
         .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
         .eq('id', profile.id)
 

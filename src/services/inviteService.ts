@@ -133,11 +133,22 @@ export async function registerForInvite(inviteId: string, userData: {
     await supabase.from('student_classes').upsert({
       user_id: userId,
       class_id: invite.class_id,
+      source: 'invite',
       enrollment_date: new Date().toISOString(),
       subscription_expires_at: expiresAt
     }, { onConflict: 'user_id,class_id' }).catch(() => {
       // Ignore if already enrolled
     })
+
+    // 5b. Ensure course is linked to class (class_courses)
+    if (invite.course_id) {
+      await supabase.from('class_courses').upsert({
+        class_id: invite.class_id,
+        course_id: invite.course_id
+      }, { onConflict: 'class_id,course_id' }).catch(() => {
+        // Ignore if already linked
+      })
+    }
   }
 
   // 6. Track registration
