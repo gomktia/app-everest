@@ -44,7 +44,7 @@ interface Question {
   question_html?: string
   question_image_url?: string
   question_image_caption?: string
-  options: string[]
+  options: string[] | string | null
   correct_answer: string
   explanation: string | null
   explanation_html?: string
@@ -65,6 +65,15 @@ interface Question {
     title: string
     content: string
   } | null
+}
+
+/** Safely parse options that may be array, JSON string, or null */
+function parseOptions(options: string[] | string | null): string[] {
+  if (Array.isArray(options)) return options
+  if (typeof options === 'string') {
+    try { return JSON.parse(options) } catch { return [] }
+  }
+  return []
 }
 
 type Phase = 'select' | 'study' | 'summary'
@@ -114,7 +123,12 @@ export default function QuestionBankPage() {
         `)
 
       if (error) throw error
-      setAllQuestions(data || [])
+      // Normalize data: reading_text comes as array from Supabase join
+      const normalized = (data || []).map((q: any) => ({
+        ...q,
+        reading_text: Array.isArray(q.reading_text) ? q.reading_text[0] || null : q.reading_text,
+      }))
+      setAllQuestions(normalized)
     } catch (error) {
       logger.error('Error fetching questions:', error)
     } finally {
@@ -137,6 +151,8 @@ export default function QuestionBankPage() {
   const availableQuestions = allQuestions.filter(q => {
     if (selectedSubject !== 'all' && q.topics?.subjects?.name !== selectedSubject) return false
     if (selectedTopic !== 'all' && q.topics?.name !== selectedTopic) return false
+    // Exclude questions with no valid options
+    if (parseOptions(q.options).length === 0) return false
     return true
   })
 
@@ -382,12 +398,13 @@ export default function QuestionBankPage() {
   }
 
   // ─── STUDY PHASE ───────────────────────────────────────────────────────
-  if (phase === 'study' && !currentQuestion) {
-    // Safety fallback: no questions loaded, return to selection
-    setPhase('select')
-    return null
-  }
-  if (phase === 'study' && currentQuestion) {
+  // Safety: if study phase but no question, useEffect will reset
+  useEffect(() => {
+    if (phase === 'study' && studyQuestions.length > 0 && !currentQuestion) {
+      setPhase('select')
+    }
+  }, [phase, studyQuestions, currentQuestion])
+  if (phase === 'study' && currentQuestion && studyQuestions.length > 0) {
     const progressPercent = ((currentIndex + 1) / studyQuestions.length) * 100
     const answeredCount = Object.keys(answers).length
     const correctCount = studyQuestions.filter(q => answers[q.id] === q.correct_answer).length
@@ -496,12 +513,7 @@ export default function QuestionBankPage() {
 
             {/* Options */}
             <div className="grid gap-2">
-              {(Array.isArray(currentQuestion.options)
-                ? currentQuestion.options
-                : typeof currentQuestion.options === 'string'
-                  ? (() => { try { return JSON.parse(currentQuestion.options) } catch { return [] } })()
-                  : []
-              ).map((option: string, optIndex: number) => {
+              {parseOptions(currentQuestion.options).map((option: string, optIndex: number) => {
                 let optionStyle = 'border-border/50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm'
                 let icon = null
 
@@ -750,7 +762,18 @@ export default function QuestionBankPage() {
             <RotateCcw className="h-4 w-4" />
             Nova Sessão
           </Button>
-          <Button onClick={() => { restart(); setTimeout(startStudy, 0) }} className="gap-2 transition-all duration-200 hover:shadow-md hover:bg-green-600">
+          <Button onClick={() => {
+            setStudyQuestions([])
+            setAnswers({})
+            setCurrentIndex(0)
+            setShowExplanation(false)
+            // Keep filters, just restart with new shuffle
+            const shuffled = [...availableQuestions].sort(() => Math.random() - 0.5)
+            const selected = shuffled.slice(0, quantity)
+            setStudyQuestions(selected)
+            setCurrentIndex(0)
+            setPhase('study')
+          }} className="gap-2 transition-all duration-200 hover:shadow-md hover:bg-green-600">
             <Play className="h-4 w-4" />
             Repetir Mesmos Filtros
           </Button>
