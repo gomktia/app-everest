@@ -3,6 +3,7 @@ import { logger } from '@/lib/logger'
 
 export interface AudioLesson {
   id: string
+  lesson_id?: string // Real video_lesson ID (without prefix)
   title: string
   description?: string
   series?: string // Mapped from module name
@@ -11,6 +12,7 @@ export interface AudioLesson {
   audio_url?: string // Mapped from audio_source_url
   audio_source_type: 'panda_video_hls' | 'mp3_url'
   thumbnail_url?: string
+  is_preview?: boolean
   rating?: number
   listens_count?: number
   created_at?: string
@@ -27,6 +29,7 @@ export interface EvercastCourse {
   name: string
   description: string | null
   thumbnail_url: string | null
+  sales_url: string | null
   modules: EvercastModule[]
   total_lessons: number
   total_duration_minutes: number
@@ -225,12 +228,12 @@ export const audioLessonService = {
     logger.debug('Increment listen', id)
   },
 
-  async getEvercastCourses(userId: string, isAdmin?: boolean): Promise<EvercastCourse[]> {
+  async getEvercastCourses(userId: string, isAdmin?: boolean, showAll?: boolean): Promise<EvercastCourse[]> {
     try {
       let courseIds: string[] | null = null
 
-      // Students need enrollment check
-      if (!isAdmin) {
+      // Students need enrollment check (unless showAll for trial browsing)
+      if (!isAdmin && !showAll) {
         const { data: userClasses, error: classesError } = await supabase
           .from('student_classes')
           .select('class_id')
@@ -253,7 +256,7 @@ export const audioLessonService = {
       // Get evercast-enabled courses
       let query = supabase
         .from('video_courses')
-        .select('id, name, description, thumbnail_url')
+        .select('id, name, description, thumbnail_url, sales_url')
         .eq('evercast_enabled', true)
         .eq('is_active', true)
 
@@ -286,7 +289,7 @@ export const audioLessonService = {
           if (moduleIds.length > 0) {
             const { data: lessonData } = await supabase
               .from('video_lessons')
-              .select('id, title, description, duration_seconds, module_id, order_index, video_source_id, video_source_type')
+              .select('id, title, description, duration_seconds, module_id, order_index, video_source_id, video_source_type, is_preview')
               .in('module_id', moduleIds)
               .eq('is_active', true)
               .not('video_source_id', 'is', null)
@@ -303,6 +306,7 @@ export const audioLessonService = {
               .filter(l => l.module_id === mod.id)
               .map(l => ({
                 id: `video_${l.id}`,
+                lesson_id: l.id,
                 title: l.title,
                 description: l.description || '',
                 series: course.name,
@@ -313,6 +317,7 @@ export const audioLessonService = {
                   : undefined,
                 audio_source_type: 'panda_video_hls' as const,
                 thumbnail_url: course.thumbnail_url || undefined,
+                is_preview: l.is_preview || false,
                 created_at: undefined,
               }))
           }))
@@ -325,6 +330,7 @@ export const audioLessonService = {
             name: course.name,
             description: course.description,
             thumbnail_url: course.thumbnail_url,
+            sales_url: (course as any).sales_url || null,
             modules: evercastModules,
             total_lessons: totalLessons,
             total_duration_minutes: Math.round(totalDuration / 60),
