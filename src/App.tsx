@@ -214,6 +214,9 @@ const AdminInvitesPage = lazy(
 const AdminInviteFormPage = lazy(
   () => import('@/pages/admin/invites/AdminInviteFormPage'),
 )
+const TrialClassWizard = lazy(
+  () => import('@/pages/admin/invites/TrialClassWizard'),
+)
 const InvitePage = lazy(
   () => import('@/pages/public/InvitePage'),
 )
@@ -433,6 +436,7 @@ const App = () => (
                     <Route path="invites" element={<AdminInvitesPage />} />
                     <Route path="invites/new" element={<AdminInviteFormPage />} />
                     <Route path="invites/:inviteId/edit" element={<AdminInviteFormPage />} />
+                    <Route path="convites/novo" element={<TrialClassWizard />} />
                     <Route path="broadcast" element={<AdminBroadcastPage />} />
                     <Route path="courses" element={<AdminCoursesPage />} />
                     <Route path="courses/new" element={<AdminCourseEditorPage />} />
