@@ -44,15 +44,14 @@ export default function QuizzesPage() {
       .finally(() => setIsLoading(false))
   }, [])
 
-  // Filter subjects based on content access restrictions
-  const filteredSubjects = isStudent && isRestricted
-    ? subjects
-        .map(subject => ({
-          ...subject,
-          topics: subject.topics.filter(topic => isAllowed(topic.id))
-        }))
-        .filter(subject => subject.topics.length > 0)
-    : subjects
+  // Mark topics as locked/unlocked (show all, but indicate which are restricted)
+  const filteredSubjects = subjects.map(subject => ({
+    ...subject,
+    topics: subject.topics.map(topic => ({
+      ...topic,
+      _locked: isStudent && isRestricted && !isAllowed(topic.id),
+    })),
+  }))
 
   const totalTopicsAvailable = filteredSubjects.reduce((total, subject) => total + subject.topics.length, 0)
   const totalQuestionsAvailable = filteredSubjects.reduce((total, subject) =>
@@ -219,6 +218,8 @@ export default function QuizzesPage() {
                 .map((subject, index) => {
                   const totalQuestions = subject.topics.reduce((sum, topic) => sum + topic.questionCount, 0)
                   const totalQuizzes = subject.topics.reduce((sum, topic) => sum + topic.quizzes.length, 0)
+                  const lockedTopics = subject.topics.filter((t: any) => t._locked).length
+                  const hasLockedTopics = lockedTopics > 0
 
                   logger.debug(`🎯 Card render - ${subject.name}: Topics=${subject.topics.length}, Quizzes=${totalQuizzes}, Questions=${totalQuestions}`)
 
@@ -283,7 +284,9 @@ export default function QuizzesPage() {
                               </div>
                               <div>
                                 <div className="text-sm font-bold text-blue-600">{subject.topics.length}</div>
-                                <div className="text-xs text-muted-foreground">Tópicos</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {hasLockedTopics ? `${subject.topics.length - lockedTopics} livres` : 'Tópicos'}
+                                </div>
                               </div>
                             </div>
 

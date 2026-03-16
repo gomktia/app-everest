@@ -77,15 +77,14 @@ export default function FlashcardsPage() {
     return <SectionLoader />
   }
 
-  // Filter subjects and topics based on content access restrictions
-  const filteredSubjects = isStudent && isRestricted
-    ? subjectList
-        .map(subject => ({
-          ...subject,
-          topics: subject.topics?.filter(topic => isAllowed(topic.id))
-        }))
-        .filter(subject => (subject.topics?.length || 0) > 0)
-    : subjectList
+  // Mark topics as locked/unlocked (show all, but indicate which are restricted)
+  const filteredSubjects = subjectList.map(subject => ({
+    ...subject,
+    topics: subject.topics?.map(topic => ({
+      ...topic,
+      _locked: isStudent && isRestricted && !isAllowed(topic.id),
+    })),
+  }))
 
   if (isStudent && !hasFeature(FEATURE_KEYS.FLASHCARDS)) {
     return (
@@ -225,17 +224,23 @@ export default function FlashcardsPage() {
 
                 {/* Preview de tópicos */}
                 <ul className="mt-4 flex-1 space-y-1.5">
-                  {previewTopics.map((topic) => (
-                    <li key={topic.id} className="flex items-center gap-2 min-w-0">
-                      <Layers className={cn('h-3.5 w-3.5 flex-shrink-0', colors.text)} />
-                      <span className="truncate text-xs text-foreground">
-                        {topic.name}
-                      </span>
-                      <span className="ml-auto text-xs text-muted-foreground shrink-0">
-                        {topic.flashcard_count || 0}
-                      </span>
-                    </li>
-                  ))}
+                  {previewTopics.map((topic) => {
+                    const topicLocked = (topic as any)._locked
+                    return (
+                      <li key={topic.id} className={cn('flex items-center gap-2 min-w-0', topicLocked && 'opacity-50')}>
+                        {topicLocked
+                          ? <Lock className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                          : <Layers className={cn('h-3.5 w-3.5 flex-shrink-0', colors.text)} />
+                        }
+                        <span className={cn('truncate text-xs', topicLocked ? 'text-muted-foreground' : 'text-foreground')}>
+                          {topic.name}
+                        </span>
+                        <span className="ml-auto text-xs text-muted-foreground shrink-0">
+                          {topicLocked ? <Lock className="h-3 w-3" /> : (topic.flashcard_count || 0)}
+                        </span>
+                      </li>
+                    )
+                  })}
                   {subjectTopics.length > 4 && (
                     <li className="text-xs text-muted-foreground pl-5.5">
                       +{subjectTopics.length - 4} tópico{subjectTopics.length - 4 !== 1 ? 's' : ''}
