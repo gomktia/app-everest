@@ -22,6 +22,7 @@ import { SectionLoader } from '@/components/SectionLoader'
 import { logger } from '@/lib/logger'
 import { useAuth } from '@/hooks/use-auth'
 import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
+import { useContentAccess } from '@/hooks/useContentAccess'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { cachedFetch } from '@/lib/offlineCache'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -44,6 +45,7 @@ export default function FlashcardsPage() {
   const { toast } = useToast()
   const { user, isStudent, isAdmin, isTeacher } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
+  const { isRestricted, isAllowed, loading: contentAccessLoading } = useContentAccess('flashcard_topic')
   const [subjectList, setSubjectList] = useState<Subject[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showTutorial, setShowTutorial] = useState(false)
@@ -71,9 +73,19 @@ export default function FlashcardsPage() {
     fetchSubjects()
   }, [user?.id])
 
-  if (permissionsLoading || isLoading) {
+  if (permissionsLoading || isLoading || contentAccessLoading) {
     return <SectionLoader />
   }
+
+  // Filter subjects and topics based on content access restrictions
+  const filteredSubjects = isStudent && isRestricted
+    ? subjectList
+        .map(subject => ({
+          ...subject,
+          topics: subject.topics?.filter(topic => isAllowed(topic.id))
+        }))
+        .filter(subject => (subject.topics?.length || 0) > 0)
+    : subjectList
 
   if (isStudent && !hasFeature(FEATURE_KEYS.FLASHCARDS)) {
     return (
@@ -97,11 +109,11 @@ export default function FlashcardsPage() {
     )
   }
 
-  const totalCards = subjectList.reduce(
+  const totalCards = filteredSubjects.reduce(
     (total, subject) => total + (subject.topics?.reduce((sum, topic) => sum + (topic.flashcard_count || 0), 0) || 0),
     0,
   )
-  const totalTopics = subjectList.reduce((total, subject) => total + (subject.topics?.length || 0), 0)
+  const totalTopics = filteredSubjects.reduce((total, subject) => total + (subject.topics?.length || 0), 0)
 
   return (
     <div className="space-y-6">
@@ -126,7 +138,7 @@ export default function FlashcardsPage() {
         <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
           <CardContent className="p-2.5 sm:p-4 text-center">
             <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 mx-auto mb-1" />
-            <div className="text-lg sm:text-xl font-bold text-foreground">{subjectList.length}</div>
+            <div className="text-lg sm:text-xl font-bold text-foreground">{filteredSubjects.length}</div>
             <div className="text-[11px] sm:text-xs text-muted-foreground">Matérias</div>
           </CardContent>
         </Card>
@@ -146,7 +158,7 @@ export default function FlashcardsPage() {
         </Card>
       </div>
 
-      {subjectList.length === 0 ? (
+      {filteredSubjects.length === 0 ? (
         <Card className="border-border shadow-sm">
           <CardContent className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -166,7 +178,7 @@ export default function FlashcardsPage() {
         </Card>
       ) : (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {subjectList
+          {filteredSubjects
             .filter((s) => (s.topics?.reduce((sum, t) => sum + (t.flashcard_count || 0), 0) || 0) > 0)
             .map((subject, idx) => {
             const subjectTopics = subject.topics || []

@@ -13,6 +13,7 @@ import { quizService, type QuizSubject } from '@/services/quizService'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useAuth } from '@/hooks/use-auth'
 import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
+import { useContentAccess } from '@/hooks/useContentAccess'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { logger } from '@/lib/logger'
 import { cachedFetch } from '@/lib/offlineCache'
@@ -23,6 +24,7 @@ export default function QuizzesPage() {
   const { toast } = useToast()
   const { isStudent, isAdmin, isTeacher } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
+  const { isRestricted, isAllowed, loading: contentAccessLoading } = useContentAccess('quiz_topic')
   const [subjects, setSubjects] = useState<QuizSubject[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showTutorial, setShowTutorial] = useState(false)
@@ -42,17 +44,27 @@ export default function QuizzesPage() {
       .finally(() => setIsLoading(false))
   }, [])
 
-  const totalTopicsAvailable = subjects.reduce((total, subject) => total + subject.topics.length, 0)
-  const totalQuestionsAvailable = subjects.reduce((total, subject) =>
+  // Filter subjects based on content access restrictions
+  const filteredSubjects = isStudent && isRestricted
+    ? subjects
+        .map(subject => ({
+          ...subject,
+          topics: subject.topics.filter(topic => isAllowed(topic.id))
+        }))
+        .filter(subject => subject.topics.length > 0)
+    : subjects
+
+  const totalTopicsAvailable = filteredSubjects.reduce((total, subject) => total + subject.topics.length, 0)
+  const totalQuestionsAvailable = filteredSubjects.reduce((total, subject) =>
     total + subject.topics.reduce((topicTotal, topic) =>
       topicTotal + topic.questionCount, 0), 0)
-  const totalQuizzesAvailable = subjects.reduce((total, subject) =>
+  const totalQuizzesAvailable = filteredSubjects.reduce((total, subject) =>
     total + subject.topics.reduce((topicTotal, topic) =>
       topicTotal + topic.quizzes.length, 0), 0)
 
-  const delays = useStaggeredAnimation(subjects.length, 100)
+  const delays = useStaggeredAnimation(filteredSubjects.length, 100)
 
-  if (permissionsLoading || isLoading) {
+  if (permissionsLoading || isLoading || contentAccessLoading) {
     return <SectionLoader />
   }
 
@@ -136,7 +148,7 @@ export default function QuizzesPage() {
                 </div>
                 <div className="text-center p-2.5 sm:p-3 md:p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
                   <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-purple-500 mx-auto mb-1.5" />
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">{subjects.length}</div>
+                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">{filteredSubjects.length}</div>
                   <div className="text-[11px] sm:text-xs md:text-sm text-muted-foreground">Matérias</div>
                 </div>
                 <div className="text-center p-2.5 sm:p-3 md:p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
@@ -149,7 +161,7 @@ export default function QuizzesPage() {
           </CardContent>
         </Card>
 
-        {subjects.length === 0 ? (
+        {filteredSubjects.length === 0 ? (
           <Card className="border-border shadow-sm">
             <CardContent className="text-center py-16">
               <div className="max-w-md mx-auto">
@@ -193,7 +205,7 @@ export default function QuizzesPage() {
                   <div>
                     <h2 className="text-2xl font-bold">Matérias de Quizzes</h2>
                     <p className="text-muted-foreground">
-                      {subjects.length} matérias disponíveis
+                      {filteredSubjects.length} matérias disponíveis
                     </p>
                   </div>
                 </div>
@@ -202,7 +214,7 @@ export default function QuizzesPage() {
 
             {/* Quizzes Grid */}
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {subjects
+              {filteredSubjects
                 .filter(subject => !subject.name.includes('Regulamentos Militares'))
                 .map((subject, index) => {
                   const totalQuestions = subject.topics.reduce((sum, topic) => sum + topic.questionCount, 0)

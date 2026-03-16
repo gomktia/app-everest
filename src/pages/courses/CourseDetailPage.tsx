@@ -102,6 +102,9 @@ export default function CourseDetailPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('card')
   const [isEnrolled, setIsEnrolled] = useState(false)
   const [enrollmentChecked, setEnrollmentChecked] = useState(false)
+  const [moduleRules, setModuleRules] = useState<Record<string, { rule_type: string; rule_value: string | null }>>({})
+  const [studentClassId, setStudentClassId] = useState<string | null>(null)
+  const [enrollmentDate, setEnrollmentDate] = useState<string | null>(null)
 
   // ---- Enrollment check ----
   useEffect(() => {
@@ -112,17 +115,47 @@ export default function CourseDetailPage() {
       }
       const { data } = await supabase
         .from('student_classes')
-        .select('id, classes!inner(class_courses!inner(course_id))')
+        .select('id, class_id, enrollment_date, classes!inner(class_courses!inner(course_id))')
         .eq('user_id', user.id)
 
       const enrolledCourseIds = (data || []).flatMap((sc: any) =>
         sc.classes?.class_courses?.map((cc: any) => cc.course_id) || []
       )
       setIsEnrolled(enrolledCourseIds.includes(courseId))
+
+      // Find the class_id that has this course
+      const matchingEntry = (data || []).find((sc: any) =>
+        sc.classes?.class_courses?.some((cc: any) => cc.course_id === courseId)
+      )
+      if (matchingEntry) {
+        setStudentClassId(matchingEntry.class_id)
+        setEnrollmentDate(matchingEntry.enrollment_date)
+      }
+
       setEnrollmentChecked(true)
     }
     checkEnrollment()
   }, [user?.id, courseId])
+
+  // ---- Module rules for the student's class ----
+  useEffect(() => {
+    async function fetchModuleRules() {
+      if (!studentClassId) return
+      const { data } = await supabase
+        .from('class_module_rules')
+        .select('module_id, rule_type, rule_value')
+        .eq('class_id', studentClassId)
+
+      if (data) {
+        const rules: Record<string, { rule_type: string; rule_value: string | null }> = {}
+        for (const r of data) {
+          rules[r.module_id] = { rule_type: r.rule_type, rule_value: r.rule_value }
+        }
+        setModuleRules(rules)
+      }
+    }
+    fetchModuleRules()
+  }, [studentClassId])
 
   // ---- Data fetching ----
   useEffect(() => {
@@ -171,6 +204,33 @@ export default function CourseDetailPage() {
 
     fetchCourseDetails()
   }, [courseId, user?.id])
+
+  // ---- Module access check helper ----
+  const getModuleAccess = (moduleId: string): { accessible: boolean; hidden: boolean; message: string } => {
+    const rule = moduleRules[moduleId]
+    if (!rule || rule.rule_type === 'free') return { accessible: true, hidden: false, message: '' }
+
+    switch (rule.rule_type) {
+      case 'hidden':
+        return { accessible: false, hidden: true, message: '' }
+      case 'blocked':
+        return { accessible: false, hidden: false, message: 'Conteúdo bloqueado' }
+      case 'scheduled_date': {
+        const date = new Date(rule.rule_value!)
+        if (date <= new Date()) return { accessible: true, hidden: false, message: '' }
+        return { accessible: false, hidden: false, message: `Disponível em ${date.toLocaleDateString('pt-BR')}` }
+      }
+      case 'days_after_enrollment': {
+        if (!enrollmentDate) return { accessible: true, hidden: false, message: '' }
+        const days = parseInt(rule.rule_value!)
+        const unlockDate = new Date(new Date(enrollmentDate).getTime() + days * 86400000)
+        if (unlockDate <= new Date()) return { accessible: true, hidden: false, message: '' }
+        return { accessible: false, hidden: false, message: `Disponível em ${unlockDate.toLocaleDateString('pt-BR')}` }
+      }
+      default:
+        return { accessible: true, hidden: false, message: '' }
+    }
+  }
 
   // ---- Computed stats ----
   const stats = useMemo(() => {
@@ -403,25 +463,36 @@ export default function CourseDetailPage() {
           </div>
         </div>
 
-        {/* ── Modules Content ── */}
-        {viewMode === 'card' ? (
-          <ModuleCardView
-            course={course}
-            courseId={courseId!}
-            firstIncompleteLessonId={firstIncompleteLesson?.lessonId ?? null}
-            isEnrolled={isEnrolled}
-            onLockedClick={() => toast({ title: 'Adquira o curso para acessar este conteudo', variant: 'destructive' })}
-          />
-        ) : (
-          <ModuleListView
-            course={course}
-            courseId={courseId!}
-            firstIncompleteLessonId={firstIncompleteLesson?.lessonId ?? null}
-            defaultOpenModule={defaultOpenModule}
-            isEnrolled={isEnrolled}
-            onLockedClick={() => toast({ title: 'Adquira o curso para acessar este conteudo', variant: 'destructive' })}
-          />
-        )}
+        {/* ── Modules Content (filtered by module rules) ── */}
+        {(() => {
+          const filteredCourse = {
+            ...course,
+            modules: course.modules
+              .filter(m => !getModuleAccess(m.id).hidden)
+              .map(m => {
+                const access = getModuleAccess(m.id)
+                return { ...m, _locked: !access.accessible, _lockMessage: access.message }
+              })
+          }
+          return viewMode === 'card' ? (
+            <ModuleCardView
+              course={filteredCourse}
+              courseId={courseId!}
+              firstIncompleteLessonId={firstIncompleteLesson?.lessonId ?? null}
+              isEnrolled={isEnrolled}
+              onLockedClick={() => toast({ title: 'Adquira o curso para acessar este conteudo', variant: 'destructive' })}
+            />
+          ) : (
+            <ModuleListView
+              course={filteredCourse}
+              courseId={courseId!}
+              firstIncompleteLessonId={firstIncompleteLesson?.lessonId ?? null}
+              defaultOpenModule={defaultOpenModule}
+              isEnrolled={isEnrolled}
+              onLockedClick={() => toast({ title: 'Adquira o curso para acessar este conteudo', variant: 'destructive' })}
+            />
+          )
+        })()}
     </div>
   )
 }
