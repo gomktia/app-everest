@@ -25,16 +25,26 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
   const { expired, expirationLoading } = useAccessExpiration()
   const [mustChangePassword, setMustChangePassword] = useState<boolean | null>(null)
 
-  // Check must_change_password flag
+  // Check must_change_password flag (with timeout fallback)
   useEffect(() => {
     if (!profile?.id) { setMustChangePassword(null); return }
+    // Timeout fallback: if query takes too long, assume false
+    const timeout = setTimeout(() => setMustChangePassword(false), 5000)
     supabase
       .from('users')
       .select('must_change_password')
       .eq('id', profile.id)
       .single()
-      .then(({ data }) => setMustChangePassword(data?.must_change_password === true))
-      .catch(() => setMustChangePassword(false))
+      .then(({ data, error }) => {
+        clearTimeout(timeout)
+        if (error) { setMustChangePassword(false); return }
+        setMustChangePassword(data?.must_change_password === true)
+      })
+      .catch(() => {
+        clearTimeout(timeout)
+        setMustChangePassword(false)
+      })
+    return () => clearTimeout(timeout)
   }, [profile?.id])
 
   // Show loading while authentication is being determined
