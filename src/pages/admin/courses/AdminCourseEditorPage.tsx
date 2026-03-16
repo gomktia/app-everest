@@ -576,15 +576,15 @@ export default function AdminCourseEditorPage() {
         // Fetch course
         const { data: courseData, error: courseError } = await supabase
           .from('video_courses')
-          .select('id, name, description, thumbnail_url, is_active, evercast_enabled')
+          .select('id, name, description, thumbnail_url, is_active, evercast_enabled, sales_url, show_in_storefront')
           .eq('id', courseId!)
           .single()
 
         if (courseError) {
-          // Fallback: column may not exist yet, retry without evercast_enabled
+          // Fallback: columns may not exist yet
           const { data: fallbackData, error: fallbackError } = await supabase
             .from('video_courses')
-            .select('id, name, description, thumbnail_url, is_active')
+            .select('*')
             .eq('id', courseId!)
             .single()
           if (fallbackError) throw fallbackError
