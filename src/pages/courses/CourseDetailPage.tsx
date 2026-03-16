@@ -226,7 +226,7 @@ export default function CourseDetailPage() {
         return { accessible: false, hidden: false, message: `Disponível em ${date.toLocaleDateString('pt-BR')}` }
       }
       case 'days_after_enrollment': {
-        if (!enrollmentDate) return { accessible: true, hidden: false, message: '' }
+        if (!enrollmentDate) return { accessible: false, hidden: false, message: 'Data de matricula nao encontrada' }
         const days = parseInt(rule.rule_value!)
         const unlockDate = new Date(new Date(enrollmentDate).getTime() + days * 86400000)
         if (unlockDate <= new Date()) return { accessible: true, hidden: false, message: '' }

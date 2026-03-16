@@ -111,7 +111,8 @@ export async function registerForInvite(inviteId: string, userData: {
     throw authError
   }
 
-  const userId = authData.user!.id
+  if (!authData.user) throw new Error('EMAIL_EXISTS')
+  const userId = authData.user.id
 
   // 4. Create user profile
   const nameParts = userData.name.split(' ')

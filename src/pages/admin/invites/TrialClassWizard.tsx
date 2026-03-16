@@ -292,38 +292,26 @@ export default function TrialClassWizard() {
   async function loadContentData() {
     setLoadingData(true)
     try {
-      const [fcRes, qzRes, simRes] = await Promise.all([
-        (supabase as any)
-          .from('flashcard_subjects')
-          .select('id, name, flashcard_topics(id, name)')
-          .order('name'),
-        (supabase as any)
-          .from('flashcard_subjects')
-          .select('id, name, flashcard_topics(id, name)')
-          .order('name'),
-        (supabase as any)
-          .from('simulations')
-          .select('id, title')
-          .order('title'),
+      const [subjectsRes, topicsRes, simRes] = await Promise.all([
+        supabase.from('subjects').select('id, name').order('name'),
+        supabase.from('topics').select('id, name, subject_id').order('name'),
+        supabase.from('quizzes').select('id, name').eq('type', 'simulation').eq('status', 'published').order('name'),
       ])
 
-      setFlashcardSubjects(
-        (fcRes.data || []).map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          topics: s.flashcard_topics || [],
-        })),
-      )
+      const subjects = subjectsRes.data || []
+      const topics = topicsRes.data || []
 
-      setQuizSubjects(
-        (qzRes.data || []).map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          topics: s.flashcard_topics || [],
-        })),
-      )
+      const subjectsWithTopics = subjects.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        topics: topics.filter((t: any) => t.subject_id === s.id).map((t: any) => ({ id: t.id, name: t.name })),
+      })).filter((s: any) => s.topics.length > 0)
 
-      setSimulations(simRes.data || [])
+      // Flashcards and quizzes share the same subjects/topics
+      setFlashcardSubjects(subjectsWithTopics)
+      setQuizSubjects(subjectsWithTopics)
+
+      setSimulations((simRes.data || []).map((s: any) => ({ id: s.id, title: s.name })))
     } catch (err) {
       logger.error('Erro ao carregar dados de conteudo:', err)
     } finally {
@@ -482,45 +470,45 @@ export default function TrialClassWizard() {
     try {
       const ca = state.contentAccess
 
-      // Flashcards
+      // Flashcards (content_type must match useContentAccess('flashcard_topic'))
       await saveContentAccess(
         state.classId,
-        'flashcards',
+        'flashcard_topic',
         ca.flashcards.restricted ? ca.flashcards.ids : [],
       )
 
-      // Quizzes
+      // Quizzes (content_type must match useContentAccess('quiz_topic'))
       await saveContentAccess(
         state.classId,
-        'quizzes',
+        'quiz_topic',
         ca.quizzes.restricted ? ca.quizzes.ids : [],
       )
 
       // Acervo - categories
       await saveContentAccess(
         state.classId,
-        'acervo_categories',
+        'acervo_category',
         ca.acervo.restricted ? ca.acervo.categories : [],
       )
 
       // Acervo - concursos
       await saveContentAccess(
         state.classId,
-        'acervo_concursos',
+        'acervo_concurso',
         ca.acervo.restricted ? ca.acervo.concursos : [],
       )
 
       // Simulados
       await saveContentAccess(
         state.classId,
-        'simulados',
+        'simulation',
         ca.simulados.restricted ? ca.simulados.ids : [],
       )
 
       // Redacoes
       await saveContentAccess(
         state.classId,
-        'redacoes',
+        'essay_limit',
         ca.redacoes.restricted && ca.redacoes.maxSubmissions
           ? [ca.redacoes.maxSubmissions]
           : [],
@@ -529,8 +517,8 @@ export default function TrialClassWizard() {
       // Comunidade
       await saveContentAccess(
         state.classId,
-        'comunidade',
-        ca.comunidade.readOnly ? ['readonly'] : [],
+        'community_readonly',
+        ca.comunidade.readOnly ? ['true'] : [],
       )
 
       return true
