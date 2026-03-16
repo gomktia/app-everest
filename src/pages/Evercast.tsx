@@ -22,12 +22,13 @@ import { audioLessonService, type AudioLesson, type EvercastCourse } from '@/ser
 import { AudioPlayer } from '@/components/AudioPlayer'
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
+import { getSupportWhatsAppUrl } from '@/lib/constants'
 
 export default function EvercastPage() {
   const { isStudent, user } = useAuth()
   const navigate = useNavigate()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
-  const { isTrialUser } = useTrialLimits()
+  const { isTrialUser, loading: trialLoading } = useTrialLimits()
   const [evercastCourses, setEvercastCourses] = useState<EvercastCourse[]>([])
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
@@ -35,9 +36,9 @@ export default function EvercastPage() {
   const [allLessons, setAllLessons] = useState<AudioLesson[]>([])
 
   useEffect(() => {
-    if (!user) return
+    if (!user || trialLoading) return
     loadCourses()
-  }, [user])
+  }, [user, trialLoading])
 
   const loadCourses = async () => {
     try {
@@ -79,7 +80,7 @@ export default function EvercastPage() {
   }
 
   // Verificação de permissões para alunos
-  if (permissionsLoading || isLoading) {
+  if (permissionsLoading || isLoading || trialLoading) {
     return <SectionLoader />
   }
 
@@ -156,7 +157,7 @@ export default function EvercastPage() {
                 </Button>
               ) : (
                 <Button size="lg" variant="outline" className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 gap-2"
-                  onClick={() => window.open('https://wa.me/5555999999999?text=Olá! Tenho interesse no acesso completo.', '_blank')}>
+                  onClick={() => window.open(getSupportWhatsAppUrl(), '_blank')}>
                   <MessageSquare className="h-4 w-4" />
                   Falar com o suporte
                 </Button>

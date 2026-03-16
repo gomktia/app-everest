@@ -36,6 +36,7 @@ import { courseService } from '@/services/courseService'
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { logger } from '@/lib/logger'
+import { getSupportWhatsAppUrl } from '@/lib/constants'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -368,7 +369,7 @@ export default function CourseDetailPage() {
                   </Button>
                 ) : (
                   <Button size="lg" variant="outline" className="border-orange-500/50 text-orange-600 hover:bg-orange-500/10 gap-2"
-                    onClick={() => window.open('https://wa.me/5555999999999?text=Olá! Tenho interesse no curso ' + encodeURIComponent(course.name), '_blank')}>
+                    onClick={() => window.open(getSupportWhatsAppUrl('Olá! Tenho interesse no curso ' + course.name), '_blank')}>
                     <MessageSquare className="h-4 w-4" />
                     Falar com o suporte
                   </Button>
@@ -401,7 +402,7 @@ export default function CourseDetailPage() {
                   </Button>
                 ) : (
                   <Button size="lg" variant="outline" className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 gap-2"
-                    onClick={() => window.open('https://wa.me/5555999999999?text=Olá! Tenho interesse no curso ' + encodeURIComponent(course.name), '_blank')}>
+                    onClick={() => window.open(getSupportWhatsAppUrl('Olá! Tenho interesse no curso ' + course.name), '_blank')}>
                     <MessageSquare className="h-4 w-4" />
                     Falar com o suporte
                   </Button>

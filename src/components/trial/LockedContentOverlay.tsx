@@ -3,33 +3,35 @@ import { Badge } from '@/components/ui/badge'
 import { Lock, Sparkles, Crown, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useNavigate } from 'react-router-dom'
+import { getSupportWhatsAppUrl } from '@/lib/constants'
 
 interface LockedContentOverlayProps {
   message?: string
   variant?: 'card' | 'page' | 'inline'
   showBenefits?: boolean
+  upgradeUrl?: string | null
   className?: string
 }
 
 /**
  * Overlay para conteúdo bloqueado (trial)
- *
- * @example
- * ```tsx
- * <LockedContentOverlay
- *   message="Este tópico está disponível apenas para assinantes"
- *   variant="card"
- *   showBenefits
- * />
- * ```
  */
 export const LockedContentOverlay = ({
   message = 'Este conteúdo está disponível apenas para assinantes',
   variant = 'card',
   showBenefits = false,
+  upgradeUrl,
   className,
 }: LockedContentOverlayProps) => {
   const navigate = useNavigate()
+
+  const handleUpgrade = () => {
+    if (upgradeUrl) {
+      window.open(upgradeUrl, '_blank')
+    } else {
+      window.open(getSupportWhatsAppUrl(), '_blank')
+    }
+  }
 
   if (variant === 'inline') {
     return (
@@ -47,11 +49,11 @@ export const LockedContentOverlay = ({
         </div>
         <Button
           size="sm"
-          onClick={() => navigate('/upgrade')}
+          onClick={handleUpgrade}
           className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
         >
           <Crown className="h-3 w-3 mr-1" />
-          Upgrade
+          {upgradeUrl ? 'Comprar' : 'Falar com suporte'}
         </Button>
       </div>
     )
@@ -125,11 +127,11 @@ export const LockedContentOverlay = ({
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Button
               size="lg"
-              onClick={() => navigate('/upgrade')}
+              onClick={handleUpgrade}
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-8 py-6 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all"
             >
               <Crown className="h-5 w-5 mr-2" />
-              Fazer Upgrade Agora
+              {upgradeUrl ? 'Adquirir Acesso Completo' : 'Falar com Suporte'}
             </Button>
             <Button
               size="lg"
@@ -140,10 +142,6 @@ export const LockedContentOverlay = ({
               Voltar ao Dashboard
             </Button>
           </div>
-
-          <p className="text-xs text-muted-foreground">
-            ✨ Cancele quando quiser • Garantia de 7 dias
-          </p>
         </div>
       </div>
     )
@@ -180,11 +178,11 @@ export const LockedContentOverlay = ({
         </div>
 
         <Button
-          onClick={() => navigate('/upgrade')}
+          onClick={handleUpgrade}
           className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white w-full"
         >
           <Crown className="h-4 w-4 mr-2" />
-          Fazer Upgrade
+          {upgradeUrl ? 'Adquirir Acesso' : 'Falar com Suporte'}
         </Button>
       </div>
     </div>
@@ -209,14 +207,22 @@ export const LockedBadge = () => {
 interface LockedButtonProps {
   label?: string
   message?: string
+  upgradeUrl?: string | null
   onClick?: () => void
 }
 
 export const LockedButton = ({
   label = 'Iniciar',
   message = 'Faça upgrade para acessar',
+  upgradeUrl,
 }: LockedButtonProps) => {
-  const navigate = useNavigate()
+  const handleUpgrade = () => {
+    if (upgradeUrl) {
+      window.open(upgradeUrl, '_blank')
+    } else {
+      window.open(getSupportWhatsAppUrl(), '_blank')
+    }
+  }
 
   return (
     <div className="space-y-2">
@@ -230,10 +236,10 @@ export const LockedButton = ({
       <p className="text-xs text-center text-muted-foreground">
         {message} •{' '}
         <button
-          onClick={() => navigate('/upgrade')}
+          onClick={handleUpgrade}
           className="text-yellow-600 hover:text-yellow-700 underline font-medium"
         >
-          Upgrade
+          {upgradeUrl ? 'Comprar' : 'Suporte'}
         </button>
       </p>
     </div>

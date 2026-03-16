@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useTrialLimits } from '@/hooks/use-trial-limits'
 import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { getSupportWhatsAppUrl } from '@/lib/constants'
 import { rankingService } from '@/services/rankingService'
 import {
   lessonInteractionService,
@@ -933,7 +934,7 @@ export default function LessonPlayerPage() {
               </a>
             ) : (
               <button
-                onClick={() => window.open('https://wa.me/5555999999999?text=Olá! Tenho interesse no acesso completo.', '_blank')}
+                onClick={() => window.open(getSupportWhatsAppUrl(), '_blank')}
                 className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border border-amber-500/50 text-amber-600 hover:bg-amber-500/10 transition-all shrink-0"
               >
                 Falar com suporte

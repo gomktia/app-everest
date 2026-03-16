@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/logger'
 
 export interface Invite {
   id?: string
@@ -160,7 +161,17 @@ export async function registerForInvite(inviteId: string, userData: {
   })
 
   if (slotError) {
-    // Fallback to direct insert if RPC not available
+    // RPC failed - do NOT fallback silently as it could bypass slot limits
+    logger.error('register_invite_slot RPC failed:', slotError)
+    // Try direct insert only if there's no max_slots (unlimited invite)
+    const { data: inviteCheck } = await supabase
+      .from('invites')
+      .select('max_slots')
+      .eq('id', inviteId)
+      .single()
+    if (inviteCheck?.max_slots) {
+      throw new Error('Erro ao registrar. Tente novamente.')
+    }
     await supabase.from('invite_registrations').insert({
       invite_id: inviteId,
       user_id: userId

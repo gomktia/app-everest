@@ -12,6 +12,7 @@ import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { audioLessonService, type AudioLesson, type EvercastCourse } from '@/services/audioLessonService'
 import { AudioPlayer } from '@/components/AudioPlayer'
 import { supabase } from '@/lib/supabase/client'
+import { getSupportWhatsAppUrl } from '@/lib/constants'
 import {
   Accordion,
   AccordionContent,
@@ -26,7 +27,7 @@ export default function EvercastAlbumPage() {
   const navigate = useNavigate()
   const { user, isStudent } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
-  const { isTrialUser } = useTrialLimits()
+  const { isTrialUser, loading: trialLoading } = useTrialLimits()
   const { toast } = useToast()
   const [course, setCourse] = useState<EvercastCourse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -40,10 +41,10 @@ export default function EvercastAlbumPage() {
   const [isEnrolledInCourse, setIsEnrolledInCourse] = useState(true)
 
   useEffect(() => {
-    if (!user || !courseId) return
+    if (!user || !courseId || trialLoading) return
     loadCourse()
     if (isStudent) loadAccessRules()
-  }, [user, courseId])
+  }, [user, courseId, trialLoading])
 
   const loadCourse = async () => {
     try {
@@ -137,11 +138,16 @@ export default function EvercastAlbumPage() {
       if (lesRule.rule_type === 'scheduled_date') {
         return new Date(lesRule.rule_value!) > new Date()
       }
+      if (lesRule.rule_type === 'days_after_enrollment') {
+        if (!enrollmentDate) return true
+        const unlockDate = new Date(new Date(enrollmentDate).getTime() + parseInt(lesRule.rule_value!) * 86400000)
+        return unlockDate > new Date()
+      }
     }
 
     // Inherit module access
     return !modAccess.accessible
-  }, [lessonRules, getModuleAccess, isStudent, isEnrolledInCourse])
+  }, [lessonRules, getModuleAccess, isStudent, isEnrolledInCourse, enrollmentDate])
 
   const handlePlay = (lesson: AudioLesson) => {
     if (isLessonLocked(lesson)) {
@@ -169,7 +175,7 @@ export default function EvercastAlbumPage() {
   // Filter playlist to only unlocked lessons (for auto-advance)
   const playableLessons = allLessons.filter(l => !isLessonLocked(l))
 
-  if (permissionsLoading || isLoading) return <SectionLoader />
+  if (permissionsLoading || isLoading || trialLoading) return <SectionLoader />
 
   if (isStudent && !hasFeature(FEATURE_KEYS.EVERCAST)) {
     navigate('/evercast')
@@ -231,7 +237,7 @@ export default function EvercastAlbumPage() {
                 </Button>
               ) : (
                 <Button size="lg" variant="outline" className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 gap-2"
-                  onClick={() => window.open('https://wa.me/5555999999999?text=Olá! Tenho interesse no acesso completo.', '_blank')}>
+                  onClick={() => window.open(getSupportWhatsAppUrl(), '_blank')}>
                   <MessageSquare className="h-4 w-4" />
                   Falar com o suporte
                 </Button>
