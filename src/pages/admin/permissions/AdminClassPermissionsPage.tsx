@@ -34,9 +34,11 @@ import {
   Users,
   Plus,
   Search,
-  ClipboardCheck
+  ClipboardCheck,
+  Shield,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { PageTabs } from '@/components/PageTabs'
 import {
   FEATURE_KEYS,
   type FeatureKey,
@@ -174,6 +176,7 @@ export default function AdminClassPermissionsPage() {
   const [selectedPermissions, setSelectedPermissions] = useState<FeatureKey[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [activeTab, setActiveTab] = useState('turma')
 
   // Buscar turmas
   useEffect(() => {
@@ -338,226 +341,265 @@ export default function AdminClassPermissionsPage() {
           </CardContent>
         </Card>
 
-        {/* Selecao de Turma */}
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-5">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <GraduationCap className="h-5 w-5 text-primary" />
-                <Label className="text-lg font-semibold text-foreground">Selecione uma Turma</Label>
-              </div>
+        <PageTabs
+          value={activeTab}
+          onChange={setActiveTab}
+          layout="full"
+          tabs={[
+            {
+              value: 'turma',
+              label: 'Selecionar Turma',
+              icon: <GraduationCap className="h-4 w-4" />,
+              content: (
+                <div className="space-y-6 pt-4">
+                  {/* Selecao de Turma */}
+                  <Card className="border-border shadow-sm">
+                    <CardContent className="p-5">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <GraduationCap className="h-5 w-5 text-primary" />
+                          <Label className="text-lg font-semibold text-foreground">Selecione uma Turma</Label>
+                        </div>
 
-              <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Escolha uma turma..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {classes.map(cls => (
-                    <SelectItem key={cls.id} value={cls.id}>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{cls.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {cls.class_type === 'trial' ? 'Trial' : 'Padrao'}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {selectedClass && (
-                <div className="p-4 rounded-xl bg-muted/50 border border-border">
-                  <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground mb-1">{selectedClass.name}</h4>
-                      {selectedClass.description && (
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {selectedClass.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>Inicio: {new Date(selectedClass.start_date).toLocaleDateString('pt-BR')}</span>
-                        {selectedClass.end_date && (
-                          <span>Fim: {new Date(selectedClass.end_date).toLocaleDateString('pt-BR')}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recursos Disponiveis */}
-        {selectedClassId && (
-          <Card className="border-border shadow-sm">
-            <CardContent className="p-5">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Lock className="h-5 w-5 text-primary" />
-                    <div>
-                      <Label className="text-lg font-semibold text-foreground">Recursos Controlaveis</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Configure quais recursos adicionais esta turma pode acessar
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Todos
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleDeselectAll}>
-                      <XCircle className="h-4 w-4 mr-2" />
-                      Nenhum
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Info Box - Recursos Padrao */}
-                <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-green-600 mb-2">Recursos Padrao (Sempre Visiveis)</h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Todos os alunos tem acesso automatico aos seguintes recursos, independente da turma:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Dashboard
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Calendario
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Ranking
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Forum
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Conquistas
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Progresso
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Notificacoes
-                        </Badge>
-                        <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
-                          Configuracoes
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {Object.entries(groupedFeatures).map(([category, features]) => (
-                  <div key={category} className="space-y-3">
-                    <div className="flex items-center gap-2 pb-2 border-b border-border">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                        {getCategoryLabel(category)}
-                      </h3>
-                      <Badge variant="outline" className="text-xs">
-                        {features.filter(f => selectedPermissions.includes(f.key)).length}/{features.length}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {features.map(feature => {
-                        const isSelected = selectedPermissions.includes(feature.key)
-                        return (
-                          <div
-                            key={feature.key}
-                            className={cn(
-                              'p-4 rounded-xl border transition-all cursor-pointer',
-                              isSelected
-                                ? 'bg-primary/5 border-primary/50'
-                                : 'bg-muted/50 border-border hover:border-primary/30'
-                            )}
-                            onClick={() => handleTogglePermission(feature.key)}
-                          >
-                            <div className="flex items-start gap-3">
-                              <Checkbox
-                                checked={isSelected}
-                                onCheckedChange={() => handleTogglePermission(feature.key)}
-                                className="mt-1"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <feature.icon className="h-4 w-4 text-primary" />
-                                  <span className="font-semibold text-foreground">{feature.label}</span>
+                        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Escolha uma turma..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {classes.map(cls => (
+                              <SelectItem key={cls.id} value={cls.id}>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{cls.name}</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {cls.class_type === 'trial' ? 'Trial' : 'Padrao'}
+                                  </Badge>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                  {feature.description}
-                                </p>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {selectedClass && (
+                          <div className="p-4 rounded-xl bg-muted/50 border border-border">
+                            <div className="flex items-start gap-3">
+                              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-foreground mb-1">{selectedClass.name}</h4>
+                                {selectedClass.description && (
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    {selectedClass.description}
+                                  </p>
+                                )}
+                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                  <span>Inicio: {new Date(selectedClass.start_date).toLocaleDateString('pt-BR')}</span>
+                                  {selectedClass.end_date && (
+                                    <span>Fim: {new Date(selectedClass.end_date).toLocaleDateString('pt-BR')}</span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                {/* Info Box */}
-                <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-                    <div className="flex-1 text-sm">
-                      <h4 className="font-semibold text-blue-600 mb-1">Importante</h4>
-                      <ul className="text-muted-foreground space-y-1 list-disc list-inside">
-                        <li>Alunos so verao os recursos marcados acima no menu e dashboard</li>
-                        <li>Professores e Administradores sempre tem acesso total</li>
-                        <li>As alteracoes sao aplicadas imediatamente apos salvar</li>
-                        <li>Alunos precisam fazer logout/login para ver as mudancas</li>
-                      </ul>
-                    </div>
-                  </div>
+                  {/* Empty State */}
+                  {!selectedClassId && !loading && (
+                    <Card className="border-border shadow-sm text-center py-12">
+                      <CardContent className="p-5">
+                        <div className="max-w-md mx-auto">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                            <GraduationCap className="w-8 h-8 text-blue-600" />
+                          </div>
+                          <h3 className="text-xl font-bold text-foreground mb-2">Selecione uma Turma</h3>
+                          <p className="text-muted-foreground">
+                            Escolha uma turma acima para configurar as permissoes de acesso aos recursos da plataforma.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
+              ),
+            },
+            {
+              value: 'permissoes',
+              label: 'Permissões',
+              icon: <Shield className="h-4 w-4" />,
+              content: (
+                <div className="space-y-6 pt-4">
+                  {selectedClassId ? (
+                    <Card className="border-border shadow-sm">
+                      <CardContent className="p-5">
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Lock className="h-5 w-5 text-primary" />
+                              <div>
+                                <Label className="text-lg font-semibold text-foreground">Recursos Controlaveis</Label>
+                                <p className="text-sm text-muted-foreground">
+                                  Configure quais recursos adicionais esta turma pode acessar
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" onClick={handleSelectAll}>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Todos
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={handleDeselectAll}>
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Nenhum
+                              </Button>
+                            </div>
+                          </div>
 
-                {/* Acoes */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                  <Button
-                    variant="outline"
-                    onClick={() => loadPermissions(selectedClassId)}
-                    disabled={loading || saving}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Resetar
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={loading || saving}
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    {saving ? 'Salvando...' : 'Salvar Permissoes'}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                          {/* Info Box - Recursos Padrao */}
+                          <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                            <div className="flex items-start gap-3">
+                              <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-green-600 mb-2">Recursos Padrao (Sempre Visiveis)</h4>
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  Todos os alunos tem acesso automatico aos seguintes recursos, independente da turma:
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Dashboard
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Calendario
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Ranking
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Forum
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Conquistas
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Progresso
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Notificacoes
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                    Configuracoes
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
 
-        {/* Empty State */}
-        {!selectedClassId && !loading && (
-          <Card className="border-border shadow-sm text-center py-12">
-            <CardContent className="p-5">
-              <div className="max-w-md mx-auto">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                  <GraduationCap className="w-8 h-8 text-blue-600" />
+                          {Object.entries(groupedFeatures).map(([category, features]) => (
+                            <div key={category} className="space-y-3">
+                              <div className="flex items-center gap-2 pb-2 border-b border-border">
+                                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                  {getCategoryLabel(category)}
+                                </h3>
+                                <Badge variant="outline" className="text-xs">
+                                  {features.filter(f => selectedPermissions.includes(f.key)).length}/{features.length}
+                                </Badge>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {features.map(feature => {
+                                  const isSelected = selectedPermissions.includes(feature.key)
+                                  return (
+                                    <div
+                                      key={feature.key}
+                                      className={cn(
+                                        'p-4 rounded-xl border transition-all cursor-pointer',
+                                        isSelected
+                                          ? 'bg-primary/5 border-primary/50'
+                                          : 'bg-muted/50 border-border hover:border-primary/30'
+                                      )}
+                                      onClick={() => handleTogglePermission(feature.key)}
+                                    >
+                                      <div className="flex items-start gap-3">
+                                        <Checkbox
+                                          checked={isSelected}
+                                          onCheckedChange={() => handleTogglePermission(feature.key)}
+                                          className="mt-1"
+                                        />
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <feature.icon className="h-4 w-4 text-primary" />
+                                            <span className="font-semibold text-foreground">{feature.label}</span>
+                                          </div>
+                                          <p className="text-xs text-muted-foreground">
+                                            {feature.description}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Info Box */}
+                          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                            <div className="flex items-start gap-3">
+                              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                              <div className="flex-1 text-sm">
+                                <h4 className="font-semibold text-blue-600 mb-1">Importante</h4>
+                                <ul className="text-muted-foreground space-y-1 list-disc list-inside">
+                                  <li>Alunos so verao os recursos marcados acima no menu e dashboard</li>
+                                  <li>Professores e Administradores sempre tem acesso total</li>
+                                  <li>As alteracoes sao aplicadas imediatamente apos salvar</li>
+                                  <li>Alunos precisam fazer logout/login para ver as mudancas</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card className="border-border shadow-sm text-center py-12">
+                      <CardContent className="p-5">
+                        <div className="max-w-md mx-auto">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                            <GraduationCap className="w-8 h-8 text-blue-600" />
+                          </div>
+                          <h3 className="text-xl font-bold text-foreground mb-2">Nenhuma Turma Selecionada</h3>
+                          <p className="text-muted-foreground">
+                            Vá para a aba "Selecionar Turma" e escolha uma turma para configurar as permissões.
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">Selecione uma Turma</h3>
-                <p className="text-muted-foreground">
-                  Escolha uma turma acima para configurar as permissoes de acesso aos recursos da plataforma.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              ),
+            },
+          ]}
+        />
+
+        {/* Acoes - outside tabs */}
+        {selectedClassId && (
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={() => loadPermissions(selectedClassId)}
+              disabled={loading || saving}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Resetar
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={loading || saving}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? 'Salvando...' : 'Salvar Permissoes'}
+            </Button>
+          </div>
         )}
       </div>
     </div>

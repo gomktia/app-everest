@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -82,6 +82,8 @@ import {
   type PandaLiveCredentials,
 } from '@/services/liveEventService'
 import { SectionLoader } from '@/components/SectionLoader'
+import { PageTabs } from '@/components/PageTabs'
+import { List, BarChart3 } from 'lucide-react'
 
 const providerConfig: Record<LiveEventProvider, { label: string; icon: typeof Radio; color: string }> = {
   panda: { label: 'Panda Video', icon: Video, color: 'text-blue-500' },
@@ -120,6 +122,7 @@ const emptyForm: FormData = {
 
 export default function AdminLiveEventsPage() {
   usePageTitle('Eventos ao Vivo')
+  const [activeTab, setActiveTab] = useState('events')
   const { user } = useAuth()
   const { toast } = useToast()
 

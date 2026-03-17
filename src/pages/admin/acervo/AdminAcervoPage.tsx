@@ -46,7 +46,10 @@ import {
   Search,
   Library,
   Download,
+  List,
+  BarChart3,
 } from 'lucide-react'
+import { PageTabs } from '@/components/PageTabs'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { acervoService, type AcervoItem, type AcervoCreateInput } from '@/services/acervoService'
@@ -91,6 +94,7 @@ type EditFormData = {
 
 export default function AdminAcervoPage() {
   usePageTitle('Acervo Digital')
+  const [activeTab, setActiveTab] = useState('items')
   const [items, setItems] = useState<AcervoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -299,200 +303,223 @@ export default function AdminAcervoPage() {
         <p className="text-muted-foreground mt-1">Gerencie livros, provas e documentos do acervo</p>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Stats */}
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-muted/50">
-                  <Library className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">Gerenciar Acervo</h2>
-                  <p className="text-muted-foreground text-lg">Upload, edição e organização de arquivos</p>
-                </div>
-              </div>
-              <Button onClick={() => setUploadOpen(true)} className="px-6 py-3 rounded-xl font-semibold">
-                <Upload className="mr-2 h-4 w-4" />
-                Novo Upload
-              </Button>
-            </div>
+      <div className="max-w-7xl mx-auto">
+        <PageTabs
+          value={activeTab}
+          onChange={setActiveTab}
+          layout="full"
+          tabs={[
+            {
+              value: 'items',
+              label: 'Todos os Itens',
+              icon: <List className="h-4 w-4" />,
+              count: filtered.length,
+              content: (
+                <div className="space-y-6 mt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-2xl bg-muted/50">
+                        <Library className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-foreground">Gerenciar Acervo</h2>
+                        <p className="text-muted-foreground text-lg">Upload, edição e organização de arquivos</p>
+                      </div>
+                    </div>
+                    <Button onClick={() => setUploadOpen(true)} className="px-6 py-3 rounded-xl font-semibold">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Novo Upload
+                    </Button>
+                  </div>
 
-            <div className="grid grid-cols-4 gap-4">
-              <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <Library className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-blue-600">{items.length}</div>
-                <div className="text-sm text-muted-foreground">Total de Itens</div>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                <BookOpen className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-green-600">{livrosCount}</div>
-                <div className="text-sm text-muted-foreground">Livros</div>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                <FileText className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-purple-600">{provasCount}</div>
-                <div className="text-sm text-muted-foreground">Provas</div>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
-                <Download className="h-6 w-6 text-orange-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-orange-600">{concursosCount}</div>
-                <div className="text-sm text-muted-foreground">Concursos</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                  <Card className="border-border shadow-sm">
+                    <CardContent className="p-5">
+                      <div className="space-y-4">
+                        {/* Search & Filters */}
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Buscar por título, concurso..."
+                              value={search}
+                              onChange={e => setSearch(e.target.value)}
+                              className="pl-10"
+                            />
+                          </div>
+                          <Select value={filterCategory} onValueChange={setFilterCategory}>
+                            <SelectTrigger className="w-[160px]">
+                              <SelectValue placeholder="Categoria" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todas</SelectItem>
+                              {CATEGORIES.map(c => (
+                                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={filterConcurso} onValueChange={setFilterConcurso}>
+                            <SelectTrigger className="w-[160px]">
+                              <SelectValue placeholder="Concurso" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos</SelectItem>
+                              {CONCURSOS.map(c => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-        {/* Filters + Table */}
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-5">
-            <div className="space-y-4">
-              {/* Search & Filters */}
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar por título, concurso..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {CATEGORIES.map(c => (
-                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={filterConcurso} onValueChange={setFilterConcurso}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Concurso" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {CONCURSOS.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                        {/* Results count */}
+                        <div className="text-sm text-muted-foreground">
+                          {filtered.length} {filtered.length === 1 ? 'item' : 'itens'} encontrado(s)
+                        </div>
 
-              {/* Results count */}
-              <div className="text-sm text-muted-foreground">
-                {filtered.length} {filtered.length === 1 ? 'item' : 'itens'} encontrado(s)
-              </div>
-
-              {/* Table */}
-              <div className="rounded-xl border border-border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="font-semibold">Título</TableHead>
-                      <TableHead className="font-semibold">Categoria</TableHead>
-                      <TableHead className="font-semibold">Concurso</TableHead>
-                      <TableHead className="font-semibold">Ano</TableHead>
-                      <TableHead className="font-semibold">Tamanho</TableHead>
-                      <TableHead className="text-right font-semibold">
-                        <span className="sr-only">Ações</span>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filtered.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                          Nenhum item encontrado.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filtered.map(item => (
-                        <TableRow key={item.id} className="hover:bg-muted/50 transition-colors">
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-                                {item.category === 'livro' ? <BookOpen className="h-4 w-4 text-green-600" />
-                                  : item.category === 'regulamento' ? <FileText className="h-4 w-4 text-red-600" />
-                                  : <FileText className="h-4 w-4 text-blue-600" />
-                                }
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-semibold text-foreground truncate max-w-[300px]">{item.title}</div>
-                                {item.subcategory && (
-                                  <div className="text-xs text-muted-foreground">{item.subcategory}</div>
-                                )}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "font-semibold",
-                                item.category === 'livro' && "border-green-300 text-green-600 bg-green-500/10",
-                                item.category === 'prova' && "border-blue-300 text-blue-600 bg-blue-500/10",
-                                item.category === 'apostila' && "border-amber-300 text-amber-600 bg-amber-500/10",
-                                item.category === 'exercicio' && "border-purple-300 text-purple-600 bg-purple-500/10",
-                                item.category === 'regulamento' && "border-red-300 text-red-600 bg-red-500/10",
-                                item.category === 'mapa_mental' && "border-teal-300 text-teal-600 bg-teal-500/10",
+                        {/* Table */}
+                        <div className="rounded-xl border border-border overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-muted/50">
+                                <TableHead className="font-semibold">Título</TableHead>
+                                <TableHead className="font-semibold">Categoria</TableHead>
+                                <TableHead className="font-semibold">Concurso</TableHead>
+                                <TableHead className="font-semibold">Ano</TableHead>
+                                <TableHead className="font-semibold">Tamanho</TableHead>
+                                <TableHead className="text-right font-semibold">
+                                  <span className="sr-only">Ações</span>
+                                </TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filtered.length === 0 ? (
+                                <TableRow>
+                                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                    Nenhum item encontrado.
+                                  </TableCell>
+                                </TableRow>
+                              ) : (
+                                filtered.map(item => (
+                                  <TableRow key={item.id} className="hover:bg-muted/50 transition-colors">
+                                    <TableCell className="font-medium">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+                                          {item.category === 'livro' ? <BookOpen className="h-4 w-4 text-green-600" />
+                                            : item.category === 'regulamento' ? <FileText className="h-4 w-4 text-red-600" />
+                                            : <FileText className="h-4 w-4 text-blue-600" />
+                                          }
+                                        </div>
+                                        <div className="min-w-0">
+                                          <div className="font-semibold text-foreground truncate max-w-[300px]">{item.title}</div>
+                                          {item.subcategory && (
+                                            <div className="text-xs text-muted-foreground">{item.subcategory}</div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        variant="outline"
+                                        className={cn(
+                                          "font-semibold",
+                                          item.category === 'livro' && "border-green-300 text-green-600 bg-green-500/10",
+                                          item.category === 'prova' && "border-blue-300 text-blue-600 bg-blue-500/10",
+                                          item.category === 'apostila' && "border-amber-300 text-amber-600 bg-amber-500/10",
+                                          item.category === 'exercicio' && "border-purple-300 text-purple-600 bg-purple-500/10",
+                                          item.category === 'regulamento' && "border-red-300 text-red-600 bg-red-500/10",
+                                          item.category === 'mapa_mental' && "border-teal-300 text-teal-600 bg-teal-500/10",
+                                        )}
+                                      >
+                                        {CATEGORIES.find(c => c.value === item.category)?.label || item.category}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                      {item.concurso || '—'}
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                      {item.year || '—'}
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">
+                                      {formatFileSize(item.file_size)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button size="icon" variant="ghost" className="hover:bg-muted">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            <span className="sr-only">Menu</span>
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          <DropdownMenuItem onClick={() => openEdit(item)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Editar
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            onClick={() => window.open(acervoService.getPublicUrl(item.file_path), '_blank')}
+                                          >
+                                            <Download className="mr-2 h-4 w-4" />
+                                            Visualizar
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem
+                                            className="text-destructive"
+                                            onClick={() => handleDelete(item)}
+                                          >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Deletar
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </TableCell>
+                                  </TableRow>
+                                ))
                               )}
-                            >
-                              {CATEGORIES.find(c => c.value === item.category)?.label || item.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {item.concurso || '—'}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {item.year || '—'}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {formatFileSize(item.file_size)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button size="icon" variant="ghost" className="hover:bg-muted">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => openEdit(item)}>
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => window.open(acervoService.getPublicUrl(item.file_path), '_blank')}
-                                >
-                                  <Download className="mr-2 h-4 w-4" />
-                                  Visualizar
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive"
-                                  onClick={() => handleDelete(item)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Deletar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ),
+            },
+            {
+              value: 'stats',
+              label: 'Estatísticas',
+              icon: <BarChart3 className="h-4 w-4" />,
+              content: (
+                <div className="mt-4">
+                  <Card className="border-border shadow-sm">
+                    <CardContent className="p-5">
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                          <Library className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                          <div className="text-2xl font-bold text-blue-600">{items.length}</div>
+                          <div className="text-sm text-muted-foreground">Total de Itens</div>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                          <BookOpen className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                          <div className="text-2xl font-bold text-green-600">{livrosCount}</div>
+                          <div className="text-sm text-muted-foreground">Livros</div>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                          <FileText className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                          <div className="text-2xl font-bold text-purple-600">{provasCount}</div>
+                          <div className="text-sm text-muted-foreground">Provas</div>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                          <Download className="h-6 w-6 text-orange-500 mx-auto mb-2" />
+                          <div className="text-2xl font-bold text-orange-600">{concursosCount}</div>
+                          <div className="text-sm text-muted-foreground">Concursos</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ),
+            },
+          ]}
+        />
       </div>
 
       {/* Edit Dialog */}

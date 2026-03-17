@@ -28,10 +28,11 @@ import {
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
-import { ArrowLeft, GraduationCap, Save, ChevronDown, ChevronRight, PlayCircle } from 'lucide-react'
+import { ArrowLeft, GraduationCap, Save, ChevronDown, ChevronRight, PlayCircle, BookOpen, Shield } from 'lucide-react'
 import { getModuleRulesForClass, saveAllModuleRules, checkCircularDependency, getLessonRulesForClass, upsertLessonRule, deleteLessonRule, type LessonRule } from '@/services/moduleRulesService'
 import { Badge } from '@/components/ui/badge'
 import { getAllContentAccessForClass, saveContentAccess } from '@/services/contentAccessService'
+import { PageTabs } from '@/components/PageTabs'
 
 const classSchema = z.object({
   name: z.string().min(1, 'O nome da turma é obrigatório'),
@@ -76,6 +77,7 @@ export default function AdminClassFormPage() {
     community_space: true,
   })
   const [essayLimit, setEssayLimit] = useState('1')
+  const [activeTab, setActiveTab] = useState('info')
 
   const isEditing = !!classId
 
@@ -427,6 +429,17 @@ export default function AdminClassFormPage() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <PageTabs
+                value={activeTab}
+                onChange={setActiveTab}
+                layout="full"
+                tabs={[
+                  {
+                    value: 'info',
+                    label: 'Informações',
+                    icon: <GraduationCap className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -602,7 +615,15 @@ export default function AdminClassFormPage() {
                   </div>
                 </CardContent>
               </Card>
-
+                      </div>
+                    ),
+                  },
+                  {
+                    value: 'modules',
+                    label: 'Módulos e Aulas',
+                    icon: <BookOpen className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-6">
               {modules.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -743,7 +764,18 @@ export default function AdminClassFormPage() {
                   </CardContent>
                 </Card>
               )}
-
+              {modules.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nenhum módulo encontrado para esta turma. Adicione cursos e módulos primeiro.</p>
+              )}
+                      </div>
+                    ),
+                  },
+                  {
+                    value: 'access',
+                    label: 'Acesso ao Conteúdo',
+                    icon: <Shield className="h-4 w-4" />,
+                    content: (
+                      <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Acesso ao Conteúdo</CardTitle>
@@ -1009,6 +1041,11 @@ export default function AdminClassFormPage() {
 
                 </CardContent>
               </Card>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="flex items-center gap-3 pt-4">
                 <Button

@@ -15,9 +15,12 @@ import {
   CheckCircle,
   PenLine,
   GraduationCap,
+  Users,
+  AlertCircle,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { SectionLoader } from '@/components/SectionLoader'
+import { PageTabs } from '@/components/PageTabs'
 
 interface ClassEssayStats {
   classId: string
@@ -35,6 +38,7 @@ export default function AdminEssaysPage() {
   const { toast } = useToast()
   const { profile, isAdmin } = useAuth()
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('turmas')
 
   useEffect(() => {
     loadClassEssayStats()
@@ -160,6 +164,83 @@ export default function AdminEssaysPage() {
 
   if (loading) return <SectionLoader />
 
+  const pendingStats = classStats.filter(cls => cls.submitted > 0)
+
+  const renderClassCards = (stats: ClassEssayStats[]) => {
+    if (stats.length === 0) {
+      return (
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-0">
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <GraduationCap className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Nenhuma turma encontrada</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Não há turmas disponíveis para exibir redações.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {stats.map((cls) => (
+          <Card
+            key={cls.classId}
+            className="border-border shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200"
+            onClick={() => navigate(`/admin/essays/turma/${cls.classId}`)}
+          >
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="truncate">{cls.className}</span>
+                {cls.submitted > 0 && (
+                  <Badge className="bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30 ml-2 shrink-0" variant="outline">
+                    {cls.submitted} pendente{cls.submitted !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-blue-500 shrink-0" />
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{cls.total}</div>
+                    <div className="text-xs text-muted-foreground">Total</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-orange-500 shrink-0" />
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{cls.submitted}</div>
+                    <div className="text-xs text-muted-foreground">Pendentes</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <PenLine className="h-4 w-4 text-yellow-500 shrink-0" />
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{cls.correcting}</div>
+                    <div className="text-xs text-muted-foreground">Em Correção</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{cls.corrected}</div>
+                    <div className="text-xs text-muted-foreground">Corrigidas</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -188,75 +269,52 @@ export default function AdminEssaysPage() {
         )}
       </div>
 
-      {/* Class Cards Grid */}
-      {classStats.length === 0 ? (
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-0">
-            <div className="text-center py-16">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <GraduationCap className="w-8 h-8 text-primary" />
+      {/* Tabs */}
+      <PageTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        layout="full"
+        tabs={[
+          {
+            value: 'turmas',
+            label: 'Turmas',
+            icon: <Users className="h-4 w-4" />,
+            count: classStats.length,
+            content: (
+              <div className="pt-4">
+                {renderClassCards(classStats)}
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Nenhuma turma encontrada</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Não há turmas disponíveis para exibir redações.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {classStats.map((cls) => (
-            <Card
-              key={cls.classId}
-              className="border-border shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200"
-              onClick={() => navigate(`/admin/essays/turma/${cls.classId}`)}
-            >
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span className="truncate">{cls.className}</span>
-                  {cls.submitted > 0 && (
-                    <Badge className="bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30 ml-2 shrink-0" variant="outline">
-                      {cls.submitted} pendente{cls.submitted !== 1 ? 's' : ''}
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-blue-500 shrink-0" />
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">{cls.total}</div>
-                      <div className="text-xs text-muted-foreground">Total</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-orange-500 shrink-0" />
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">{cls.submitted}</div>
-                      <div className="text-xs text-muted-foreground">Pendentes</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <PenLine className="h-4 w-4 text-yellow-500 shrink-0" />
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">{cls.correcting}</div>
-                      <div className="text-xs text-muted-foreground">Em Correção</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">{cls.corrected}</div>
-                      <div className="text-xs text-muted-foreground">Corrigidas</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+            ),
+          },
+          {
+            value: 'pendentes',
+            label: 'Pendentes',
+            icon: <AlertCircle className="h-4 w-4" />,
+            count: pendingStats.reduce((sum, cls) => sum + cls.submitted, 0),
+            content: (
+              <div className="pt-4">
+                {pendingStats.length === 0 ? (
+                  <Card className="border-border shadow-sm">
+                    <CardContent className="p-0">
+                      <div className="text-center py-16">
+                        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground mb-2">Nenhuma redação pendente</h3>
+                        <p className="text-muted-foreground max-w-md mx-auto">
+                          Todas as redações foram corrigidas. Parabéns!
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  renderClassCards(pendingStats)
+                )}
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   )
 }

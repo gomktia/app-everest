@@ -30,6 +30,8 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AIProviderConfigPanel } from '@/components/admin/integrations/AIProviderConfig'
+import { PageTabs } from '@/components/PageTabs'
+import { Settings } from 'lucide-react'
 
 // ─── Integration definitions ─────────────────────────────────────────────────
 
@@ -145,6 +147,7 @@ export default function AdminIntegrationsPage() {
   )
   const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({})
   const [testing, setTesting] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('status')
 
   useEffect(() => {
     checkAllStatuses()

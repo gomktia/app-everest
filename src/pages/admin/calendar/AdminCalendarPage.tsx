@@ -37,7 +37,9 @@ import {
   ChevronRight,
   Users,
   Pencil,
+  List,
 } from 'lucide-react'
+import { PageTabs } from '@/components/PageTabs'
 import {
   getCalendarEvents,
   createEvent,
@@ -88,6 +90,7 @@ type EventType = keyof typeof eventConfig
 
 export default function AdminCalendarPage() {
   usePageTitle('Calendário')
+  const [activeTab, setActiveTab] = useState('calendar')
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [events, setEvents] = useState<CalendarEvent[]>([])
@@ -373,230 +376,260 @@ export default function AdminCalendarPage() {
         </Dialog>
       </div>
 
-      {/* Stats Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {(Object.keys(eventConfig) as EventType[]).map((type) => {
-          const config = eventConfig[type]
-          const Icon = config.icon
-          const count = eventCountByType[type] || 0
-          return (
-            <button
-              key={type}
-              onClick={() => setFilterType(filterType === type ? 'ALL' : type)}
-              className={cn(
-                "flex items-center gap-3 p-3 rounded-lg border transition-all text-left",
-                filterType === type
-                  ? "ring-2 ring-primary/50 " + config.bg
-                  : "bg-card hover:bg-muted/50"
-              )}
-            >
-              <div className={cn("p-2 rounded-lg", config.bg)}>
-                <Icon className={cn("h-4 w-4", config.color)} />
-              </div>
-              <div>
-                <div className="text-xl font-bold leading-none">{count}</div>
-                <div className="text-xs text-muted-foreground">{config.label}</div>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+      <PageTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        layout="full"
+        tabs={[
+          {
+            value: 'calendar',
+            label: 'Calendário',
+            icon: <CalendarIcon className="h-4 w-4" />,
+            content: (
+              <div className="space-y-6 mt-4">
+                {/* Stats Bar */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {(Object.keys(eventConfig) as EventType[]).map((type) => {
+                    const config = eventConfig[type]
+                    const Icon = config.icon
+                    const count = eventCountByType[type] || 0
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => setFilterType(filterType === type ? 'ALL' : type)}
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg border transition-all text-left",
+                          filterType === type
+                            ? "ring-2 ring-primary/50 " + config.bg
+                            : "bg-card hover:bg-muted/50"
+                        )}
+                      >
+                        <div className={cn("p-2 rounded-lg", config.bg)}>
+                          <Icon className={cn("h-4 w-4", config.color)} />
+                        </div>
+                        <div>
+                          <div className="text-xl font-bold leading-none">{count}</div>
+                          <div className="text-xs text-muted-foreground">{config.label}</div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <Select value={filterClass} onValueChange={setFilterClass}>
-          <SelectTrigger className="w-[200px] h-8 text-xs">
-            <SelectValue placeholder="Filtrar por turma" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Todas as turmas</SelectItem>
-            <SelectItem value="global">Apenas Globais</SelectItem>
-            {classes.map((cls) => (
-              <SelectItem key={cls.id} value={cls.id}>
-                {cls.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {(filterClass !== 'ALL' || filterType !== 'ALL') && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs"
-            onClick={() => { setFilterClass('ALL'); setFilterType('ALL') }}
-          >
-            Limpar filtros
-          </Button>
-        )}
-        <span className="text-xs text-muted-foreground ml-auto">
-          {filteredEvents.length} de {events.length} eventos
-        </span>
-      </div>
-
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* Calendar */}
-        <div className="lg:col-span-3">
-          <div className="rounded-lg border bg-card p-4">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              month={currentMonth}
-              onMonthChange={setCurrentMonth}
-              className="rounded-md mx-auto"
-              locale={ptBR}
-              modifiers={{
-                event: filteredEvents.map((event) => parseISO(event.start_time)),
-              }}
-              modifiersStyles={{
-                event: {
-                  fontWeight: 'bold',
-                  color: 'hsl(var(--primary))',
-                  backgroundColor: 'hsl(var(--primary) / 0.1)',
-                  borderRadius: '6px',
-                },
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Day Events */}
-        <div className="lg:col-span-2">
-          <div className="rounded-lg border bg-card">
-            <div className="p-4 border-b">
-              <h2 className="font-semibold">
-                {date ? format(date, "dd 'de' MMMM", { locale: ptBR }) : 'Selecione um dia'}
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {selectedDayEvents.length} evento{selectedDayEvents.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-            <div className="p-3 space-y-2 max-h-[450px] overflow-y-auto">
-              {loading ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>
-              ) : selectedDayEvents.length > 0 ? (
-                selectedDayEvents.map((event) => {
-                  const config = getEventConfig(event.event_type)
-                  const Icon = config.icon
-                  return (
-                    <div
-                      key={event.id}
-                      className={cn("p-3 rounded-lg border group", config.bg)}
+                {/* Filters */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={filterClass} onValueChange={setFilterClass}>
+                    <SelectTrigger className="w-[200px] h-8 text-xs">
+                      <SelectValue placeholder="Filtrar por turma" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Todas as turmas</SelectItem>
+                      <SelectItem value="global">Apenas Globais</SelectItem>
+                      {classes.map((cls) => (
+                        <SelectItem key={cls.id} value={cls.id}>
+                          {cls.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {(filterClass !== 'ALL' || filterType !== 'ALL') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => { setFilterClass('ALL'); setFilterType('ALL') }}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2 flex-1 min-w-0">
-                          <Icon className={cn("h-4 w-4 mt-0.5 shrink-0", config.color)} />
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm leading-tight">{event.title}</p>
-                            {event.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                                {event.description}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {format(parseISO(event.start_time), 'HH:mm')}
-                                {event.end_time && ` - ${format(parseISO(event.end_time), 'HH:mm')}`}
-                              </span>
-                              <Badge variant="outline" className="text-[10px] h-5">
-                                <Users className="h-2.5 w-2.5 mr-1" />
-                                {getClassName(event.class_id)}
-                              </Badge>
-                            </div>
+                      Limpar filtros
+                    </Button>
+                  )}
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    {filteredEvents.length} de {events.length} eventos
+                  </span>
+                </div>
+
+                {/* Main Content */}
+                <div className="grid gap-6 lg:grid-cols-5">
+                  {/* Calendar */}
+                  <div className="lg:col-span-3">
+                    <div className="rounded-lg border bg-card p-4">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        month={currentMonth}
+                        onMonthChange={setCurrentMonth}
+                        className="rounded-md mx-auto"
+                        locale={ptBR}
+                        modifiers={{
+                          event: filteredEvents.map((event) => parseISO(event.start_time)),
+                        }}
+                        modifiersStyles={{
+                          event: {
+                            fontWeight: 'bold',
+                            color: 'hsl(var(--primary))',
+                            backgroundColor: 'hsl(var(--primary) / 0.1)',
+                            borderRadius: '6px',
+                          },
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Day Events */}
+                  <div className="lg:col-span-2">
+                    <div className="rounded-lg border bg-card">
+                      <div className="p-4 border-b">
+                        <h2 className="font-semibold">
+                          {date ? format(date, "dd 'de' MMMM", { locale: ptBR }) : 'Selecione um dia'}
+                        </h2>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedDayEvents.length} evento{selectedDayEvents.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <div className="p-3 space-y-2 max-h-[450px] overflow-y-auto">
+                        {loading ? (
+                          <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>
+                        ) : selectedDayEvents.length > 0 ? (
+                          selectedDayEvents.map((event) => {
+                            const config = getEventConfig(event.event_type)
+                            const Icon = config.icon
+                            return (
+                              <div
+                                key={event.id}
+                                className={cn("p-3 rounded-lg border group", config.bg)}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex items-start gap-2 flex-1 min-w-0">
+                                    <Icon className={cn("h-4 w-4 mt-0.5 shrink-0", config.color)} />
+                                    <div className="min-w-0">
+                                      <p className="font-medium text-sm leading-tight">{event.title}</p>
+                                      {event.description && (
+                                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                                          {event.description}
+                                        </p>
+                                      )}
+                                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                          <Clock className="h-3 w-3" />
+                                          {format(parseISO(event.start_time), 'HH:mm')}
+                                          {event.end_time && ` - ${format(parseISO(event.end_time), 'HH:mm')}`}
+                                        </span>
+                                        <Badge variant="outline" className="text-[10px] h-5">
+                                          <Users className="h-2.5 w-2.5 mr-1" />
+                                          {getClassName(event.class_id)}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1 shrink-0">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                      onClick={() => handleEditEvent(event)}
+                                    >
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive shrink-0"
+                                      onClick={() => handleDeleteEvent(event.id)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })
+                        ) : (
+                          <div className="text-center py-8">
+                            <CalendarIcon className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">Nenhum evento</p>
                           </div>
-                        </div>
-                        <div className="flex gap-1 shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                            onClick={() => handleEditEvent(event)}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive shrink-0"
-                            onClick={() => handleDeleteEvent(event.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                        )}
                       </div>
                     </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-8">
-                  <CalendarIcon className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Nenhum evento</p>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Upcoming Events */}
-      {upcomingEvents.length > 0 && (
-        <div className="rounded-lg border bg-card">
-          <div className="p-4 border-b flex items-center justify-between">
-            <h2 className="font-semibold">Próximos Eventos</h2>
-            <span className="text-xs text-muted-foreground">{events.length} eventos no mês</span>
-          </div>
-          <div className="divide-y">
-            {upcomingEvents.map((event) => {
-              const config = getEventConfig(event.event_type)
-              const Icon = config.icon
-              const eventDate = parseISO(event.start_time)
-              return (
-                <div
-                  key={event.id}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer group"
-                  onClick={() => {
-                    setDate(eventDate)
-                    setCurrentMonth(eventDate)
-                  }}
-                >
-                  <div className="text-center w-10 shrink-0">
-                    <div className="text-lg font-bold leading-none">{format(eventDate, 'dd')}</div>
-                    <div className="text-[10px] uppercase text-muted-foreground">
-                      {format(eventDate, 'MMM', { locale: ptBR })}
+              </div>
+            ),
+          },
+          {
+            value: 'upcoming',
+            label: 'Próximos Eventos',
+            icon: <List className="h-4 w-4" />,
+            count: upcomingEvents.length,
+            content: (
+              <div className="mt-4">
+                {upcomingEvents.length > 0 ? (
+                  <div className="rounded-lg border bg-card">
+                    <div className="p-4 border-b flex items-center justify-between">
+                      <h2 className="font-semibold">Próximos Eventos</h2>
+                      <span className="text-xs text-muted-foreground">{events.length} eventos no mês</span>
+                    </div>
+                    <div className="divide-y">
+                      {upcomingEvents.map((event) => {
+                        const config = getEventConfig(event.event_type)
+                        const Icon = config.icon
+                        const eventDate = parseISO(event.start_time)
+                        return (
+                          <div
+                            key={event.id}
+                            className="flex items-center gap-4 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer group"
+                            onClick={() => {
+                              setDate(eventDate)
+                              setCurrentMonth(eventDate)
+                              setActiveTab('calendar')
+                            }}
+                          >
+                            <div className="text-center w-10 shrink-0">
+                              <div className="text-lg font-bold leading-none">{format(eventDate, 'dd')}</div>
+                              <div className="text-[10px] uppercase text-muted-foreground">
+                                {format(eventDate, 'MMM', { locale: ptBR })}
+                              </div>
+                            </div>
+                            <div className={cn("w-1 h-8 rounded-full shrink-0", config.dot)} />
+                            <Icon className={cn("h-4 w-4 shrink-0", config.color)} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{event.title}</p>
+                              <span className="text-xs text-muted-foreground">
+                                {format(eventDate, "EEEE", { locale: ptBR })} · {format(eventDate, 'HH:mm')}
+                                {event.end_time && ` - ${format(parseISO(event.end_time), 'HH:mm')}`}
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="text-[10px] h-5 shrink-0">
+                              {getClassName(event.class_id)}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteEvent(event.id)
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
-                  <div className={cn("w-1 h-8 rounded-full shrink-0", config.dot)} />
-                  <Icon className={cn("h-4 w-4 shrink-0", config.color)} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{event.title}</p>
-                    <span className="text-xs text-muted-foreground">
-                      {format(eventDate, "EEEE", { locale: ptBR })} · {format(eventDate, 'HH:mm')}
-                      {event.end_time && ` - ${format(parseISO(event.end_time), 'HH:mm')}`}
-                    </span>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <CalendarIcon className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">Nenhum evento próximo</p>
                   </div>
-                  <Badge variant="outline" className="text-[10px] h-5 shrink-0">
-                    {getClassName(event.class_id)}
-                  </Badge>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDeleteEvent(event.id)
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+                )}
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   )
 }
