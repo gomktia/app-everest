@@ -1,13 +1,28 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
 import { getInviteBySlug, registerForInvite, getRegistrationCount } from '@/services/inviteService'
-import { UserPlus, Loader2 } from 'lucide-react'
+import {
+  UserPlus,
+  Loader2,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Phone,
+  User,
+  CreditCard,
+  Mountain,
+  BookOpen,
+  Trophy,
+  Zap,
+  ArrowLeft,
+  CheckCircle2,
+} from 'lucide-react'
 
 export default function InvitePage() {
   const { slug } = useParams()
@@ -20,6 +35,8 @@ export default function InvitePage() {
   const [registrationCount, setRegistrationCount] = useState(0)
   const [form, setForm] = useState({ name: '', email: '', phone: '', cpf: '', password: '', confirmPassword: '' })
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!slug) return
@@ -38,7 +55,7 @@ export default function InvitePage() {
     setError('')
 
     if (form.password !== form.confirmPassword) {
-      setError('As senhas nao coincidem')
+      setError('As senhas não coincidem')
       return
     }
     if (form.password.length < 8) {
@@ -46,7 +63,7 @@ export default function InvitePage() {
       return
     }
     if (!form.phone || form.phone.replace(/\D/g, '').length < 10) {
-      setError('Informe um numero de WhatsApp valido')
+      setError('Informe um número de WhatsApp válido')
       return
     }
 
@@ -59,15 +76,15 @@ export default function InvitePage() {
         cpf_cnpj: form.cpf || undefined,
         password: form.password,
       })
-      toast({ title: 'Conta criada!', description: 'Faca login para acessar o conteudo.' })
+      toast({ title: 'Conta criada!', description: 'Faça login para acessar o conteúdo.' })
       navigate('/login')
     } catch (err: any) {
       if (err.message === 'EMAIL_EXISTS') {
-        setError('Voce ja tem uma conta. Faca login para acessar.')
+        setError('Você já tem uma conta. Faça login para acessar.')
       } else if (err.message === 'Vagas esgotadas') {
         setError('Desculpe, as vagas foram esgotadas.')
       } else if (err.message === 'WEAK_PASSWORD') {
-        setError('Senha muito fraca. Use uma senha mais complexa com letras, numeros e simbolos.')
+        setError('Senha muito fraca. Use uma senha mais complexa com letras, números e símbolos.')
       } else {
         setError('Erro ao criar conta. Tente novamente.')
       }
@@ -76,30 +93,39 @@ export default function InvitePage() {
     }
   }
 
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-sidebar">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
+  // Invite not found
   if (!invite) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md w-full mx-4">
-          <CardHeader>
-            <CardTitle className="text-center">Convite nao encontrado ou expirado</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-muted-foreground">
-              Este link de convite pode ter expirado ou nao existe mais.
-            </p>
-            <Button asChild>
-              <Link to="/login">Ir para o login</Link>
+      <div className="min-h-screen flex">
+        <HeroPanel />
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-sidebar text-sidebar-foreground">
+          <div className="w-full max-w-sm space-y-6 text-center">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center">
+              <Mountain className="h-8 w-8 text-destructive" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">Convite não encontrado</h2>
+              <p className="text-muted-foreground mt-2 text-sm">
+                Este link de convite pode ter expirado ou não existe mais.
+              </p>
+            </div>
+            <Button asChild className="w-full h-11 rounded-xl">
+              <Link to="/login">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Ir para o login
+              </Link>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
@@ -108,120 +134,358 @@ export default function InvitePage() {
   const isFull = slotsAvailable !== null && slotsAvailable <= 0
 
   return (
-    <div className="min-h-screen bg-background">
-      {invite.cover_image_url || invite.video_courses?.thumbnail_url ? (
-        <div className="w-full h-64 relative">
-          <img
-            src={invite.cover_image_url || invite.video_courses?.thumbnail_url}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-        </div>
-      ) : (
-        <div className="w-full h-32 bg-primary/10" />
-      )}
+    <div className="min-h-screen flex">
+      <InviteHeroPanel
+        title={invite.title}
+        description={invite.description}
+        courseName={invite.video_courses?.name}
+        coverUrl={invite.cover_image_url || invite.video_courses?.thumbnail_url}
+        slotsAvailable={slotsAvailable}
+        isFull={isFull}
+      />
 
-      <div className="max-w-xl mx-auto px-4 -mt-16 relative z-10 pb-12">
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-2xl">{invite.title}</CardTitle>
+      {/* Right side — Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-sidebar text-sidebar-foreground relative overflow-y-auto">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+        <div className="w-full max-w-sm space-y-6 relative z-10">
+          {/* Mobile logo + invite info (hidden on lg+) */}
+          <div className="flex flex-col items-center gap-3 lg:hidden">
+            <img src="/logo.png" alt="Everest" className="h-14 w-14 rounded-xl object-contain" />
+            <h1 className="text-xl font-bold text-center">{invite.title}</h1>
             {invite.video_courses && (
-              <p className="text-sm text-muted-foreground">
-                Curso: {invite.video_courses.name}
-              </p>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {invite.description && (
-              <p className="text-muted-foreground">{invite.description}</p>
+              <p className="text-sm text-muted-foreground">Curso: {invite.video_courses.name}</p>
             )}
             {invite.max_slots && (
               <Badge variant={isFull ? 'destructive' : 'outline'}>
-                {isFull
-                  ? 'Vagas esgotadas'
-                  : `${slotsAvailable} de ${invite.max_slots} vagas disponiveis`}
+                {isFull ? 'Vagas esgotadas' : `${slotsAvailable} vagas restantes`}
               </Badge>
             )}
-          </CardContent>
-        </Card>
+          </div>
 
-        {!isFull && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5" />
-                Criar conta e acessar
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* Heading */}
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight">Crie sua conta</h2>
+            <p className="text-muted-foreground text-sm">
+              Preencha seus dados para acessar o conteúdo.
+            </p>
+          </div>
+
+          {isFull ? (
+            <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 space-y-4 text-center">
+              <p className="text-sm font-medium text-destructive">As vagas foram esgotadas</p>
+              <Button asChild variant="outline" className="w-full h-11 rounded-xl">
+                <Link to="/login">Ir para o login</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent p-6 shadow-sm">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Nome completo</Label>
-                  <Input
-                    required
-                    value={form.name}
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                  />
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-semibold">Nome completo</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      required
+                      placeholder="Seu nome completo"
+                      className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                      value={form.name}
+                      onChange={e => setForm({ ...form, name: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                  />
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-semibold">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      required
+                      placeholder="seu@email.com"
+                      autoComplete="email"
+                      className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                      value={form.email}
+                      onChange={e => setForm({ ...form, email: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>WhatsApp</Label>
-                  <Input
-                    type="tel"
-                    placeholder="(00) 00000-0000"
-                    value={form.phone}
-                    onChange={e => setForm({ ...form, phone: e.target.value })}
-                  />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold">WhatsApp</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="tel"
+                        placeholder="(00) 00000-0000"
+                        className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                        value={form.phone}
+                        onChange={e => setForm({ ...form, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold">CPF <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="000.000.000-00"
+                        className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                        value={form.cpf}
+                        onChange={e => setForm({ ...form, cpf: e.target.value })}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>CPF/CNPJ (opcional)</Label>
-                  <Input
-                    placeholder="000.000.000-00"
-                    value={form.cpf}
-                    onChange={e => setForm({ ...form, cpf: e.target.value })}
-                  />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold">Senha</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Min. 8 caracteres"
+                        className="pl-10 pr-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                        value={form.password}
+                        onChange={e => setForm({ ...form, password: e.target.value })}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold">Confirmar</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type={showConfirm ? 'text' : 'password'}
+                        required
+                        placeholder="Repita a senha"
+                        className="pl-10 pr-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                        value={form.confirmPassword}
+                        onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirm(!showConfirm)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Senha</Label>
-                  <Input
-                    type="password"
-                    required
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Confirmar senha</Label>
-                  <Input
-                    type="password"
-                    required
-                    value={form.confirmPassword}
-                    onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-                  />
-                </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={registering}>
-                  {registering ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Criar conta e acessar
+
+                {error && (
+                  <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full h-12 rounded-xl font-semibold text-sm shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
+                  disabled={registering}
+                >
+                  {registering ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Criando conta...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Criar conta e acessar
+                    </>
+                  )}
                 </Button>
               </form>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
 
-        <p className="text-center text-xs text-muted-foreground mt-8">
-          Everest Cursos Preparatorios - Rumo ao topo!
-        </p>
+          {/* Footer */}
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Já tem uma conta?{' '}
+              <Link to="/login" className="text-primary font-medium hover:underline">
+                Faça login
+              </Link>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Ao criar sua conta, você concorda com nossos{' '}
+              <a href="/termos" className="underline hover:text-foreground transition-colors">Termos de Uso</a>
+              {' '}e{' '}
+              <a href="/privacidade" className="underline hover:text-foreground transition-colors">Política de Privacidade</a>.
+            </p>
+          </div>
+        </div>
       </div>
+    </div>
+  )
+}
+
+// ─── Invite Hero Panel (left side) ──────────────────────────────────────────
+
+interface InviteHeroPanelProps {
+  title: string
+  description?: string
+  courseName?: string
+  coverUrl?: string
+  slotsAvailable: number | null
+  isFull: boolean
+}
+
+function InviteHeroPanel({ title, description, courseName, coverUrl, slotsAvailable, isFull }: InviteHeroPanelProps) {
+  return (
+    <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500">
+      {/* Cover image overlay if available */}
+      {coverUrl && (
+        <div className="absolute inset-0">
+          <img src={coverUrl} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-600/90 via-orange-500/85 to-amber-500/90" />
+        </div>
+      )}
+
+      {/* Animated background shapes */}
+      <div className="absolute inset-0">
+        <div className="absolute top-[10%] left-[15%] w-64 h-64 rounded-full bg-white/[0.07] animate-[float_20s_ease-in-out_infinite]" />
+        <div className="absolute bottom-[15%] right-[10%] w-80 h-80 rounded-full bg-white/[0.05] animate-[float_25s_ease-in-out_infinite_reverse]" />
+        <div className="absolute top-[50%] left-[60%] w-40 h-40 rounded-full bg-white/[0.06] animate-[float_15s_ease-in-out_infinite]" />
+
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 40px, white 40px, white 41px)',
+          }}
+        />
+
+        <svg className="absolute bottom-0 left-0 w-full text-black/[0.08]" viewBox="0 0 1200 300" preserveAspectRatio="none">
+          <path d="M0,300 L0,200 L150,100 L300,180 L450,60 L600,140 L750,40 L900,120 L1050,80 L1200,160 L1200,300 Z" fill="currentColor" />
+        </svg>
+        <svg className="absolute bottom-0 left-0 w-full text-black/[0.05]" viewBox="0 0 1200 200" preserveAspectRatio="none">
+          <path d="M0,200 L0,150 L200,100 L400,130 L600,70 L800,110 L1000,80 L1200,120 L1200,200 Z" fill="currentColor" />
+        </svg>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white w-full">
+        {/* Top — Logo */}
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="Everest" className="h-12 w-12 rounded-xl object-contain brightness-0 invert" />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Everest</h1>
+            <p className="text-white/60 text-xs font-medium tracking-wider uppercase">Preparatórios</p>
+          </div>
+        </div>
+
+        {/* Center — Invite info */}
+        <div className="space-y-6 max-w-md">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/10 text-sm font-medium">
+            <UserPlus className="h-4 w-4" />
+            Convite Especial
+          </div>
+          <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight">
+            {title}
+          </h2>
+          {description && (
+            <p className="text-white/70 text-lg leading-relaxed">
+              {description}
+            </p>
+          )}
+          {courseName && (
+            <p className="text-white/80 text-base flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Curso: {courseName}
+            </p>
+          )}
+          {slotsAvailable !== null && !isFull && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-sm font-semibold">
+              {slotsAvailable} {slotsAvailable === 1 ? 'vaga restante' : 'vagas restantes'}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom — Feature pills */}
+        <div className="flex flex-wrap gap-3">
+          <FeaturePill icon={<BookOpen className="h-3.5 w-3.5" />} label="Videoaulas" />
+          <FeaturePill icon={<Zap className="h-3.5 w-3.5" />} label="Flashcards" />
+          <FeaturePill icon={<Mountain className="h-3.5 w-3.5" />} label="Simulados" />
+          <FeaturePill icon={<Trophy className="h-3.5 w-3.5" />} label="Ranking" />
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          33% { transform: translateY(-20px) rotate(2deg); }
+          66% { transform: translateY(10px) rotate(-1deg); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+// ─── Shared Hero Panel (for not-found state) ────────────────────────────────
+
+function HeroPanel() {
+  return (
+    <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500">
+      <div className="absolute inset-0">
+        <div className="absolute top-[10%] left-[15%] w-64 h-64 rounded-full bg-white/[0.07] animate-[float_20s_ease-in-out_infinite]" />
+        <div className="absolute bottom-[15%] right-[10%] w-80 h-80 rounded-full bg-white/[0.05] animate-[float_25s_ease-in-out_infinite_reverse]" />
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 40px, white 40px, white 41px)',
+          }}
+        />
+        <svg className="absolute bottom-0 left-0 w-full text-black/[0.08]" viewBox="0 0 1200 300" preserveAspectRatio="none">
+          <path d="M0,300 L0,200 L150,100 L300,180 L450,60 L600,140 L750,40 L900,120 L1050,80 L1200,160 L1200,300 Z" fill="currentColor" />
+        </svg>
+      </div>
+      <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 text-white w-full">
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="Everest" className="h-12 w-12 rounded-xl object-contain brightness-0 invert" />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Everest</h1>
+            <p className="text-white/60 text-xs font-medium tracking-wider uppercase">Preparatórios</p>
+          </div>
+        </div>
+        <div className="space-y-6 max-w-md">
+          <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight">
+            Conquiste o<br /><span className="text-white/90">topo da sua</span><br />preparação.
+          </h2>
+          <p className="text-white/70 text-lg leading-relaxed">
+            Videoaulas, flashcards, simulados e muito mais em uma plataforma completa para sua aprovação.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <FeaturePill icon={<BookOpen className="h-3.5 w-3.5" />} label="Videoaulas" />
+          <FeaturePill icon={<Zap className="h-3.5 w-3.5" />} label="Flashcards" />
+          <FeaturePill icon={<Mountain className="h-3.5 w-3.5" />} label="Simulados" />
+          <FeaturePill icon={<Trophy className="h-3.5 w-3.5" />} label="Ranking" />
+        </div>
+      </div>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          33% { transform: translateY(-20px) rotate(2deg); }
+          66% { transform: translateY(10px) rotate(-1deg); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function FeaturePill({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm font-medium text-white/90">
+      {icon}
+      {label}
     </div>
   )
 }
