@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Play, Target, BookOpen, Clock, Lock } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { ArrowLeft, Play, Target, BookOpen, Lock, Layers, ChevronRight } from 'lucide-react'
+import { cn, getCategoryColor } from '@/lib/utils'
 import { quizService, type Quiz } from '@/services/quizService'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
@@ -16,6 +15,7 @@ interface QuizTopic {
   id: string
   name: string
   description: string
+  questionCount: number
   quizzes: Quiz[]
 }
 
@@ -35,8 +35,6 @@ export default function QuizTopicsPage() {
     const loadTopics = async () => {
       try {
         setIsLoading(true)
-
-        // Buscar todas as matérias e encontrar a atual
         const subjects = await quizService.getQuizSubjects()
         const subject = subjects.find(s => s.id === subjectId)
 
@@ -51,13 +49,6 @@ export default function QuizTopicsPage() {
         }
 
         setSubjectName(subject.name)
-
-        logger.debug(`Subject found: ${subject.name}`)
-        logger.debug(`Topics in subject: ${subject.topics.length}`)
-        subject.topics.forEach((topic, idx) => {
-          logger.debug(`  Topic ${idx + 1}: ${topic.name} - ${topic.quizzes.length} quizzes`)
-        })
-
         setTopics(subject.topics)
       } catch (error) {
         logger.error('Erro ao carregar tópicos:', error)
@@ -78,158 +69,173 @@ export default function QuizTopicsPage() {
     return <SectionLoader />
   }
 
-  // Verificar se há quizzes em algum tópico
   const hasQuizzes = topics.some(topic => topic.quizzes && topic.quizzes.length > 0)
 
   if (topics.length === 0 || !hasQuizzes) {
-    logger.warn(`No quizzes found for subject: ${subjectName}`)
-    logger.debug(`Topics: ${topics.length}, HasQuizzes: ${hasQuizzes}`)
-
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">{subjectName || 'Matéria'}</h1>
-        <div className="text-center py-12">
-          <div className="w-20 h-20 mx-auto mb-8 rounded-3xl bg-primary/10 flex items-center justify-center">
-            <BookOpen className="w-10 h-10 text-primary" />
-          </div>
-          <h2 className="text-2xl font-bold mb-4">Nenhum quiz disponível</h2>
-          <p className="text-muted-foreground mb-6">
-            Esta matéria ainda não possui quizzes publicados.
-          </p>
-          <Button onClick={() => navigate('/quizzes')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar para Matérias
-          </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{subjectName || 'Matéria'}</h1>
+          <p className="text-sm text-muted-foreground mt-1">Nenhum quiz disponível</p>
         </div>
+        <Card className="border-border shadow-sm">
+          <CardContent className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <BookOpen className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">Nenhum quiz disponível</h3>
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              Esta matéria ainda não possui quizzes publicados.
+            </p>
+            <Button variant="outline" onClick={() => navigate('/quizzes')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar para Matérias
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
+  const totalQuestions = topics.reduce((sum, t) => sum + (t.questionCount || 0), 0)
+  const totalQuizzesCount = topics.reduce((sum, t) => sum + t.quizzes.length, 0)
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">{subjectName}</h1>
-      <p className="text-muted-foreground">Selecione um tópico para ver os quizzes disponíveis</p>
-
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Back Button */}
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/quizzes">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar para Matérias
-            </Link>
-          </Button>
+          <h1 className="text-2xl font-bold text-foreground">{subjectName}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Selecione um tópico para iniciar
+          </p>
         </div>
+        <Button variant="outline" size="sm" asChild className="w-fit">
+          <Link to="/quizzes">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Link>
+        </Button>
+      </div>
 
-        {/* Topics Grid */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {topics.map((topic, index) => {
-            const totalQuestions = topic.quizzes.reduce(
-              (sum, quiz) => sum + (quiz.questions?.length || 0),
-              0
-            )
-            const totalQuizzes = topic.quizzes.length
-            const topicLocked = isStudent && !isAllowed(topic.id)
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
+          <CardContent className="p-2.5 sm:p-4 text-center">
+            <Target className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 mx-auto mb-1" />
+            <div className="text-lg sm:text-xl font-bold text-foreground">{topics.length}</div>
+            <div className="text-[11px] sm:text-xs text-muted-foreground">Tópicos</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-purple-500/30">
+          <CardContent className="p-2.5 sm:p-4 text-center">
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 mx-auto mb-1" />
+            <div className="text-lg sm:text-xl font-bold text-foreground">{totalQuizzesCount}</div>
+            <div className="text-[11px] sm:text-xs text-muted-foreground">Quizzes</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-green-500/30">
+          <CardContent className="p-2.5 sm:p-4 text-center">
+            <Layers className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mx-auto mb-1" />
+            <div className="text-lg sm:text-xl font-bold text-foreground">{totalQuestions}</div>
+            <div className="text-[11px] sm:text-xs text-muted-foreground">Questões</div>
+          </CardContent>
+        </Card>
+      </div>
 
-            return (
-              <Card
-                key={topic.id}
-                className={cn("border-border shadow-sm flex flex-col overflow-hidden transition-colors duration-300 hover:shadow-md h-full", topicLocked && "opacity-50")}
+      {/* Topics Grid */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {topics.map((topic, idx) => {
+          const topicQuizzes = topic.quizzes.length
+          const topicLocked = isStudent && !isAllowed(topic.id)
+          const colors = getCategoryColor(idx)
+
+          return (
+            <div
+              key={topic.id}
+              className={cn(
+                'group relative flex flex-col rounded-xl border bg-card p-5 transition-all duration-200 shadow-sm',
+                topicLocked ? 'opacity-60' : 'hover:shadow-lg',
+                colors.border, !topicLocked && colors.hoverBorder
+              )}
+            >
+              {/* Badge */}
+              <div
+                className={cn(
+                  'absolute -top-3 left-4 inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-bold text-white',
+                  topicLocked ? 'bg-gray-400' : colors.badge
+                )}
               >
-                {/* Image Header */}
-                <div className="relative h-32 sm:h-36 overflow-hidden">
-                  <img
-                    src="/quiz-cover.png"
-                    alt={topic.name}
-                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {topicQuizzes} {topicQuizzes === 1 ? 'Quiz' : 'Quizzes'}
+              </div>
 
-                  <div className="absolute inset-x-3 bottom-3">
-                    <h3 className="text-white text-lg font-bold mb-0.5 drop-shadow-lg line-clamp-1">
-                      {topic.name}
-                    </h3>
-                  </div>
-                </div>
+              {/* Título */}
+              <h3 className="mt-2 font-semibold text-foreground leading-snug line-clamp-2">
+                {topic.name}
+              </h3>
 
-                <div className="flex-1 flex flex-col p-4 space-y-4">
-                  <div className="space-y-2">
-                    {/* Badge moved here for consistency */}
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] h-5">
-                        {totalQuizzes} {totalQuizzes === 1 ? 'Quiz' : 'Quizzes'}
-                      </Badge>
-                    </div>
-                    {topic.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 min-h-[3rem]">
-                        {topic.description}
-                      </p>
-                    )}
-                  </div>
+              {/* Description */}
+              {topic.description && (
+                <p className="mt-2 text-xs text-muted-foreground line-clamp-2">
+                  {topic.description}
+                </p>
+              )}
 
-                  {/* Stats */}
-                  <div className="flex items-center justify-between text-xs py-2 border-t border-border/50">
-                    <div className="flex items-center gap-1.5">
-                      <Target className="w-3.5 h-3.5 text-blue-500" />
-                      <span className="text-muted-foreground font-medium">
-                        {totalQuestions} questões
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-green-500" />
-                      <span className="text-muted-foreground font-medium">Disponível</span>
-                    </div>
-                  </div>
+              {/* Stats */}
+              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{topic.questionCount || 0} questões</span>
+                {topicLocked && (
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <Lock className="h-3 w-3" /> Bloqueado
+                  </span>
+                )}
+              </div>
 
-                  {/* Quizzes Preview List */}
-                  {totalQuizzes > 0 ? (
-                    <div className="space-y-1.5 flex-1">
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">
-                        Disponíveis
-                      </p>
-                      <div className="space-y-1">
-                        {topic.quizzes.slice(0, 2).map((quiz) => (
-                          <div key={quiz.id} className="flex items-center gap-2 text-xs text-foreground/80">
-                            <div className="w-1 h-1 rounded-full bg-primary/50" />
-                            <span className="line-clamp-1">{quiz.title}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex-1 flex items-center justify-center p-2 rounded-lg bg-muted/20 border border-dashed text-xs text-muted-foreground">
-                      Em breve
-                    </div>
+              {/* Quiz list preview */}
+              {topicQuizzes > 0 && !topicLocked && (
+                <ul className="mt-3 flex-1 space-y-1.5">
+                  {topic.quizzes.slice(0, 3).map((quiz) => (
+                    <li key={quiz.id} className="flex items-center gap-2 min-w-0">
+                      <Layers className={cn('h-3.5 w-3.5 flex-shrink-0', colors.text)} />
+                      <span className="truncate text-xs text-foreground">{quiz.title}</span>
+                    </li>
+                  ))}
+                  {topicQuizzes > 3 && (
+                    <li className="text-xs text-muted-foreground pl-5.5">
+                      +{topicQuizzes - 3} quiz{topicQuizzes - 3 !== 1 ? 'zes' : ''}
+                    </li>
                   )}
+                </ul>
+              )}
 
-                  {/* Action Button */}
-                  {topicLocked ? (
-                    <Button
-                      variant="outline"
-                      className="w-full opacity-50 cursor-not-allowed gap-2"
-                      onClick={() => toast({ title: 'Conteúdo bloqueado', description: 'Adquira o acesso completo para desbloquear este conteúdo' })}
-                    >
-                      <Lock className="h-3.5 w-3.5" />
-                      Bloqueado
-                    </Button>
-                  ) : totalQuizzes > 0 ? (
-                    <Button asChild className="w-full bg-primary hover:bg-primary/90 text-white shadow-sm hover:shadow-md">
-                      <Link to={`/quiz/${topic.quizzes[0].id}`}>
-                        <Play className="h-3.5 w-3.5 mr-2" />
-                        Iniciar Agora
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button disabled variant="outline" className="w-full opacity-50">
-                      Indisponível
-                    </Button>
+              {/* Action */}
+              {topicLocked ? (
+                <button
+                  onClick={() => toast({ title: 'Conteúdo bloqueado', description: 'Adquira o acesso completo para desbloquear.' })}
+                  className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-muted text-muted-foreground cursor-not-allowed"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  Bloqueado
+                </button>
+              ) : topicQuizzes > 0 ? (
+                <Link
+                  to={`/quiz/${topic.quizzes[0].id}`}
+                  className={cn(
+                    'mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 text-white hover:shadow-md',
+                    colors.btn
                   )}
+                >
+                  Iniciar Quiz
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <div className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-muted text-muted-foreground">
+                  Em breve
                 </div>
-              </Card>
-            )
-          })}
-        </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
