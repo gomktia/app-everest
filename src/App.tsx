@@ -424,8 +424,10 @@ const App = () => (
                   <Route path="/configuracoes" element={<SettingsPage />} />
                   <Route path="/notificacoes" element={<NotificationsPage />} />
                   <Route path="/ranking" element={<RankingPage />} />
-                  <Route path="/achievements" element={<AchievementsPage />} />
-                  <Route path="/study-planner" element={<StudyPlannerPage />} />
+                  <Route path="/conquistas" element={<AchievementsPage />} />
+                  <Route path="/achievements" element={<Navigate to="/conquistas" replace />} />
+                  <Route path="/plano-de-estudos" element={<StudyPlannerPage />} />
+                  <Route path="/study-planner" element={<Navigate to="/plano-de-estudos" replace />} />
                   <Route path="/faq" element={<FaqPage />} />
                   <Route path="/contato" element={<ContactPage />} />
                   <Route path="/termos" element={<TermsPage />} />

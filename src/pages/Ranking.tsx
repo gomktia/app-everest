@@ -544,7 +544,7 @@ export default function RankingPage() {
                 <Button
                   variant="outline"
                   className="rounded-xl"
-                  onClick={() => navigate('/achievements')}
+                  onClick={() => navigate('/conquistas')}
                 >
                   Ver Todas as Conquistas
                 </Button>

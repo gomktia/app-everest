@@ -122,7 +122,7 @@ const studentMenuGroups: MenuGroup[] = [
     collapsible: true,
     items: [
       { label: 'Calendário', href: '/calendario', icon: Calendar, featureKey: FEATURE_KEYS.CALENDAR },
-      { label: 'Plano de Estudos', href: '/study-planner', icon: Target, featureKey: FEATURE_KEYS.STUDY_PLANNER },
+      { label: 'Plano de Estudos', href: '/plano-de-estudos', icon: Target, featureKey: FEATURE_KEYS.STUDY_PLANNER },
     ],
   },
   {
@@ -132,7 +132,7 @@ const studentMenuGroups: MenuGroup[] = [
     items: [
       { label: 'Progresso', href: '/progresso', icon: TrendingUp },
       { label: 'Ranking', href: '/ranking', icon: Trophy, featureKey: FEATURE_KEYS.RANKING },
-      { label: 'Conquistas', href: '/achievements', icon: Award },
+      { label: 'Conquistas', href: '/conquistas', icon: Award },
     ],
   },
   {

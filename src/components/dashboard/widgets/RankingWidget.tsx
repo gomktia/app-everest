@@ -271,7 +271,7 @@ function RankingWidget({ className }: RankingWidgetProps) {
               Ver Ranking
             </Button>
           </Link>
-          <Link to="/achievements" className="flex-1">
+          <Link to="/conquistas" className="flex-1">
             <Button variant="outline" size="sm" className="w-full rounded-lg">
               <Award className="h-4 w-4 mr-2" />
               Conquistas
