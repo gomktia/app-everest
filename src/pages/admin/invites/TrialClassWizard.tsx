@@ -125,9 +125,16 @@ const ALL_FEATURE_KEYS: { key: FeatureKey; label: string }[] = [
   { key: FEATURE_KEYS.VIDEO_LESSONS, label: 'Videoaulas' },
   { key: FEATURE_KEYS.FLASHCARDS, label: 'Flashcards' },
   { key: FEATURE_KEYS.QUIZ, label: 'Quizzes' },
+  { key: FEATURE_KEYS.QUESTION_BANK, label: 'Banco de Questoes' },
+  { key: FEATURE_KEYS.SIMULATIONS, label: 'Simulados' },
   { key: FEATURE_KEYS.ESSAYS, label: 'Redacoes' },
   { key: FEATURE_KEYS.EVERCAST, label: 'Evercast' },
   { key: FEATURE_KEYS.LIVE_EVENTS, label: 'Eventos ao vivo' },
+  { key: FEATURE_KEYS.ACERVO, label: 'Acervo Digital' },
+  { key: FEATURE_KEYS.CALENDAR, label: 'Calendario' },
+  { key: FEATURE_KEYS.STUDY_PLANNER, label: 'Plano de Estudos' },
+  { key: FEATURE_KEYS.RANKING, label: 'Ranking' },
+  { key: FEATURE_KEYS.COMMUNITY, label: 'Comunidade' },
 ]
 
 const ACERVO_CATEGORIES = [

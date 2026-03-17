@@ -31,7 +31,9 @@ import {
   AlertCircle,
   Info,
   Users,
-  Plus
+  Plus,
+  Search,
+  ClipboardCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -87,8 +89,22 @@ const FEATURE_OPTIONS: FeatureOption[] = [
   {
     key: FEATURE_KEYS.QUIZ,
     label: 'Quizzes',
-    description: 'Quizzes, banco de questoes e simulados',
+    description: 'Quizzes por materia e topico',
     icon: Target,
+    category: 'content'
+  },
+  {
+    key: FEATURE_KEYS.QUESTION_BANK,
+    label: 'Banco de Questoes',
+    description: 'Treino livre com questoes aleatorias',
+    icon: Search,
+    category: 'content'
+  },
+  {
+    key: FEATURE_KEYS.SIMULATIONS,
+    label: 'Simulados',
+    description: 'Simulados completos com tempo e nota',
+    icon: ClipboardCheck,
     category: 'content'
   },
   {

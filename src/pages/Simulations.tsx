@@ -165,7 +165,7 @@ export default function SimulationsPage() {
 
   if (permissionsLoading || loading) return <SectionLoader />
 
-  if (isStudent && !hasFeature(FEATURE_KEYS.QUIZ)) {
+  if (isStudent && !hasFeature(FEATURE_KEYS.SIMULATIONS)) {
     return (
       <div className="space-y-6">
         <div>

@@ -58,7 +58,7 @@ const studentMenuGroups: MenuGroup[] = [
     items: [
       { label: 'Meus Cursos', href: '/courses', icon: BookOpen, featureKey: FEATURE_KEYS.VIDEO_LESSONS },
       { label: 'Flashcards', href: '/flashcards', icon: Brain, featureKey: FEATURE_KEYS.FLASHCARDS },
-      { label: 'Banco de Questões', href: '/banco-de-questoes', icon: Search, featureKey: FEATURE_KEYS.QUIZ },
+      { label: 'Banco de Questões', href: '/banco-de-questoes', icon: Search, featureKey: FEATURE_KEYS.QUESTION_BANK },
       { label: 'Quizzes', href: '/quizzes', icon: Target, featureKey: FEATURE_KEYS.QUIZ },
       { label: 'Ao Vivo', href: '/lives', icon: Radio, featureKey: FEATURE_KEYS.LIVE_EVENTS },
     ],
@@ -66,7 +66,7 @@ const studentMenuGroups: MenuGroup[] = [
   {
     group: 'Avaliações',
     items: [
-      { label: 'Simulados', href: '/simulados', icon: ClipboardCheck, featureKey: FEATURE_KEYS.QUIZ },
+      { label: 'Simulados', href: '/simulados', icon: ClipboardCheck, featureKey: FEATURE_KEYS.SIMULATIONS },
       { label: 'Redações', href: '/redacoes', icon: FileText, featureKey: FEATURE_KEYS.ESSAYS },
     ],
   },

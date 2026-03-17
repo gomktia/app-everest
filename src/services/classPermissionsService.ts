@@ -22,6 +22,8 @@ export interface ClassFeaturePermission {
 export const FEATURE_KEYS = {
   FLASHCARDS: 'flashcards',
   QUIZ: 'quiz',
+  QUESTION_BANK: 'question_bank',
+  SIMULATIONS: 'simulations',
   EVERCAST: 'evercast',
   ESSAYS: 'essays',
   VIDEO_LESSONS: 'video_lessons',
