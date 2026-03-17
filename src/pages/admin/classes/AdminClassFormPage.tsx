@@ -60,6 +60,7 @@ export default function AdminClassFormPage() {
   const [allTopics, setAllTopics] = useState<any[]>([])
   const [allSubjects, setAllSubjects] = useState<any[]>([])
   const [allSimulations, setAllSimulations] = useState<any[]>([])
+  const [allCommunitySpaces, setAllCommunitySpaces] = useState<any[]>([])
   const [lessonRules, setLessonRules] = useState<Record<string, { rule_type: string; rule_value: string }>>({})
   const [moduleLessons, setModuleLessons] = useState<Record<string, { id: string; title: string; order_index: number }[]>>({})
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
@@ -70,6 +71,7 @@ export default function AdminClassFormPage() {
     simulation: true,
     essay_limit: true,
     community_readonly: true,
+    community_space: true,
   })
   const [essayLimit, setEssayLimit] = useState('1')
 
@@ -205,6 +207,16 @@ export default function AdminClassFormPage() {
       const { data: sims } = await supabase.from('quizzes').select('id, title').eq('type', 'simulation')
       setAllSimulations(sims || [])
 
+      // Load community spaces (only general ones, excluding 'geral' which is always visible)
+      const { data: spaces } = await supabase
+        .from('community_spaces')
+        .select('id, name, slug, icon, color, space_type')
+        .eq('is_archived', false)
+        .neq('slug', 'geral')
+        .eq('space_type', 'general')
+        .order('order', { ascending: true })
+      setAllCommunitySpaces(spaces || [])
+
       // Load existing content access
       const access = await getAllContentAccessForClass(classId!)
       setContentAccess(access)
@@ -217,6 +229,7 @@ export default function AdminClassFormPage() {
         simulation: !access.simulation?.length,
         essay_limit: !access.essay_limit?.length,
         community_readonly: !access.community_readonly?.length,
+        community_space: !access.community_space?.length,
       })
       if (access.essay_limit?.length) setEssayLimit(access.essay_limit[0])
     } catch (error) {
@@ -293,6 +306,9 @@ export default function AdminClassFormPage() {
         if (!contentToggles.community_readonly) await saveContentAccess(classId!, 'community_readonly', ['true'])
         else await saveContentAccess(classId!, 'community_readonly', [])
 
+        if (!contentToggles.community_space) await saveContentAccess(classId!, 'community_space', contentAccess.community_space || [])
+        else await saveContentAccess(classId!, 'community_space', [])
+
         toast({
           title: 'Sucesso',
           description: 'Turma atualizada com sucesso',
@@ -349,6 +365,9 @@ export default function AdminClassFormPage() {
 
           if (!contentToggles.community_readonly) await saveContentAccess(newClassId, 'community_readonly', ['true'])
           else await saveContentAccess(newClassId, 'community_readonly', [])
+
+          if (!contentToggles.community_space) await saveContentAccess(newClassId, 'community_space', contentAccess.community_space || [])
+          else await saveContentAccess(newClassId, 'community_space', [])
         }
 
         toast({
@@ -926,10 +945,10 @@ export default function AdminClassFormPage() {
 
                   <div className="border-t border-border" />
 
-                  {/* Comunidade */}
+                  {/* Comunidade - Permissão de escrita */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Comunidade</h4>
+                      <h4 className="font-medium flex items-center gap-2">Comunidade — Permissão</h4>
                       <label className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={contentToggles.community_readonly} onChange={e => {
                           setContentToggles(p => ({...p, community_readonly: e.target.checked}))
@@ -940,6 +959,49 @@ export default function AdminClassFormPage() {
                     </div>
                     {!contentToggles.community_readonly && (
                       <p className="text-sm text-muted-foreground pl-4">Somente leitura — aluno pode ver posts mas não pode criar ou comentar</p>
+                    )}
+                  </div>
+
+                  <div className="border-t border-border" />
+
+                  {/* Comunidade - Espaços visíveis */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium flex items-center gap-2">Comunidade — Espaços Visíveis</h4>
+                      <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={contentToggles.community_space} onChange={e => {
+                          setContentToggles(p => ({...p, community_space: e.target.checked}))
+                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.community_space; return n })
+                        }} />
+                        Todos os espaços
+                      </label>
+                    </div>
+                    <p className="text-xs text-muted-foreground pl-4">
+                      "Geral" e o espaço da turma estão sempre visíveis. Aqui você controla os espaços temáticos (EAOF, CADAR, etc).
+                    </p>
+                    {!contentToggles.community_space && allCommunitySpaces.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4">
+                        {allCommunitySpaces.map(space => (
+                          <label key={space.id} className="flex items-center gap-2 text-sm py-0.5">
+                            <input type="checkbox"
+                              checked={contentAccess.community_space?.includes(space.id) || false}
+                              onChange={e => {
+                                setContentAccess(prev => {
+                                  const current = prev.community_space || []
+                                  return { ...prev, community_space: e.target.checked
+                                    ? [...current, space.id]
+                                    : current.filter(id => id !== space.id) }
+                                })
+                              }}
+                            />
+                            <span
+                              className="h-2.5 w-2.5 rounded-full shrink-0"
+                              style={{ backgroundColor: space.color }}
+                            />
+                            {space.name}
+                          </label>
+                        ))}
+                      </div>
                     )}
                   </div>
 

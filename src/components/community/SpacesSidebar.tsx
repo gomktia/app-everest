@@ -4,6 +4,9 @@ import { MessageSquare, HelpCircle, BookOpen, Coffee, Hash, Loader2, GraduationC
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { communityService, type CommunitySpace } from '@/services/communityService'
+import { useAuth } from '@/hooks/use-auth'
+import { useContentAccess } from '@/hooks/useContentAccess'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -21,8 +24,26 @@ function getSpaceIcon(iconName: string): React.ElementType {
 export function SpacesSidebar() {
   const [spaces, setSpaces] = useState<CommunitySpace[]>([])
   const [loading, setLoading] = useState(true)
+  const [userClassIds, setUserClassIds] = useState<string[]>([])
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, isStudent, effectiveUserId } = useAuth()
+  const { isRestricted, allowedIds, loading: accessLoading } = useContentAccess('community_space')
+
+  const targetUserId = effectiveUserId || user?.id
+
+  // Fetch user's class IDs for filtering class spaces
+  useEffect(() => {
+    if (!targetUserId || !isStudent) return
+    const fetchClasses = async () => {
+      const { data } = await supabase
+        .from('student_classes')
+        .select('class_id')
+        .eq('user_id', targetUserId)
+      setUserClassIds((data || []).map(e => e.class_id))
+    }
+    fetchClasses()
+  }, [targetUserId, isStudent])
 
   useEffect(() => {
     const fetchSpaces = async () => {
@@ -40,8 +61,30 @@ export function SpacesSidebar() {
 
   const currentSlug = location.pathname.match(/^\/comunidade\/([^/]+)/)?.[1]
 
-  const generalSpaces = spaces.filter(s => s.space_type !== 'course')
-  const classSpaces = spaces.filter(s => s.space_type === 'course')
+  // Filter spaces based on role and class permissions
+  const visibleSpaces = spaces.filter(space => {
+    // Admins/teachers see everything
+    if (!isStudent) return true
+
+    // "Geral" is always visible
+    if (space.slug === 'geral') return true
+
+    // Class spaces: only visible to enrolled students
+    if (space.space_type === 'course' && space.class_id) {
+      return userClassIds.includes(space.class_id)
+    }
+
+    // Other general spaces: check content access restrictions
+    if (isRestricted) {
+      return allowedIds.includes(space.id)
+    }
+
+    // No restrictions = show all
+    return true
+  })
+
+  const generalSpaces = visibleSpaces.filter(s => s.space_type !== 'course')
+  const classSpaces = visibleSpaces.filter(s => s.space_type === 'course')
 
   const renderSpaceButton = (space: CommunitySpace) => {
     const Icon = getSpaceIcon(space.icon)
@@ -75,7 +118,7 @@ export function SpacesSidebar() {
         <CardTitle className="text-sm font-semibold text-foreground">Espacos</CardTitle>
       </CardHeader>
       <CardContent className="px-2 pb-3">
-        {loading ? (
+        {loading || accessLoading ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>

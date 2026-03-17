@@ -27,4 +27,18 @@ Sentry.init({
   tracesSampleRate: import.meta.env.DEV ? 1.0 : 0.2,
   replaysSessionSampleRate: 0.05,
   replaysOnErrorSampleRate: 1.0,
+  ignoreErrors: [
+    // Stale chunks after deploy (user has old cached version)
+    'Failed to fetch dynamically imported module',
+    "'text/html' is not a valid JavaScript MIME type",
+    'Loading chunk',
+    'Loading CSS chunk',
+    // Benign: fetch aborted by component unmount or navigation
+    'AbortError',
+    'The operation was aborted',
+    // Network errors (user offline or unstable connection)
+    'NetworkError',
+    'Failed to fetch',
+    'Load failed',
+  ],
 })

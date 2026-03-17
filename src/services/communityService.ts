@@ -263,6 +263,7 @@ export const communityService = {
 
   async getPosts(options: {
     spaceId?: string
+    allowedSpaceIds?: string[]
     sort?: 'recent' | 'popular' | 'unanswered'
     type?: string
     search?: string
@@ -270,7 +271,7 @@ export const communityService = {
     limit?: number
   } = {}): Promise<{ posts: CommunityPost[]; total: number }> {
     try {
-      const { spaceId, sort = 'recent', type, search, page = 1, limit = 20 } = options
+      const { spaceId, allowedSpaceIds, sort = 'recent', type, search, page = 1, limit = 20 } = options
       const from = (page - 1) * limit
       const to = from + limit - 1
 
@@ -284,6 +285,9 @@ export const communityService = {
 
       if (spaceId) {
         query = query.eq('space_id', spaceId)
+      } else if (allowedSpaceIds && allowedSpaceIds.length > 0) {
+        // Filter posts to only show from allowed spaces
+        query = query.in('space_id', allowedSpaceIds)
       }
 
       if (type) {

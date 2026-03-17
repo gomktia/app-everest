@@ -103,7 +103,7 @@ export function QuestionRenderer({
       case 'multiple_choice':
         return (
           <RadioGroup
-            value={answer}
+            value={answer ?? ""}
             onValueChange={onAnswerChange}
             disabled={disabled}
             className="space-y-3"
@@ -146,7 +146,7 @@ export function QuestionRenderer({
       case 'true_false':
         return (
           <RadioGroup
-            value={answer}
+            value={answer ?? ""}
             onValueChange={onAnswerChange}
             disabled={disabled}
             className="space-y-3"

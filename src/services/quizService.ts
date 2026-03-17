@@ -313,7 +313,35 @@ export const quizService = {
       })
 
       if (rpcError) {
-        logger.warn('Erro ao chamar RPC de submissão, mas tentativa foi salva:', rpcError)
+        logger.warn('RPC submit_quiz_attempt falhou, usando fallback client-side:', rpcError)
+        // Fallback: grade answers client-side
+        if (rpcError.code === 'PGRST202') {
+          const { data: questions } = await supabase
+            .from('quiz_questions')
+            .select('id, correct_answer, points')
+            .eq('quiz_id', quizId)
+
+          const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
+          let totalPts = 0, earnedPts = 0
+          for (const q of (questions || [])) totalPts += (q as any).points || 1
+
+          for (const [qId, ansVal] of Object.entries(answers)) {
+            const q = questionMap.get(qId) as any
+            if (!q) continue
+            const correct = q.correct_answer && ansVal === q.correct_answer
+            const pts = correct ? (q.points || 1) : 0
+            earnedPts += pts
+            await (supabase as any).from('quiz_answers')
+              .update({ is_correct: correct, points_earned: pts })
+              .eq('attempt_id', attempt.id)
+              .eq('question_id', qId)
+          }
+
+          const pct = totalPts > 0 ? (earnedPts / totalPts) * 100 : 0
+          await (supabase as any).from('quiz_attempts')
+            .update({ score: earnedPts, total_points: totalPts, percentage: Math.round(pct * 100) / 100 })
+            .eq('id', attempt.id)
+        }
       }
 
       return attempt.id

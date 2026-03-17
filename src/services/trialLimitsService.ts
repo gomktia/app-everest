@@ -40,7 +40,7 @@ export interface ContentAccessResult {
 export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> => {
   try {
     // Buscar turma trial do usuário
-    const { data: studentClass, error } = await supabase
+    const { data: studentClasses, error } = await supabase
       .from('student_classes')
       .select(`
         enrollment_date,
@@ -55,8 +55,9 @@ export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> =
       `)
       .eq('user_id', userId)
       .eq('classes.class_type', 'trial')
-      .single()
+      .limit(1)
 
+    const studentClass = studentClasses?.[0]
     if (error || !studentClass) {
       return {
         isTrialUser: false,
@@ -100,13 +101,14 @@ export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> =
 export const getTrialAllowedContent = async (userId: string): Promise<TrialAllowedContent> => {
   try {
     // Buscar class_id do usuário
-    const { data: studentClass } = await supabase
+    const { data: studentClasses } = await supabase
       .from('student_classes')
       .select('class_id, classes!inner(class_type)')
       .eq('user_id', userId)
       .eq('classes.class_type', 'trial')
-      .single()
+      .limit(1)
 
+    const studentClass = studentClasses?.[0]
     if (!studentClass) {
       return { subjects: [], topics: [], quizzes: [], flashcardSets: [] }
     }

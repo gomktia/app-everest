@@ -116,16 +116,16 @@ export async function startSimulationAttempt(quizId: string, userId: string): Pr
     if (!currentUser || currentUser.id !== userId) throw new Error('Não autorizado')
 
     // Check for existing in-progress attempt
-    const { data: existingAttempt } = await (supabase as any)
+    const { data: existingAttempts } = await (supabase as any)
       .from('quiz_attempts')
       .select('id')
       .eq('quiz_id', quizId)
       .eq('user_id', userId)
       .eq('status', 'in_progress')
-      .single()
+      .limit(1)
 
-    if (existingAttempt) {
-      return existingAttempt.id
+    if (existingAttempts?.[0]) {
+      return existingAttempts[0].id
     }
 
     // Create new attempt
@@ -191,12 +191,84 @@ export async function submitSimulation(attemptId: string) {
       p_attempt_id: attemptId
     })
 
-    if (error) throw error
+    if (error) {
+      // Fallback: if RPC doesn't exist (PGRST202), do client-side submission
+      if (error.code === 'PGRST202') {
+        logger.warn('submit_quiz_attempt RPC not found, using client-side fallback')
+        await submitSimulationFallback(attemptId)
+        return null
+      }
+      throw error
+    }
     return data
   } catch (error) {
     logger.error('Error submitting simulation:', error)
     throw error
   }
+}
+
+/**
+ * Client-side fallback when submit_quiz_attempt RPC is missing.
+ * Marks the attempt as submitted, grades answers, and updates score.
+ */
+async function submitSimulationFallback(attemptId: string) {
+  // 1. Get the attempt and its quiz questions
+  const { data: attempt, error: attemptError } = await (supabase as any)
+    .from('quiz_attempts')
+    .select('id, quiz_id, started_at')
+    .eq('id', attemptId)
+    .single()
+  if (attemptError) throw attemptError
+
+  // 2. Get all questions with correct answers
+  const { data: questions } = await supabase
+    .from('quiz_questions')
+    .select('id, correct_answer, points')
+    .eq('quiz_id', attempt.quiz_id)
+
+  // 3. Get all answers for this attempt
+  const { data: answers } = await (supabase as any)
+    .from('quiz_answers')
+    .select('id, question_id, answer_value')
+    .eq('attempt_id', attemptId)
+
+  // 4. Grade each answer
+  const questionMap = new Map(questions?.map((q: any) => [q.id, q]) || [])
+  let totalPoints = 0
+  let earnedPoints = 0
+
+  for (const q of (questions || [])) {
+    totalPoints += (q as any).points || 1
+  }
+
+  for (const ans of (answers || [])) {
+    const q = questionMap.get(ans.question_id) as any
+    if (!q) continue
+    const isCorrect = q.correct_answer && ans.answer_value === q.correct_answer
+    const pointsEarned = isCorrect ? (q.points || 1) : 0
+    earnedPoints += pointsEarned
+
+    await (supabase as any)
+      .from('quiz_answers')
+      .update({ is_correct: isCorrect, points_earned: pointsEarned })
+      .eq('id', ans.id)
+  }
+
+  // 5. Calculate time spent and update attempt
+  const timeSpent = Math.floor((Date.now() - new Date(attempt.started_at).getTime()) / 1000)
+  const percentage = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0
+
+  await (supabase as any)
+    .from('quiz_attempts')
+    .update({
+      status: 'submitted',
+      submitted_at: new Date().toISOString(),
+      time_spent_seconds: timeSpent,
+      score: earnedPoints,
+      total_points: totalPoints,
+      percentage: Math.round(percentage * 100) / 100,
+    })
+    .eq('id', attemptId)
 }
 
 export async function getSimulationResult(attemptId: string) {

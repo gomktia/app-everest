@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Plus, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -8,15 +8,33 @@ import { PostEditor } from '@/components/community/PostEditor'
 import { communityService, type CommunitySpace } from '@/services/communityService'
 import { useAuth } from '@/hooks/use-auth'
 import { useContentAccess } from '@/hooks/useContentAccess'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
 export default function CommunityPage() {
-  const { isStudent } = useAuth()
+  const { user, isStudent, effectiveUserId } = useAuth()
   const { isRestricted: isReadOnly } = useContentAccess('community_readonly')
+  const { isRestricted: hasSpaceRestrictions, allowedIds: allowedSpaceIds } = useContentAccess('community_space')
   const [spaces, setSpaces] = useState<CommunitySpace[]>([])
+  const [userClassIds, setUserClassIds] = useState<string[]>([])
   const [editorOpen, setEditorOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [feedKey, setFeedKey] = useState(0)
+
+  const targetUserId = effectiveUserId || user?.id
+
+  // Fetch user's class IDs for filtering class spaces
+  useEffect(() => {
+    if (!targetUserId || !isStudent) return
+    const fetchClasses = async () => {
+      const { data } = await supabase
+        .from('student_classes')
+        .select('class_id')
+        .eq('user_id', targetUserId)
+      setUserClassIds((data || []).map(e => e.class_id))
+    }
+    fetchClasses()
+  }, [targetUserId, isStudent])
 
   useEffect(() => {
     const fetchSpaces = async () => {
@@ -29,6 +47,37 @@ export default function CommunityPage() {
     }
     fetchSpaces()
   }, [])
+
+  // Compute the allowed space IDs for the feed
+  const feedAllowedSpaceIds = useMemo(() => {
+    if (!isStudent) return undefined // admins/teachers see all
+
+    // Build list of visible space IDs
+    const visibleIds: string[] = []
+    for (const space of spaces) {
+      // Geral always visible
+      if (space.slug === 'geral') { visibleIds.push(space.id); continue }
+      // Class spaces: only for enrolled students
+      if (space.space_type === 'course' && space.class_id) {
+        if (userClassIds.includes(space.class_id)) visibleIds.push(space.id)
+        continue
+      }
+      // Other general spaces: check restrictions
+      if (hasSpaceRestrictions) {
+        if (allowedSpaceIds.includes(space.id)) visibleIds.push(space.id)
+      } else {
+        visibleIds.push(space.id)
+      }
+    }
+    return visibleIds.length > 0 ? visibleIds : undefined
+  }, [isStudent, spaces, userClassIds, hasSpaceRestrictions, allowedSpaceIds])
+
+  // Filter spaces available for the post editor (only visible ones)
+  const editorSpaces = useMemo(() => {
+    if (!isStudent) return spaces
+    if (!feedAllowedSpaceIds) return spaces
+    return spaces.filter(s => feedAllowedSpaceIds.includes(s.id))
+  }, [isStudent, spaces, feedAllowedSpaceIds])
 
   const handlePostSuccess = () => {
     setEditorOpen(false)
@@ -68,7 +117,7 @@ export default function CommunityPage() {
 
         {/* Feed */}
         <div className="flex-1 min-w-0">
-          <PostFeed key={feedKey} />
+          <PostFeed key={feedKey} allowedSpaceIds={feedAllowedSpaceIds} />
         </div>
       </div>
 
@@ -86,7 +135,7 @@ export default function CommunityPage() {
       {/* Post editor dialog */}
       {!(isStudent && isReadOnly) && (
         <PostEditor
-          spaces={spaces}
+          spaces={editorSpaces}
           onSuccess={handlePostSuccess}
           open={editorOpen}
           onOpenChange={setEditorOpen}

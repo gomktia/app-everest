@@ -16,6 +16,7 @@ import { logger } from '@/lib/logger'
 export default function SpaceFeedPage() {
   const { isStudent } = useAuth()
   const { isRestricted: isReadOnly } = useContentAccess('community_readonly')
+  const { isRestricted: hasSpaceRestrictions, isAllowed: isSpaceAllowed } = useContentAccess('community_space')
   const { spaceSlug } = useParams<{ spaceSlug: string }>()
   const navigate = useNavigate()
   const [space, setSpace] = useState<CommunitySpace | null>(null)
@@ -43,6 +44,12 @@ export default function SpaceFeedPage() {
           return
         }
 
+        // Check if student has access to this space
+        if (isStudent && spaceData.slug !== 'geral' && spaceData.space_type !== 'course' && hasSpaceRestrictions && !isSpaceAllowed(spaceData.id)) {
+          setNotFound(true)
+          return
+        }
+
         setSpace(spaceData)
         setSpaces(allSpaces)
       } catch (error) {
@@ -53,7 +60,7 @@ export default function SpaceFeedPage() {
       }
     }
     fetchData()
-  }, [spaceSlug])
+  }, [spaceSlug, isStudent, hasSpaceRestrictions, isSpaceAllowed])
 
   const handlePostSuccess = () => {
     setEditorOpen(false)

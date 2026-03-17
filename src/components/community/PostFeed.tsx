@@ -11,12 +11,13 @@ import { PostCard } from './PostCard'
 
 interface PostFeedProps {
   spaceId?: string
+  allowedSpaceIds?: string[]
 }
 
 type SortOption = 'recent' | 'popular' | 'unanswered'
 type TypeFilter = 'all' | 'text' | 'question' | 'poll'
 
-export function PostFeed({ spaceId }: PostFeedProps) {
+export function PostFeed({ spaceId, allowedSpaceIds }: PostFeedProps) {
   const [posts, setPosts] = useState<CommunityPost[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -43,6 +44,7 @@ export function PostFeed({ spaceId }: PostFeedProps) {
     try {
       const { posts: fetched, total: totalCount } = await communityService.getPosts({
         spaceId,
+        allowedSpaceIds: !spaceId ? allowedSpaceIds : undefined,
         sort,
         type: typeFilter === 'all' ? undefined : typeFilter,
         search: debouncedSearch || undefined,
@@ -62,7 +64,7 @@ export function PostFeed({ spaceId }: PostFeedProps) {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [spaceId, sort, typeFilter, debouncedSearch])
+  }, [spaceId, allowedSpaceIds, sort, typeFilter, debouncedSearch])
 
   // Reset to page 1 when filters change
   useEffect(() => {
