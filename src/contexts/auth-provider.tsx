@@ -288,52 +288,94 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        // Get initial session - reads localStorage first (should be instant).
-        // Race with 3s timeout — if it takes longer, let onAuthStateChange handle it.
+        // STEP 1: Try cached profile for INSTANT render (no network needed)
+        const cached = getCachedProfile()
+
+        // STEP 2: Read session from localStorage directly (no network call)
+        // supabase.auth.getSession() may trigger token refresh over network (slow!)
+        // So we read the raw token from localStorage first for instant UI
         let initialSession: Session | null = null
+
+        // Try raw localStorage read first (instant, no network)
         try {
-          const result = await Promise.race([
-            supabase.auth.getSession(),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('Auth timeout')), 3000)
-            )
-          ])
-          initialSession = result.data.session
-        } catch {
-          // Timeout — stop loading spinner immediately, let onAuthStateChange catch up
-          if (mounted) {
-            initCompleteRef.current = true
-            setLoading(false)
+          const storageKey = 'everest-auth-token'
+          const raw = localStorage.getItem(storageKey)
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            // Supabase stores session under different structures
+            const sessionData = parsed?.currentSession || parsed
+            if (sessionData?.access_token && sessionData?.user?.id) {
+              // We have a valid-looking session in storage
+              initialSession = sessionData as Session
+            }
           }
-          return
+        } catch {
+          // localStorage parse failed, fall through to getSession
+        }
+
+        // If localStorage had a session AND we have a cached profile, render INSTANTLY
+        if (initialSession?.user && cached && cached.id === initialSession.user.id) {
+          if (!mounted) return
+          setSession(initialSession)
+          setProfile(cached)
+          setProfileFetchAttempted(true)
+
+          // Refresh both in background (non-blocking)
+          supabase.auth.getSession().then(({ data }) => {
+            if (data.session && mounted) {
+              setSession(data.session)
+              // Also refresh profile
+              fetchUserProfile(data.session.user.id).then(fresh => {
+                if (fresh && mounted) {
+                  setProfile(fresh)
+                  setCachedProfile(fresh)
+                }
+              }).catch(() => {})
+            }
+          }).catch(() => {})
+
+          return // initializeAuth done — loading will be set false in finally
+        }
+
+        // No cache hit — fall back to getSession with timeout
+        if (!initialSession) {
+          try {
+            const result = await Promise.race([
+              supabase.auth.getSession(),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Auth timeout')), 8000)
+              )
+            ])
+            initialSession = result.data.session
+          } catch {
+            // Timeout — stop loading, let onAuthStateChange catch up
+            if (mounted) {
+              initCompleteRef.current = true
+              setLoading(false)
+            }
+            return
+          }
         }
 
         if (!mounted) return
 
         if (initialSession?.user) {
-          // Set session immediately so UI renders (stops loading spinner)
           setSession(initialSession)
 
-          // Try cached profile first — renders page INSTANTLY on F5
-          const cached = getCachedProfile()
+          // Try cached profile (maybe different user?)
           if (cached && cached.id === initialSession.user.id) {
             setProfile(cached)
             setProfileFetchAttempted(true)
-            // Refresh in background (non-blocking)
             fetchUserProfile(initialSession.user.id).then(fresh => {
-              if (fresh) {
-                setProfile(fresh)
-                setCachedProfile(fresh)
-              }
+              if (fresh && mounted) { setProfile(fresh); setCachedProfile(fresh) }
             }).catch(() => {})
           } else {
-            // No cache — fetch profile (will block on profileFetchAttempted)
+            // No cache — fetch profile
             handleSessionChange(initialSession).catch(err => {
               logger.error('Background profile fetch failed:', err)
             })
           }
         } else {
-          // No session — user is not logged in
           setSession(null)
           setProfile(null)
           setProfileFetchAttempted(true)
