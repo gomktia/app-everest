@@ -266,6 +266,166 @@ export default function AdminIntegrationsPage() {
   const connectedCount = integrations.filter(i => i.status === 'connected').length
   const errorCount = integrations.filter(i => i.status === 'error').length
 
+  const renderIntegrationCard = (integration: Integration) => {
+    const Icon = integration.icon
+    const isKeyVisible = visibleKeys[integration.id]
+
+    return (
+      <Card key={integration.id} className={cn(
+        'border-border shadow-sm overflow-hidden transition-all hover:shadow-md',
+        integration.status === 'error' && 'border-red-500/20'
+      )}>
+        {/* Banner gradient */}
+        <div className={cn('h-2 bg-gradient-to-r', integration.bgGradient)} />
+
+        <CardContent className="p-5 space-y-4">
+          {/* Header row */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                'w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br',
+                integration.bgGradient
+              )}>
+                <Icon className={cn('h-5 w-5', integration.brandColor)} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">{integration.name}</h3>
+                <p className="text-xs text-muted-foreground leading-snug">{integration.description}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {statusIcon(integration.status)}
+              {statusBadge(integration.status)}
+            </div>
+          </div>
+
+          {/* Status message */}
+          {integration.statusMessage && (
+            <p className="text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-1.5">
+              {integration.statusMessage}
+            </p>
+          )}
+
+          {/* Features pills */}
+          <div className="flex flex-wrap gap-1.5">
+            {integration.features.map((f, i) => (
+              <Badge key={i} variant="outline" className="text-[10px] font-normal">{f}</Badge>
+            ))}
+          </div>
+
+          {/* API Key */}
+          {integration.apiKey && (
+            <>
+              <Separator />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">API Key</span>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost" size="icon" className="h-6 w-6"
+                      onClick={() => toggleKeyVisibility(integration.id)}
+                    >
+                      {isKeyVisible
+                        ? <EyeOff className="h-3 w-3" />
+                        : <Eye className="h-3 w-3" />}
+                    </Button>
+                    <Button
+                      variant="ghost" size="icon" className="h-6 w-6"
+                      onClick={() => copyToClipboard(integration.apiKey!, 'API Key')}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+                <code className="block text-xs bg-muted/50 rounded-md px-3 py-2 font-mono text-foreground/80 break-all">
+                  {isKeyVisible ? integration.apiKey : maskKey(integration.apiKey)}
+                </code>
+              </div>
+            </>
+          )}
+
+          {/* Webhook URL */}
+          {integration.webhookUrl && (
+            <>
+              <Separator />
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <Webhook className="h-3 w-3" /> Webhook URL
+                  </span>
+                  <Button
+                    variant="ghost" size="icon" className="h-6 w-6"
+                    onClick={() => copyToClipboard(integration.webhookUrl!, 'Webhook URL')}
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+                <code className="block text-xs bg-muted/50 rounded-md px-3 py-2 font-mono text-foreground/80 break-all">
+                  {integration.webhookUrl}
+                </code>
+              </div>
+            </>
+          )}
+
+          {/* Extra info */}
+          {integration.extra && (
+            <>
+              <Separator />
+              <div className="space-y-1">
+                {Object.entries(integration.extra).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">{key}</span>
+                    <span className="font-medium text-foreground">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-1">
+            <Button
+              variant="outline" size="sm" className="flex-1 gap-1.5 text-xs"
+              onClick={() => handleTestConnection(integration)}
+              disabled={testing === integration.id}
+            >
+              {testing === integration.id
+                ? <RefreshCw className="h-3 w-3 animate-spin" />
+                : <RefreshCw className="h-3 w-3" />}
+              Testar
+            </Button>
+            {integration.id === 'memberkit' && (
+              <Button
+                variant="outline" size="sm" className="flex-1 gap-1.5 text-xs" asChild
+              >
+                <Link to="/admin/integrations/memberkit-import">
+                  <Upload className="h-3 w-3" />
+                  Importar
+                </Link>
+              </Button>
+            )}
+            {integration.projectUrl && (
+              <Button
+                variant="outline" size="sm" className="flex-1 gap-1.5 text-xs"
+                onClick={() => window.open(integration.projectUrl, '_blank', 'noopener')}
+              >
+                <Link2 className="h-3 w-3" />
+                Painel
+              </Button>
+            )}
+            <Button
+              variant="ghost" size="sm" className="gap-1.5 text-xs"
+              onClick={() => window.open(integration.docsUrl, '_blank', 'noopener')}
+            >
+              <ExternalLink className="h-3 w-3" />
+              Docs
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -282,193 +442,66 @@ export default function AdminIntegrationsPage() {
         </Button>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-foreground">{integrations.length}</div>
-            <div className="text-xs text-muted-foreground">Total</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{connectedCount}</div>
-            <div className="text-xs text-muted-foreground">Conectados</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">{errorCount}</div>
-            <div className="text-xs text-muted-foreground">Com Erro</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* AI Provider Configuration */}
-      <AIProviderConfigPanel />
-
-      {/* Integration Cards */}
-      <div className="grid gap-5 md:grid-cols-2">
-        {integrations.map((integration) => {
-          const Icon = integration.icon
-          const isKeyVisible = visibleKeys[integration.id]
-
-          return (
-            <Card key={integration.id} className={cn(
-              'border-border shadow-sm overflow-hidden transition-all hover:shadow-md',
-              integration.status === 'error' && 'border-red-500/20'
-            )}>
-              {/* Banner gradient */}
-              <div className={cn('h-2 bg-gradient-to-r', integration.bgGradient)} />
-
-              <CardContent className="p-5 space-y-4">
-                {/* Header row */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      'w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br',
-                      integration.bgGradient
-                    )}>
-                      <Icon className={cn('h-5 w-5', integration.brandColor)} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{integration.name}</h3>
-                      <p className="text-xs text-muted-foreground leading-snug">{integration.description}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {statusIcon(integration.status)}
-                    {statusBadge(integration.status)}
-                  </div>
+      <PageTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        layout="full"
+        tabs={[
+          {
+            value: 'status',
+            label: 'Status',
+            icon: <CheckCircle className="h-4 w-4" />,
+            content: (
+              <div className="space-y-6 pt-4">
+                {/* Summary Stats */}
+                <div className="grid grid-cols-3 gap-4">
+                  <Card className="border-border shadow-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-foreground">{integrations.length}</div>
+                      <div className="text-xs text-muted-foreground">Total</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border shadow-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600">{connectedCount}</div>
+                      <div className="text-xs text-muted-foreground">Conectados</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-border shadow-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold text-red-600">{errorCount}</div>
+                      <div className="text-xs text-muted-foreground">Com Erro</div>
+                    </CardContent>
+                  </Card>
                 </div>
 
-                {/* Status message */}
-                {integration.statusMessage && (
-                  <p className="text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-1.5">
-                    {integration.statusMessage}
-                  </p>
-                )}
-
-                {/* Features pills */}
-                <div className="flex flex-wrap gap-1.5">
-                  {integration.features.map((f, i) => (
-                    <Badge key={i} variant="outline" className="text-[10px] font-normal">{f}</Badge>
-                  ))}
+                {/* Integration Cards */}
+                <div className="grid gap-5 md:grid-cols-2">
+                  {integrations.map(renderIntegrationCard)}
                 </div>
+              </div>
+            ),
+          },
+          {
+            value: 'configuracao',
+            label: 'Configuração',
+            icon: <Settings className="h-4 w-4" />,
+            content: (
+              <div className="space-y-6 pt-4">
+                {/* AI Provider Configuration */}
+                <AIProviderConfigPanel />
 
-                {/* API Key */}
-                {integration.apiKey && (
-                  <>
-                    <Separator />
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground">API Key</span>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost" size="icon" className="h-6 w-6"
-                            onClick={() => toggleKeyVisibility(integration.id)}
-                          >
-                            {isKeyVisible
-                              ? <EyeOff className="h-3 w-3" />
-                              : <Eye className="h-3 w-3" />}
-                          </Button>
-                          <Button
-                            variant="ghost" size="icon" className="h-6 w-6"
-                            onClick={() => copyToClipboard(integration.apiKey!, 'API Key')}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <code className="block text-xs bg-muted/50 rounded-md px-3 py-2 font-mono text-foreground/80 break-all">
-                        {isKeyVisible ? integration.apiKey : maskKey(integration.apiKey)}
-                      </code>
-                    </div>
-                  </>
-                )}
-
-                {/* Webhook URL */}
-                {integration.webhookUrl && (
-                  <>
-                    <Separator />
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                          <Webhook className="h-3 w-3" /> Webhook URL
-                        </span>
-                        <Button
-                          variant="ghost" size="icon" className="h-6 w-6"
-                          onClick={() => copyToClipboard(integration.webhookUrl!, 'Webhook URL')}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <code className="block text-xs bg-muted/50 rounded-md px-3 py-2 font-mono text-foreground/80 break-all">
-                        {integration.webhookUrl}
-                      </code>
-                    </div>
-                  </>
-                )}
-
-                {/* Extra info */}
-                {integration.extra && (
-                  <>
-                    <Separator />
-                    <div className="space-y-1">
-                      {Object.entries(integration.extra).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">{key}</span>
-                          <span className="font-medium text-foreground">{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-1">
-                  <Button
-                    variant="outline" size="sm" className="flex-1 gap-1.5 text-xs"
-                    onClick={() => handleTestConnection(integration)}
-                    disabled={testing === integration.id}
-                  >
-                    {testing === integration.id
-                      ? <RefreshCw className="h-3 w-3 animate-spin" />
-                      : <RefreshCw className="h-3 w-3" />}
-                    Testar
-                  </Button>
-                  {integration.id === 'memberkit' && (
-                    <Button
-                      variant="outline" size="sm" className="flex-1 gap-1.5 text-xs" asChild
-                    >
-                      <Link to="/admin/integrations/memberkit-import">
-                        <Upload className="h-3 w-3" />
-                        Importar
-                      </Link>
-                    </Button>
-                  )}
-                  {integration.projectUrl && (
-                    <Button
-                      variant="outline" size="sm" className="flex-1 gap-1.5 text-xs"
-                      onClick={() => window.open(integration.projectUrl, '_blank', 'noopener')}
-                    >
-                      <Link2 className="h-3 w-3" />
-                      Painel
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost" size="sm" className="gap-1.5 text-xs"
-                    onClick={() => window.open(integration.docsUrl, '_blank', 'noopener')}
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    Docs
-                  </Button>
+                {/* API Keys & Webhook Details */}
+                <div className="grid gap-5 md:grid-cols-2">
+                  {integrations
+                    .filter(i => i.apiKey || i.webhookUrl || i.extra)
+                    .map(renderIntegrationCard)}
                 </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+              </div>
+            ),
+          },
+        ]}
+      />
     </div>
   )
 }

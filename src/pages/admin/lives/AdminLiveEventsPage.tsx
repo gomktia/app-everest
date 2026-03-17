@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -340,155 +340,179 @@ export default function AdminLiveEventsPage() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {(['scheduled', 'live', 'ended', 'cancelled'] as LiveEventStatus[]).map(status => {
-          const config = statusConfig[status]
-          const count = lives.filter(l => l.status === status).length
-          return (
-            <Card key={status} className="border-border shadow-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-foreground">{count}</div>
-                <Badge variant="outline" className={cn('mt-1', config.className)}>{config.label}</Badge>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+      <PageTabs
+        value={activeTab}
+        onChange={setActiveTab}
+        layout="full"
+        tabs={[
+          {
+            value: 'events',
+            label: 'Eventos',
+            icon: <List className="h-4 w-4" />,
+            count: filteredLives.length,
+            content: (
+              <div className="space-y-6 mt-4">
+                {/* Filters */}
+                <div className="flex gap-3">
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="scheduled">Agendada</SelectItem>
+                      <SelectItem value="live">Ao Vivo</SelectItem>
+                      <SelectItem value="ended">Encerrada</SelectItem>
+                      <SelectItem value="cancelled">Cancelada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterClass} onValueChange={setFilterClass}>
+                    <SelectTrigger className="w-48"><SelectValue placeholder="Turma" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as turmas</SelectItem>
+                      {classes.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterProvider} onValueChange={setFilterProvider}>
+                    <SelectTrigger className="w-40"><SelectValue placeholder="Provedor" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="panda">Panda Video</SelectItem>
+                      <SelectItem value="youtube">YouTube</SelectItem>
+                      <SelectItem value="meet">Google Meet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-      {/* Filters */}
-      <div className="flex gap-3">
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="scheduled">Agendada</SelectItem>
-            <SelectItem value="live">Ao Vivo</SelectItem>
-            <SelectItem value="ended">Encerrada</SelectItem>
-            <SelectItem value="cancelled">Cancelada</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterClass} onValueChange={setFilterClass}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Turma" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas as turmas</SelectItem>
-            {classes.map(c => (
-              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filterProvider} onValueChange={setFilterProvider}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Provedor" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="panda">Panda Video</SelectItem>
-            <SelectItem value="youtube">YouTube</SelectItem>
-            <SelectItem value="meet">Google Meet</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+                {/* Table */}
+                <Card className="border-border shadow-sm overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Título</TableHead>
+                        <TableHead>Provedor</TableHead>
+                        <TableHead>Turma</TableHead>
+                        <TableHead>Data/Hora</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="w-12" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredLives.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            Nenhuma live encontrada.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredLives.map(live => {
+                          const provider = providerConfig[live.provider]
+                          const status = statusConfig[live.status]
+                          const ProviderIcon = provider.icon
 
-      {/* Table */}
-      <Card className="border-border shadow-sm overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Título</TableHead>
-              <TableHead>Provedor</TableHead>
-              <TableHead>Turma</TableHead>
-              <TableHead>Data/Hora</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-12" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredLives.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  Nenhuma live encontrada.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredLives.map(live => {
-                const provider = providerConfig[live.provider]
-                const status = statusConfig[live.status]
-                const ProviderIcon = provider.icon
-
-                return (
-                  <TableRow key={live.id}>
-                    <TableCell className="font-medium">{live.title}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <ProviderIcon className={cn('h-4 w-4', provider.color)} />
-                        <span className="text-sm">{provider.label}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{live.classes?.name || 'Global'}</TableCell>
-                    <TableCell className="text-sm">
-                      {format(new Date(live.scheduled_start), "dd/MM/yy HH:mm", { locale: ptBR })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={status.className}>{status.label}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {live.status === 'scheduled' && (
-                            <>
-                              <DropdownMenuItem onClick={() => openEditDialog(live)}>
-                                <Pencil className="h-4 w-4 mr-2" /> Editar
-                              </DropdownMenuItem>
-                              {live.panda_rtmp && live.panda_stream_key && (
-                                <DropdownMenuItem onClick={() => {
-                                  setObsCredentials({ rtmp: live.panda_rtmp!, key: live.panda_stream_key!, title: live.title })
-                                  setObsDialogOpen(true)
-                                }}>
-                                  <Settings2 className="h-4 w-4 mr-2" /> Config OBS
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem onClick={() => handleStartLive(live.id)}>
-                                <Play className="h-4 w-4 mr-2" /> Iniciar Live
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleCancelLive(live.id)}>
-                                <XCircle className="h-4 w-4 mr-2" /> Cancelar
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {live.status === 'live' && (
-                            <DropdownMenuItem onClick={() => handleEndLive(live.id)}>
-                              <Square className="h-4 w-4 mr-2" /> Encerrar Live
-                            </DropdownMenuItem>
-                          )}
-                          {live.status === 'ended' && !live.recording_published && live.course_id && (
-                            <DropdownMenuItem onClick={() => {
-                              setPublishingId(live.id)
-                              setPublishDialogOpen(true)
-                            }}>
-                              <Upload className="h-4 w-4 mr-2" /> Publicar Gravação
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => {
-                              setDeletingId(live.id)
-                              setDeleteDialogOpen(true)
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" /> Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+                          return (
+                            <TableRow key={live.id}>
+                              <TableCell className="font-medium">{live.title}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1.5">
+                                  <ProviderIcon className={cn('h-4 w-4', provider.color)} />
+                                  <span className="text-sm">{provider.label}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{live.classes?.name || 'Global'}</TableCell>
+                              <TableCell className="text-sm">
+                                {format(new Date(live.scheduled_start), "dd/MM/yy HH:mm", { locale: ptBR })}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={status.className}>{status.label}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    {live.status === 'scheduled' && (
+                                      <>
+                                        <DropdownMenuItem onClick={() => openEditDialog(live)}>
+                                          <Pencil className="h-4 w-4 mr-2" /> Editar
+                                        </DropdownMenuItem>
+                                        {live.panda_rtmp && live.panda_stream_key && (
+                                          <DropdownMenuItem onClick={() => {
+                                            setObsCredentials({ rtmp: live.panda_rtmp!, key: live.panda_stream_key!, title: live.title })
+                                            setObsDialogOpen(true)
+                                          }}>
+                                            <Settings2 className="h-4 w-4 mr-2" /> Config OBS
+                                          </DropdownMenuItem>
+                                        )}
+                                        <DropdownMenuItem onClick={() => handleStartLive(live.id)}>
+                                          <Play className="h-4 w-4 mr-2" /> Iniciar Live
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleCancelLive(live.id)}>
+                                          <XCircle className="h-4 w-4 mr-2" /> Cancelar
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
+                                    {live.status === 'live' && (
+                                      <DropdownMenuItem onClick={() => handleEndLive(live.id)}>
+                                        <Square className="h-4 w-4 mr-2" /> Encerrar Live
+                                      </DropdownMenuItem>
+                                    )}
+                                    {live.status === 'ended' && !live.recording_published && live.course_id && (
+                                      <DropdownMenuItem onClick={() => {
+                                        setPublishingId(live.id)
+                                        setPublishDialogOpen(true)
+                                      }}>
+                                        <Upload className="h-4 w-4 mr-2" /> Publicar Gravação
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem
+                                      className="text-destructive"
+                                      onClick={() => {
+                                        setDeletingId(live.id)
+                                        setDeleteDialogOpen(true)
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </Card>
+              </div>
+            ),
+          },
+          {
+            value: 'stats',
+            label: 'Estatísticas',
+            icon: <BarChart3 className="h-4 w-4" />,
+            content: (
+              <div className="mt-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {(['scheduled', 'live', 'ended', 'cancelled'] as LiveEventStatus[]).map(status => {
+                    const config = statusConfig[status]
+                    const count = lives.filter(l => l.status === status).length
+                    return (
+                      <Card key={status} className="border-border shadow-sm">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-foreground">{count}</div>
+                          <Badge variant="outline" className={cn('mt-1', config.className)}>{config.label}</Badge>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
