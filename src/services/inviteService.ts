@@ -108,19 +108,33 @@ export async function registerForInvite(inviteId: string, userData: {
     }
   })
 
+  let userId: string
+
   if (authError) {
     if (authError.message?.includes('already registered') || authError.message?.includes('already been registered')) {
-      throw new Error('EMAIL_EXISTS')
+      // User exists — try to sign in to get their ID and still enroll them
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: userData.email,
+        password: userData.password,
+      })
+      if (signInError || !signInData.user) {
+        throw new Error('EMAIL_EXISTS')
+      }
+      userId = signInData.user.id
+      // Sign out immediately — they'll login properly from the login page
+      await supabase.auth.signOut()
+    } else {
+      throw authError
     }
-    throw authError
+  } else if (!authData.user) {
+    throw new Error('EMAIL_EXISTS')
+  } else {
+    userId = authData.user.id
   }
-
-  if (!authData.user) throw new Error('EMAIL_EXISTS')
-  const userId = authData.user.id
 
   // 4. Create user profile
   const nameParts = userData.name.split(' ')
-  await supabase.from('users').upsert({
+  const { error: profileError } = await supabase.from('users').upsert({
     id: userId,
     email: userData.email,
     first_name: nameParts[0],
@@ -131,16 +145,24 @@ export async function registerForInvite(inviteId: string, userData: {
     is_active: true
   })
 
+  if (profileError) {
+    logger.error('Profile upsert failed:', profileError)
+    // Continue anyway — profile might already exist via trigger
+  }
+
   // 5. Atomic slot check + enrollment via SECURITY DEFINER RPC
   // The RPC handles: invite_registrations, student_classes, and class_courses
   // This bypasses RLS restrictions that prevent students from self-enrolling
+  logger.error(`[INVITE] Calling register_invite_slot: invite=${inviteId}, user=${userId}`)
   const { data: slotOk, error: slotError } = await supabase.rpc('register_invite_slot', {
     p_invite_id: inviteId,
     p_user_id: userId
   })
 
+  logger.error(`[INVITE] RPC result: slotOk=${slotOk}, error=${slotError?.message || 'none'}`)
+
   if (slotError) {
-    logger.error('register_invite_slot RPC failed:', slotError)
+    logger.error('[INVITE] register_invite_slot RPC failed:', slotError)
     throw new Error('Erro ao registrar. Tente novamente.')
   } else if (slotOk === false) {
     throw new Error('Vagas esgotadas')
