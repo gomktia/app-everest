@@ -37,6 +37,9 @@ import { supabase } from '@/lib/supabase/client'
 import { SectionLoader } from '@/components/SectionLoader'
 import { cn, getCategoryColor } from '@/lib/utils'
 import { logger } from '@/lib/logger'
+import { useAuth } from '@/hooks/use-auth'
+import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
+import { FEATURE_KEYS } from '@/services/classPermissionsService'
 
 interface Question {
   id: string
@@ -82,6 +85,8 @@ const QUANTITY_OPTIONS = [10, 15, 20, 25, 30, 50]
 
 export default function QuestionBankPage() {
   const { toast } = useToast()
+  const { isStudent } = useAuth()
+  const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
   const [allQuestions, setAllQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -227,7 +232,29 @@ export default function QuestionBankPage() {
     }
   }, [phase, studyQuestions, currentQuestion])
 
-  if (loading) return <SectionLoader />
+  if (loading || permissionsLoading) return <SectionLoader />
+
+  if (isStudent && !hasFeature(FEATURE_KEYS.QUIZ)) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Banco de Questões</h1>
+          <p className="text-sm text-muted-foreground mt-1">Recurso bloqueado</p>
+        </div>
+        <Card className="border-border shadow-sm">
+          <CardContent className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Search className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">Recurso Bloqueado</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              O banco de questões não está disponível para sua turma. Entre em contato com seu professor ou administrador.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   // ─── SELECTION PHASE ───────────────────────────────────────────────────
   if (phase === 'select') {
