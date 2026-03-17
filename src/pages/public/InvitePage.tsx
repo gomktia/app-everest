@@ -187,33 +187,33 @@ export default function InvitePage() {
             <div className="rounded-2xl border border-sidebar-border bg-sidebar-accent p-6 shadow-sm">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label className="text-sm font-semibold">Nome completo</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      required
-                      placeholder="Seu nome completo"
-                      className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
-                      value={form.name}
-                      onChange={e => setForm({ ...form, name: e.target.value })}
-                    />
-                  </div>
+                  <Label className="text-sm font-semibold flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5 text-muted-foreground" />
+                    Nome completo
+                  </Label>
+                  <Input
+                    required
+                    placeholder="Seu nome completo"
+                    className="h-11 rounded-xl border-border/60 focus:border-primary"
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                  />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-sm font-semibold">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      required
-                      placeholder="seu@email.com"
-                      autoComplete="email"
-                      className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
-                      value={form.email}
-                      onChange={e => setForm({ ...form, email: e.target.value })}
-                    />
-                  </div>
+                  <Label className="text-sm font-semibold flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                    Email
+                  </Label>
+                  <Input
+                    type="email"
+                    required
+                    placeholder="seu@email.com"
+                    autoComplete="email"
+                    className="h-11 rounded-xl border-border/60 focus:border-primary"
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -246,14 +246,16 @@ export default function InvitePage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-semibold">Senha</Label>
+                    <Label className="text-sm font-semibold flex items-center gap-1.5">
+                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                      Senha
+                    </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type={showPassword ? 'text' : 'password'}
                         required
                         placeholder="Min. 8 caracteres"
-                        className="pl-10 pr-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                        className="pr-10 h-11 rounded-xl border-border/60 focus:border-primary"
                         value={form.password}
                         onChange={e => setForm({ ...form, password: e.target.value })}
                       />
@@ -267,14 +269,16 @@ export default function InvitePage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-semibold">Confirmar</Label>
+                    <Label className="text-sm font-semibold flex items-center gap-1.5">
+                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                      Confirmar
+                    </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type={showConfirm ? 'text' : 'password'}
                         required
                         placeholder="Repita a senha"
-                        className="pl-10 pr-10 h-11 rounded-xl border-border/60 focus:border-primary"
+                        className="pr-10 h-11 rounded-xl border-border/60 focus:border-primary"
                         value={form.confirmPassword}
                         onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
                       />
