@@ -10,17 +10,19 @@ interface ContentAccessResult {
 }
 
 export function useContentAccess(contentType: string): ContentAccessResult {
-  const { user, profile } = useAuth()
+  const { user, profile, effectiveUserId, isStudent } = useAuth()
   const [allowedIds, setAllowedIds] = useState<string[]>([])
   const [isRestricted, setIsRestricted] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  const targetUserId = effectiveUserId || user?.id
 
   useEffect(() => {
     let cancelled = false
 
     async function fetchAccess() {
-      // Unlimited access = no restrictions
-      if ((profile as any)?.is_unlimited_access) {
+      // Non-students (admin/teacher not impersonating) = no restrictions
+      if (!isStudent) {
         if (!cancelled) {
           setIsRestricted(false)
           setAllowedIds([])
@@ -29,17 +31,17 @@ export function useContentAccess(contentType: string): ContentAccessResult {
         return
       }
 
-      if (!user) {
+      if (!targetUserId) {
         if (!cancelled) setLoading(false)
         return
       }
 
       try {
-        // Get student's class IDs
+        // Get student's class IDs (use effective user for impersonation)
         const { data: enrollments } = await supabase
           .from('student_classes')
           .select('class_id')
-          .eq('user_id', user.id)
+          .eq('user_id', targetUserId)
 
         if (!enrollments || enrollments.length === 0) {
           if (!cancelled) {
@@ -83,7 +85,7 @@ export function useContentAccess(contentType: string): ContentAccessResult {
     fetchAccess()
 
     return () => { cancelled = true }
-  }, [user, profile, contentType])
+  }, [targetUserId, isStudent, contentType])
 
   const isAllowed = useCallback(
     (id: string) => !isRestricted || allowedIds.includes(id),

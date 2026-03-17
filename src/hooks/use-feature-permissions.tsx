@@ -39,9 +39,10 @@ interface UseFeaturePermissionsReturn {
  * ```
  */
 export const useFeaturePermissions = (): UseFeaturePermissionsReturn => {
-  const { profile, isStudent, isAuthenticated } = useAuth()
+  const { profile, isStudent, isAuthenticated, effectiveUserId } = useAuth()
   const [allowedFeatures, setAllowedFeatures] = useState<FeatureKey[]>([])
   const [loading, setLoading] = useState(true)
+  const [lastUserId, setLastUserId] = useState<string | null>(null)
 
   // Função para carregar as permissões
   const loadPermissions = useCallback(async () => {
@@ -51,35 +52,36 @@ export const useFeaturePermissions = (): UseFeaturePermissionsReturn => {
       return
     }
 
-    // Se não for aluno (professor ou admin), tem acesso a TUDO
+    const targetUserId = effectiveUserId || profile.id
+
+    // Se não for aluno (professor ou admin, and NOT impersonating), tem acesso a TUDO
     if (!isStudent) {
       const allFeatures = Object.values(FEATURE_KEYS) as FeatureKey[]
       setAllowedFeatures(allFeatures)
+      setLastUserId(targetUserId)
       setLoading(false)
-      logger.debug('✅ Usuário não-aluno tem acesso a todos os recursos')
       return
     }
 
-    // Se for aluno, busca as permissões baseadas nas turmas
-    // Evita recarregar se já temos permissões
-    if (allowedFeatures.length > 0) {
-      logger.debug('⏭️ Permissões já carregadas, pulando...')
+    // Se for aluno (ou impersonando), busca permissões reais
+    // Reload if user changed (e.g. impersonation)
+    if (lastUserId === targetUserId && allowedFeatures.length > 0) {
       setLoading(false)
       return
     }
 
     try {
       setLoading(true)
-      const features = await getUserAllowedFeatures(profile.id)
+      const features = await getUserAllowedFeatures(targetUserId)
       setAllowedFeatures(features)
-      logger.debug(`✅ Permissões carregadas para aluno: ${features.length} recursos`)
+      setLastUserId(targetUserId)
     } catch (error) {
-      logger.error('❌ Erro ao carregar permissões:', error)
+      logger.error('Erro ao carregar permissões:', error)
       setAllowedFeatures([])
     } finally {
       setLoading(false)
     }
-  }, [isAuthenticated, profile, isStudent, allowedFeatures.length])
+  }, [isAuthenticated, profile, isStudent, effectiveUserId, lastUserId, allowedFeatures.length])
 
   // Carregar permissões quando o hook é montado ou quando o usuário muda
   useEffect(() => {
