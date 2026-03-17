@@ -23,9 +23,11 @@ import { useContentAccess } from '@/hooks/useContentAccess'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { logger } from '@/lib/logger'
 import { cachedFetch } from '@/lib/offlineCache'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { OfflineBanner } from '@/components/OfflineBanner'
 
 export default function QuizzesPage() {
+  usePageTitle('Quizzes')
   const navigate = useNavigate()
   const { toast } = useToast()
   const { isStudent, isAdmin, isTeacher } = useAuth()

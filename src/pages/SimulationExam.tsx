@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -41,6 +42,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { SectionLoader } from '@/components/SectionLoader'
 
 export default function SimulationExamPage() {
+  usePageTitle('Simulado')
   const { simulationId } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -116,8 +118,10 @@ export default function SimulationExamPage() {
 
       // Score the simulation activity
       const totalQuestions = simulation.questions.length
-      const correctAnswers = Object.keys(answers).length // approximate - real score comes from backend
-      await scoreSimulationActivity(correctAnswers, totalQuestions, attemptId)
+      // Real score is calculated server-side by submitSimulation RPC
+      // Pass answered count as approximate for XP (backend corrects later)
+      const answeredCount = Object.keys(answers).length
+      await scoreSimulationActivity(answeredCount, totalQuestions, attemptId)
 
       toast({ title: 'Simulado enviado!', description: 'Suas respostas foram salvas com sucesso.' })
       navigate(`/simulados/${simulationId}/resultado`)
@@ -197,9 +201,10 @@ export default function SimulationExamPage() {
               {simulation.questions.map((q, idx) => {
                 const isAnswered = !!answers[q.id]
                 const isCurrent = idx === currentQ
-                const answerLetter = isAnswered && q.options
-                  ? String.fromCharCode(65 + q.options.indexOf(answers[q.id]))
-                  : null
+                const optIdx = isAnswered && Array.isArray(q.options)
+                  ? q.options.indexOf(answers[q.id])
+                  : -1
+                const answerLetter = optIdx >= 0 ? String.fromCharCode(65 + optIdx) : null
 
                 return (
                   <button

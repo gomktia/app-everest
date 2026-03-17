@@ -40,6 +40,7 @@ import { logger } from '@/lib/logger'
 import { useAuth } from '@/hooks/use-auth'
 import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 interface Question {
   id: string
@@ -84,6 +85,7 @@ type Phase = 'select' | 'study' | 'summary'
 const QUANTITY_OPTIONS = [10, 15, 20, 25, 30, 50]
 
 export default function QuestionBankPage() {
+  usePageTitle('Banco de Questões')
   const { toast } = useToast()
   const { isStudent } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()

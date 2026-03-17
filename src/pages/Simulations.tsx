@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { SimulationsTutorial } from '@/components/simulations/SimulationsTutorial'
@@ -67,6 +68,7 @@ interface QuizWithAttempt extends Quiz {
 }
 
 export default function SimulationsPage() {
+  usePageTitle('Simulados')
   const { isStudent } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
   const { isAllowed } = useContentAccess('simulation')
@@ -126,7 +128,7 @@ export default function SimulationsPage() {
         available: combinedSims.filter(q => getSimulationStatus(q) === 'available').length,
         completed: simAttempts.length,
         average: simAttempts.length > 0 ? Math.round(simAttempts.reduce((s, a) => s + (a.percentage || 0), 0) / simAttempts.length) : 0,
-        best: Math.round(simAttempts.reduce((m, a) => Math.max(m, a.percentage || 0), 0)),
+        best: simAttempts.length > 0 ? Math.round(simAttempts.reduce((m, a) => Math.max(m, a.percentage || 0), 0)) : 0,
       })
 
       // Stats - Cartões
@@ -135,7 +137,7 @@ export default function SimulationsPage() {
         available: combinedSheets.filter(q => getSimulationStatus(q) === 'available').length,
         submitted: sheetAttempts.length,
         average: sheetAttempts.length > 0 ? Math.round(sheetAttempts.reduce((s, a) => s + (a.percentage || 0), 0) / sheetAttempts.length) : 0,
-        best: Math.round(sheetAttempts.reduce((m, a) => Math.max(m, a.percentage || 0), 0)),
+        best: sheetAttempts.length > 0 ? Math.round(sheetAttempts.reduce((m, a) => Math.max(m, a.percentage || 0), 0)) : 0,
       })
     } catch (error: any) {
       logger.error('Erro ao carregar simulados:', error)

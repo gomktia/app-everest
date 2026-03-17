@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useActivityScoring } from '@/hooks/useAchievements'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 export default function QuizPlayerPage() {
   const { quizId } = useParams<{ quizId: string }>()
@@ -34,6 +35,7 @@ export default function QuizPlayerPage() {
 
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  usePageTitle(quiz?.title || 'Quiz')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({})
   const [startTime] = useState(Date.now())

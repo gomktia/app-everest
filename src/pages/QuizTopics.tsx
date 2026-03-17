@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { useContentAccess } from '@/hooks/useContentAccess'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 interface QuizTopic {
   id: string
@@ -28,6 +29,7 @@ export default function QuizTopicsPage() {
   const [subjectName, setSubjectName] = useState('')
   const [topics, setTopics] = useState<QuizTopic[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  usePageTitle(subjectName || 'Quizzes')
 
   useEffect(() => {
     if (!subjectId) return
