@@ -51,6 +51,36 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Profile cache in localStorage for instant F5 reload
+const PROFILE_CACHE_KEY = 'everest-profile-cache'
+
+function getCachedProfile(): UserProfile | null {
+  try {
+    const cached = localStorage.getItem(PROFILE_CACHE_KEY)
+    if (!cached) return null
+    const parsed = JSON.parse(cached)
+    // Cache expires after 1 hour
+    if (parsed._cachedAt && Date.now() - parsed._cachedAt > 3600000) {
+      localStorage.removeItem(PROFILE_CACHE_KEY)
+      return null
+    }
+    const { _cachedAt, ...profile } = parsed
+    return profile
+  } catch {
+    return null
+  }
+}
+
+function setCachedProfile(profile: UserProfile | null) {
+  try {
+    if (profile) {
+      localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({ ...profile, _cachedAt: Date.now() }))
+    } else {
+      localStorage.removeItem(PROFILE_CACHE_KEY)
+    }
+  } catch { /* ignore quota errors */ }
+}
+
 // Simple hook with better error handling - used internally by enhanced hook
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -208,6 +238,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const userProfile = await fetchUserProfile(currentSession.user.id)
     setProfile(userProfile)
+    setCachedProfile(userProfile)
   }, [session])
 
   // Handle session changes - stable callback using refs
@@ -231,12 +262,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const userProfile = await fetchUserProfile(newSession.user.id)
         setProfile(userProfile)
+        setCachedProfile(userProfile)
         // Set Sentry user context for error tracking
         if (userProfile) {
           Sentry.setUser({ id: userProfile.id, email: userProfile.email, username: `${userProfile.first_name} ${userProfile.last_name}`.trim() })
         }
       } catch (error) {
-        logger.error('❌ Failed to fetch profile in handleSessionChange:', error)
+        logger.error('Failed to fetch profile in handleSessionChange:', error)
         setProfile(null)
       } finally {
         isFetchingProfileRef.current = false
@@ -282,10 +314,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Set session immediately so UI renders (stops loading spinner)
           setSession(initialSession)
 
-          // Fetch profile in background — don't block the UI
-          handleSessionChange(initialSession).catch(err => {
-            logger.error('Background profile fetch failed:', err)
-          })
+          // Try cached profile first — renders page INSTANTLY on F5
+          const cached = getCachedProfile()
+          if (cached && cached.id === initialSession.user.id) {
+            setProfile(cached)
+            setProfileFetchAttempted(true)
+            // Refresh in background (non-blocking)
+            fetchUserProfile(initialSession.user.id).then(fresh => {
+              if (fresh) {
+                setProfile(fresh)
+                setCachedProfile(fresh)
+              }
+            }).catch(() => {})
+          } else {
+            // No cache — fetch profile (will block on profileFetchAttempted)
+            handleSessionChange(initialSession).catch(err => {
+              logger.error('Background profile fetch failed:', err)
+            })
+          }
         } else {
           // No session — user is not logged in
           setSession(null)
@@ -483,6 +529,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setProfile(null)
       setProfileFetchAttempted(false)
+      setCachedProfile(null)
       Sentry.setUser(null)
 
       return { error }
