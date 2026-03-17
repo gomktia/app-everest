@@ -4,27 +4,24 @@ import { Header } from './Header'
 import { SidebarProvider } from './ui/sidebar'
 import { UnifiedSidebar } from './UnifiedSidebar'
 import { OfflineIndicator } from './ui/OfflineIndicator'
-import { ViewModeProvider } from '@/contexts/view-mode-context'
 import { ViewAsStudentBanner } from './ViewAsStudentBanner'
 
 export default function Layout() {
   const [isSidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <ViewModeProvider>
-      <SidebarProvider open={isSidebarOpen} onOpenChange={setSidebarOpen}>
-        <div className="flex min-h-screen w-full bg-background">
-          <UnifiedSidebar />
-          <div className="flex flex-col flex-1 min-w-0">
-            <ViewAsStudentBanner />
-            <Header />
-            <main className="flex-grow p-3 sm:p-4 md:p-6 lg:p-8">
-              <Outlet />
-            </main>
-          </div>
+    <SidebarProvider open={isSidebarOpen} onOpenChange={setSidebarOpen}>
+      <div className="flex min-h-screen w-full bg-background">
+        <UnifiedSidebar />
+        <div className="flex flex-col flex-1 min-w-0">
+          <ViewAsStudentBanner />
+          <Header />
+          <main className="flex-grow p-3 sm:p-4 md:p-6 lg:p-8">
+            <Outlet />
+          </main>
         </div>
-        <OfflineIndicator />
-      </SidebarProvider>
-    </ViewModeProvider>
+      </div>
+      <OfflineIndicator />
+    </SidebarProvider>
   )
 }

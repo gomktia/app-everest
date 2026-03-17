@@ -9,6 +9,7 @@ import { PWAUpdatePrompt } from '@/components/PWAUpdatePrompt'
 import { InstallPWA } from '@/components/InstallPWA'
 import { ThemeProvider } from '@/contexts/theme-provider'
 import { AuthProvider } from '@/contexts/auth-provider'
+import { ViewModeProvider } from '@/contexts/view-mode-context'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { PublicRoute } from '@/components/PublicRoute'
 import { PageLoader } from '@/components/PageLoader'
@@ -266,6 +267,7 @@ const App = () => (
     >
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
+          <ViewModeProvider>
           <TooltipProvider>
           <RemoveInitialLoader />
           <Toaster />
@@ -536,6 +538,7 @@ const App = () => (
           </Suspense>
         </TooltipProvider>
         <AchievementNotificationContainer />
+        </ViewModeProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>
