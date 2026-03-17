@@ -14,7 +14,6 @@ import {
   Lock,
   HelpCircle,
   PlusCircle,
-  Zap,
 } from 'lucide-react'
 import { quizService, type QuizSubject } from '@/services/quizService'
 import { SectionLoader } from '@/components/SectionLoader'
@@ -233,7 +232,7 @@ export default function QuizzesPage() {
         </div>
       )}
 
-      {showTutorial && <QuizzesTutorial onClose={handleCloseTutorial} />}
+      {showTutorial && <QuizzesTutorial onClose={() => setShowTutorial(false)} />}
     </div>
   )
 }

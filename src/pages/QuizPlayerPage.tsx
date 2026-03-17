@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { quizService, type Quiz } from '@/services/quizService'
-import { useAuth } from '@/contexts/auth-provider'
+import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useActivityScoring } from '@/hooks/useAchievements'

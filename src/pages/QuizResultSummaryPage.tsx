@@ -115,6 +115,7 @@ export default function QuizResultSummaryPage() {
       retakeLink={`/quiz/${quizId}`}
       backLink="/quizzes"
       backLinkText="Voltar aos Quizzes"
+      durationSeconds={state?.durationSeconds}
     />
   )
 }

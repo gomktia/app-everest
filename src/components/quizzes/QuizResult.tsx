@@ -3,11 +3,10 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { 
-  CheckCircle, 
-  XCircle, 
-  Repeat, 
-  Trophy, 
-  Target, 
+  CheckCircle,
+  XCircle,
+  Trophy,
+  Target,
   Brain,
   Star,
   Clock,
@@ -44,6 +43,7 @@ interface QuizResultProps {
   retakeLink: string
   backLink: string
   backLinkText?: string
+  durationSeconds?: number
 }
 
 export const QuizResult = ({
@@ -52,6 +52,7 @@ export const QuizResult = ({
   retakeLink,
   backLink,
   backLinkText = 'Voltar',
+  durationSeconds,
 }: QuizResultProps) => {
   const [isShareOpen, setIsShareOpen] = useState(false)
   
@@ -158,7 +159,9 @@ export const QuizResult = ({
               </div>
               <div className="text-center p-6 rounded-xl bg-blue-500/10 border border-blue-500/20">
                 <Clock className="h-8 w-8 text-blue-500 mx-auto mb-3" />
-                <div className="text-3xl font-bold text-blue-600">5min</div>
+                <div className="text-3xl font-bold text-blue-600">
+                  {durationSeconds ? `${Math.floor(durationSeconds / 60)}min` : '—'}
+                </div>
                 <div className="text-sm text-muted-foreground">Tempo total</div>
               </div>
             </div>

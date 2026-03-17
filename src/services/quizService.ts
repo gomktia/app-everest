@@ -114,8 +114,6 @@ export const quizService = {
   // Buscar todas as matérias com quizzes
   async getQuizSubjects(): Promise<QuizSubject[]> {
     try {
-      logger.debug('Fetching quiz subjects from database...')
-
       const { data: subjects, error } = await supabase
         .from('subjects')
         .select(`
@@ -212,7 +210,7 @@ export const quizService = {
           correct_answer: q.correct_answer,
           explanation: q.explanation || '',
           points: q.points,
-          reading_text: q.reading_text_id ? readingTextsMap[q.reading_text_id] : null
+          reading_text: q.reading_text_id ? readingTextsMap[q.reading_text_id] ?? null : null
         })) || []
       }
 

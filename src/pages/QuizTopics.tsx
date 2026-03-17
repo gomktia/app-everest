@@ -24,7 +24,7 @@ export default function QuizTopicsPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { isStudent } = useAuth()
-  const { isAllowed } = useContentAccess('quiz_topic')
+  const { isAllowed, loading: contentAccessLoading } = useContentAccess('quiz_topic')
   const [subjectName, setSubjectName] = useState('')
   const [topics, setTopics] = useState<QuizTopic[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -65,7 +65,7 @@ export default function QuizTopicsPage() {
     loadTopics()
   }, [subjectId, navigate, toast])
 
-  if (isLoading) {
+  if (isLoading || contentAccessLoading) {
     return <SectionLoader />
   }
 
