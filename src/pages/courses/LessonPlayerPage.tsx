@@ -26,6 +26,7 @@ import { logger } from '@/lib/logger'
 import {
   ArrowLeft,
   CheckCircle,
+  Lock,
   Play,
   ChevronDown,
   ChevronLeft,
@@ -652,6 +653,8 @@ export default function LessonPlayerPage() {
     () => sortedModules.find((m) => m.id === selectedModuleId) || sortedModules[0] || null,
     [sortedModules, selectedModuleId],
   )
+  const isCurrentModuleBlocked = currentModule ? blockedModuleIds.has(currentModule.id) : false
+
   const currentModuleLessons = useMemo(() => {
     if (!currentModule) return []
     return [...currentModule.lessons].sort((a, b) => a.order_index - b.order_index)
@@ -660,6 +663,14 @@ export default function LessonPlayerPage() {
     () => sortedModules.findIndex((m) => m.id === currentModule?.id),
     [sortedModules, currentModule],
   )
+
+  /** Check if a lesson is accessible (not blocked by module or lesson rule) */
+  const isLessonAccessible = useCallback((lessonId: string, moduleId: string) => {
+    if (freeLessonIds.has(lessonId)) return true
+    if (blockedLessonIds.has(lessonId)) return false
+    if (blockedModuleIds.has(moduleId)) return false
+    return true
+  }, [freeLessonIds, blockedLessonIds, blockedModuleIds])
 
   /* ---- filtered lessons for search ---- */
   const filteredLessons = useMemo(() => {
@@ -788,6 +799,7 @@ export default function LessonPlayerPage() {
         <div className="absolute left-0 right-0 top-full z-20 bg-card border-b border-border shadow-md max-h-[400px] overflow-y-auto">
           <div className="p-2 space-y-0.5">
             {sortedModules.map((mod, idx) => {
+              const modBlocked = blockedModuleIds.has(mod.id)
               const mc = mod.lessons.filter((l) => l.completed).length
               const mt = mod.lessons.length
               const modProgress = mt > 0 ? Math.round((mc / mt) * 100) : 0
@@ -797,17 +809,20 @@ export default function LessonPlayerPage() {
                   onClick={() => { setSelectedModuleId(mod.id); setShowModuleSelector(false) }}
                   className={cn(
                     "w-full px-3 py-3 flex items-center gap-3 text-left rounded-lg transition-all group/mod",
+                    modBlocked && "opacity-50",
                     isSel ? "bg-primary/5 border border-primary/15" : "border border-transparent hover:bg-muted/40"
                   )}>
                   <div className={cn(
                     "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all",
-                    modProgress === 100
-                      ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                      : isSel
-                        ? "bg-primary/10 text-primary border border-primary/20"
-                        : "bg-muted text-muted-foreground group-hover/mod:bg-primary/10 group-hover/mod:text-primary group-hover/mod:border-primary/20 border border-transparent"
+                    modBlocked
+                      ? "bg-muted text-muted-foreground border border-transparent"
+                      : modProgress === 100
+                        ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                        : isSel
+                          ? "bg-primary/10 text-primary border border-primary/20"
+                          : "bg-muted text-muted-foreground group-hover/mod:bg-primary/10 group-hover/mod:text-primary group-hover/mod:border-primary/20 border border-transparent"
                   )}>
-                    {modProgress === 100 ? <CheckCircle className="h-4 w-4" /> : idx + 1}
+                    {modBlocked ? <Lock className="h-3.5 w-3.5" /> : modProgress === 100 ? <CheckCircle className="h-4 w-4" /> : idx + 1}
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className={cn(
@@ -857,13 +872,18 @@ export default function LessonPlayerPage() {
             const isCurrent = lesson.id === lessonId
             const isLast = idx === filteredLessons.length - 1
             const prevCompleted = idx > 0 && filteredLessons[idx - 1]?.completed
+            const lessonLocked = currentModule ? !isLessonAccessible(lesson.id, currentModule.id) : false
             return (
               <Link key={lesson.id}
                 ref={isCurrent ? currentLessonRef : undefined}
-                to={`/courses/${courseId}/lessons/${lesson.id}`}
-                onClick={isMobile ? () => setIsSidebarOpen(false) : undefined}
+                to={lessonLocked ? '#' : `/courses/${courseId}/lessons/${lesson.id}`}
+                onClick={(e) => {
+                  if (lessonLocked) { e.preventDefault(); return }
+                  if (isMobile) setIsSidebarOpen(false)
+                }}
                 className={cn(
                   "group/lesson relative flex items-start gap-3 pl-4 pr-4 py-0 transition-all",
+                  lessonLocked && "opacity-40 cursor-not-allowed",
                   isCurrent
                     ? "bg-primary/10"
                     : "hover:bg-muted/40"
@@ -885,13 +905,17 @@ export default function LessonPlayerPage() {
                   <div className={cn(
                     "relative z-10 flex items-center justify-center rounded-full shrink-0 transition-all duration-200",
                     isMobile ? "w-5 h-5" : "w-7 h-7",
-                    lesson.completed
-                      ? "bg-emerald-500 text-white border-2 border-emerald-500"
-                      : isCurrent
-                        ? "bg-primary text-white border-2 border-primary"
-                        : "border-2 border-muted-foreground/20 bg-card group-hover/lesson:border-primary/40"
+                    lessonLocked
+                      ? "border-2 border-muted-foreground/10 bg-muted text-muted-foreground"
+                      : lesson.completed
+                        ? "bg-emerald-500 text-white border-2 border-emerald-500"
+                        : isCurrent
+                          ? "bg-primary text-white border-2 border-primary"
+                          : "border-2 border-muted-foreground/20 bg-card group-hover/lesson:border-primary/40"
                   )}>
-                    {lesson.completed ? (
+                    {lessonLocked ? (
+                      <Lock className={cn(isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
+                    ) : lesson.completed ? (
                       <CheckCircle className={cn(isMobile ? "h-3 w-3" : "h-3.5 w-3.5")} />
                     ) : isCurrent ? (
                       <Play className={cn(isMobile ? "h-2.5 w-2.5" : "h-3 w-3", "ml-px")} />
