@@ -220,6 +220,13 @@ export default function QuestionBankPage() {
     return { total, answered, correct, wrong, percentage }
   }, [studyQuestions, answers])
 
+  // Safety: if study phase but no question, reset to select
+  useEffect(() => {
+    if (phase === 'study' && studyQuestions.length > 0 && !currentQuestion) {
+      setPhase('select')
+    }
+  }, [phase, studyQuestions, currentQuestion])
+
   if (loading) return <SectionLoader />
 
   // ─── SELECTION PHASE ───────────────────────────────────────────────────
@@ -398,12 +405,6 @@ export default function QuestionBankPage() {
   }
 
   // ─── STUDY PHASE ───────────────────────────────────────────────────────
-  // Safety: if study phase but no question, useEffect will reset
-  useEffect(() => {
-    if (phase === 'study' && studyQuestions.length > 0 && !currentQuestion) {
-      setPhase('select')
-    }
-  }, [phase, studyQuestions, currentQuestion])
   if (phase === 'study' && currentQuestion && studyQuestions.length > 0) {
     const progressPercent = ((currentIndex + 1) / studyQuestions.length) * 100
     const answeredCount = Object.keys(answers).length
