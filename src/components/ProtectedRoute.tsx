@@ -63,27 +63,8 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
   }
 
   // At this point we have session, fetch was attempted, but profile is null
-  // This means the profile fetch failed after retries - auto-retry once
-  const [profileRetried, setProfileRetried] = useState(false)
-
-  useEffect(() => {
-    if (session && profileFetchAttempted && !profile && !profileRetried) {
-      setProfileRetried(true)
-      // Auto-retry profile fetch after 2s
-      const timer = setTimeout(() => {
-        refreshProfile().catch(() => {})
-      }, 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [session, profileFetchAttempted, profile, profileRetried, refreshProfile])
-
   if (!profile) {
-    // Show loading while auto-retrying
-    if (!profileRetried) {
-      return <PageLoader />
-    }
-
-    logger.warn('Profile failed to load after retry')
+    logger.warn('Profile failed to load')
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-background">
         <h2 className="text-2xl font-bold mb-2">Erro ao carregar perfil</h2>
@@ -92,7 +73,7 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
         </p>
         <div className="flex gap-3">
           <button
-            onClick={() => { setProfileRetried(false) }}
+            onClick={() => refreshProfile()}
             className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
           >
             Tentar Novamente

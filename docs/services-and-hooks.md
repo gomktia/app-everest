@@ -134,6 +134,7 @@
 
 | Hook | Arquivo | Descricao |
 |------|---------|-----------|
+| usePageTitle | usePageTitle.ts | Atualiza titulo da aba do navegador (ex: "Turmas \| Everest") |
 | useDebounce | use-debounce.ts | Debounce para inputs de busca |
 | useToast | use-toast.ts | Sistema de toasts (Shadcn) |
 | useAnimations | useAnimations.ts | Utilitarios de animacao |
@@ -175,6 +176,9 @@ Provê autenticacao para toda a aplicacao.
 - Cria perfil automaticamente para novos usuarios
 - Listener `onAuthStateChange` para mudancas de sessao
 - Auto-refresh de tokens
+- Limite de 1 sessao por usuario (session-guard edge function)
+- Detecta sessao revogada quando aba ganha foco (visibilitychange)
+- Toast automatico quando outra aba/dispositivo faz login
 
 ### ThemeProvider (`theme-provider.tsx`)
 
