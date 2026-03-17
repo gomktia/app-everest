@@ -10,9 +10,8 @@ import { registerSW } from 'virtual:pwa-register'
 
 const updateSW = registerSW({
   onNeedRefresh() {
-    if (confirm('Nova versão disponível! Deseja atualizar?')) {
-      updateSW(true)
-    }
+    // Auto-update without asking — prevents stale chunks on deploy
+    updateSW(true)
   },
   onOfflineReady() {
     // App pronto para funcionar offline

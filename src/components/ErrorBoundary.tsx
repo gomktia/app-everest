@@ -26,6 +26,25 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     logger.error('Error caught by boundary:', error, errorInfo)
+
+    // Auto-reload on chunk loading errors (happens after deploy with new hashes)
+    const isChunkError =
+      error.message?.includes('Failed to fetch dynamically imported module') ||
+      error.message?.includes('Loading chunk') ||
+      error.message?.includes('Loading CSS chunk') ||
+      error.message?.includes('Unable to preload CSS') ||
+      error.message?.includes('error loading dynamically imported module')
+
+    if (isChunkError) {
+      const lastReload = sessionStorage.getItem('everest-chunk-reload')
+      const now = Date.now()
+      // Only auto-reload once per 30 seconds to prevent infinite loop
+      if (!lastReload || now - parseInt(lastReload) > 30000) {
+        sessionStorage.setItem('everest-chunk-reload', String(now))
+        window.location.reload()
+        return
+      }
+    }
   }
 
   handleRetry = () => {
