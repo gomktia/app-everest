@@ -36,6 +36,18 @@ export default defineConfig(({ mode }) => ({
         }
         warn(warning)
       },
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-dom') || id.includes('react/')) return 'vendor-react'
+            if (id.includes('@radix-ui')) return 'vendor-radix'
+            if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts'
+            if (id.includes('@tiptap') || id.includes('prosemirror')) return 'vendor-editor'
+            if (id.includes('jspdf') || id.includes('pdfjs-dist')) return 'vendor-pdf'
+            if (id.includes('@supabase')) return 'vendor-supabase'
+          }
+        },
+      },
     },
   },
   plugins: [

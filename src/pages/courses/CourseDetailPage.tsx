@@ -37,6 +37,7 @@ import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 import { getSupportWhatsAppUrl } from '@/lib/constants'
+import { cachedFetch } from '@/lib/offlineCache'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -175,7 +176,11 @@ export default function CourseDetailPage() {
 
       try {
         setIsLoading(true)
-        const data = await courseService.getCourseWithModulesAndProgress(courseId, effectiveUserId)
+        const { data } = await cachedFetch(
+          `course-detail-${courseId}-${effectiveUserId}`,
+          () => courseService.getCourseWithModulesAndProgress(courseId, effectiveUserId),
+          { maxAgeMs: 5 * 60 * 1000 } // 5 min TTL
+        )
         if (data) {
           setCourse({
             id: data.id,

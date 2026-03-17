@@ -98,10 +98,10 @@ function SecurityPasswordForm() {
   const { toast } = useToast()
 
   const handleSetPassword = async () => {
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       toast({
         title: 'Senha muito curta',
-        description: 'A senha deve ter pelo menos 6 caracteres.',
+        description: 'A senha deve ter pelo menos 8 caracteres.',
         variant: 'destructive',
       })
       return

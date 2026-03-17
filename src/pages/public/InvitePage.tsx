@@ -41,8 +41,8 @@ export default function InvitePage() {
       setError('As senhas nao coincidem')
       return
     }
-    if (form.password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres')
+    if (form.password.length < 8) {
+      setError('A senha deve ter pelo menos 8 caracteres')
       return
     }
 

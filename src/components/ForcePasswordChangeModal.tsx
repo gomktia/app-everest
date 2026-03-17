@@ -24,8 +24,8 @@ export function ForcePasswordChangeModal({ userId, onSuccess }: ForcePasswordCha
     e.preventDefault()
     setError('')
 
-    if (newPassword.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres')
+    if (newPassword.length < 8) {
+      setError('A senha deve ter pelo menos 8 caracteres')
       return
     }
     if (newPassword !== confirmPassword) {

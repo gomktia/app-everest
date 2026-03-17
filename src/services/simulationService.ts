@@ -58,11 +58,23 @@ export async function getSimulation(quizId: string): Promise<Simulation | null> 
     if (questionsError) throw questionsError
 
     // Transformar options de JSONB para array de strings
-    const formattedQuestions = questions?.map(q => ({
-      ...q,
-      question_format: (q as any).question_type || 'multiple_choice',
-      options: q.options ? (Array.isArray(q.options) ? q.options : JSON.parse(JSON.stringify(q.options))) : undefined,
-    })) as unknown as SimulationQuestion[]
+    const formattedQuestions = questions?.map(q => {
+      let opts: string[] | undefined
+      if (q.options) {
+        if (Array.isArray(q.options)) {
+          opts = q.options.map(String)
+        } else if (typeof q.options === 'string') {
+          try { opts = JSON.parse(q.options) } catch { opts = undefined }
+        } else if (typeof q.options === 'object') {
+          opts = Object.values(q.options).map(String)
+        }
+      }
+      return {
+        ...q,
+        question_format: (q as any).question_type || 'multiple_choice',
+        options: opts,
+      }
+    }) as unknown as SimulationQuestion[]
 
     return {
       id: quiz.id,

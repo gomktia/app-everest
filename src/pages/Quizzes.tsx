@@ -2,13 +2,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { useStaggeredAnimation } from '@/hooks/useAnimations'
 import { QuizzesTutorial } from '@/components/quizzes/QuizzesTutorial'
 import { useToast } from '@/hooks/use-toast'
-import { cn } from '@/lib/utils'
-import { Play, Target, Clock, TrendingUp, ArrowRight, BookOpen, Brain, Star, Award, Users, Zap, Lock, HelpCircle } from 'lucide-react'
+import { Play, Target, ArrowRight, BookOpen, Brain, Zap, Lock, HelpCircle } from 'lucide-react'
 import { quizService, type QuizSubject } from '@/services/quizService'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useAuth } from '@/hooks/use-auth'
@@ -93,8 +91,6 @@ export default function QuizzesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Quizzes</h1>
-
       <OfflineBanner fromCache={fromCache} />
 
       <div className="max-w-7xl mx-auto space-y-8">
@@ -109,7 +105,7 @@ export default function QuizzesPage() {
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold text-foreground">
-                      Sistema de Quizzes
+                      Quizzes por Matéria
                     </h1>
                     <p className="text-muted-foreground text-sm md:text-base lg:text-lg">
                       Teste seus conhecimentos com nossos quizzes interativos
@@ -126,10 +122,6 @@ export default function QuizzesPage() {
                     <HelpCircle className="h-4 w-4" />
                     <span className="hidden md:inline">Ajuda</span>
                   </Button>
-                  <div className="hidden md:flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-primary/10 border border-primary/20">
-                    <Star className="h-3 w-3 md:h-4 md:w-4 text-primary" />
-                    <span className="text-xs md:text-sm font-medium">Sistema Inteligente</span>
-                  </div>
                 </div>
               </div>
 
@@ -193,39 +185,14 @@ export default function QuizzesPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-8">
-            {/* Category Header */}
-            <Card className="border-border shadow-sm">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <BookOpen className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">Matérias de Quizzes</h2>
-                    <p className="text-muted-foreground">
-                      {filteredSubjects.length} matérias disponíveis
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+          <div className="space-y-6">
             {/* Quizzes Grid */}
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {filteredSubjects
-                .filter(subject => !subject.name.includes('Regulamentos Militares'))
-                .map((subject, index) => {
+              {filteredSubjects.map((subject, index) => {
                   const totalQuestions = subject.topics.reduce((sum, topic) => sum + topic.questionCount, 0)
                   const totalQuizzes = subject.topics.reduce((sum, topic) => sum + topic.quizzes.length, 0)
                   const lockedTopics = subject.topics.filter((t: any) => t._locked).length
                   const hasLockedTopics = lockedTopics > 0
-
-                  logger.debug(`🎯 Card render - ${subject.name}: Topics=${subject.topics.length}, Quizzes=${totalQuizzes}, Questions=${totalQuestions}`)
-
-                  // Progress will be calculated from real user data later
-                  // For now, showing 0 instead of fake random progress
-                  const progress = 0
 
                   return (
                     <Link
@@ -256,10 +223,10 @@ export default function QuizzesPage() {
                           {/* Overlay com gradiente mais suave */}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-                          {/* Progress Badge - Mais discreto */}
+                          {/* Questions badge */}
                           <div className="absolute top-3 right-3">
                             <div className="px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm shadow-lg">
-                              <span className="text-xs font-bold text-foreground">{Math.round(progress)}%</span>
+                              <span className="text-xs font-bold text-foreground">{totalQuestions} questões</span>
                             </div>
                           </div>
 
@@ -303,21 +270,7 @@ export default function QuizzesPage() {
                             </div>
                           </div>
 
-                          {/* Progress - Mais limpo */}
-                          <div className="space-y-1.5 mb-4">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground font-medium">Progresso</span>
-                              <span className="text-xs font-bold text-purple-600">{Math.round(progress)}%</span>
-                            </div>
-                            <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-purple-500 rounded-full transition-all duration-1000 ease-out"
-                                style={{ width: `${progress}%` }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Action Button - Mais destacado */}
+                          {/* Action Button */}
                           <Button className="w-full text-white transition-colors duration-300 py-2.5 text-sm font-semibold rounded-lg shadow-sm hover:shadow-md">
                             <div className="flex items-center justify-center gap-2">
                               <Play className="w-4 h-4 fill-current" />

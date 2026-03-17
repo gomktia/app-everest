@@ -178,6 +178,13 @@ export default function LessonPlayerPage() {
   const [notebookExpanded, setNotebookExpanded] = useState(false)
   const drawingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Refs to track latest values for flush-on-lesson-change
+  const noteContentRef = useRef(noteContent)
+  const drawingDataRef = useRef(drawingData)
+  const prevLessonIdRef = useRef(lessonId)
+  noteContentRef.current = noteContent
+  drawingDataRef.current = drawingData
+
   // Auto-play next lesson
   const [autoPlayNext, setAutoPlayNext] = useState(() => {
     return localStorage.getItem('everest-autoplay') !== 'false'
@@ -563,13 +570,32 @@ export default function LessonPlayerPage() {
     }, 1500)
   }, [user?.id, lessonId])
 
-  // Cleanup timers on unmount
+  // Flush pending note/drawing saves when lesson changes or on unmount
   useEffect(() => {
+    const prevLesson = prevLessonIdRef.current
+    prevLessonIdRef.current = lessonId
+
+    // If lesson changed, flush any pending debounced saves for the OLD lesson
+    if (prevLesson && prevLesson !== lessonId && user?.id) {
+      if (noteTimerRef.current) {
+        clearTimeout(noteTimerRef.current)
+        noteTimerRef.current = null
+        lessonInteractionService.saveNote(prevLesson, user.id, noteContentRef.current)
+      }
+      if (drawingTimerRef.current) {
+        clearTimeout(drawingTimerRef.current)
+        drawingTimerRef.current = null
+        if (drawingDataRef.current) {
+          lessonInteractionService.saveDrawing(prevLesson, user.id, drawingDataRef.current)
+        }
+      }
+    }
+
     return () => {
       if (noteTimerRef.current) clearTimeout(noteTimerRef.current)
       if (drawingTimerRef.current) clearTimeout(drawingTimerRef.current)
     }
-  }, [])
+  }, [lessonId, user?.id])
 
   /* ---- auto-play toggle ---- */
   const toggleAutoPlay = useCallback(() => {

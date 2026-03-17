@@ -33,8 +33,8 @@ const loginSchema = z.object({
   email: z.string().email('Por favor, insira um email válido.'),
   password: z.string().optional(),
 }).refine(
-  (data) => !data.password || data.password.length >= 6,
-  { message: 'A senha deve ter pelo menos 6 caracteres.', path: ['password'] }
+  (data) => !data.password || data.password.length >= 8,
+  { message: 'A senha deve ter pelo menos 8 caracteres.', path: ['password'] }
 )
 
 type LoginValues = z.infer<typeof loginSchema>
