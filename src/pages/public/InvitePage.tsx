@@ -394,7 +394,7 @@ function InviteHeroPanel({ title, description, courseName, motivationalMessage, 
               <UserPlus className="h-4 w-4" />
               Convite Especial
             </div>
-            <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight whitespace-nowrap">
+            <h2 className="text-3xl xl:text-4xl 2xl:text-5xl font-extrabold leading-[1.1] tracking-tight">
               {title}
             </h2>
             {description && (

@@ -329,7 +329,7 @@ function HeroPanel() {
         {/* Center — Hero text */}
         <div className="space-y-8">
           <div className="space-y-5">
-            <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight whitespace-nowrap">
+            <h2 className="text-3xl xl:text-4xl 2xl:text-5xl font-extrabold leading-[1.1] tracking-tight">
               Conquiste o topo da sua aprovação.
             </h2>
             <p className="text-white/80 text-lg leading-relaxed">
