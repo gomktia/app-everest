@@ -27,6 +27,12 @@ import {
   BookOpen,
   Trophy,
   Zap,
+  Library,
+  MessageSquare,
+  FileText,
+  PenTool,
+  HelpCircle,
+  ClipboardList,
 } from 'lucide-react'
 
 const loginSchema = z.object({
@@ -321,24 +327,41 @@ function HeroPanel() {
         </div>
 
         {/* Center — Hero text */}
-        <div className="space-y-6 max-w-md">
-          <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight">
-            Conquiste o
-            <br />
-            <span className="text-white/90">topo da sua</span>
-            <br />
-            preparação.
-          </h2>
-          <p className="text-white/70 text-lg leading-relaxed">
-            Videoaulas, flashcards, simulados e muito mais em uma plataforma completa para sua aprovação.
+        <div className="space-y-8">
+          <div className="space-y-5">
+            <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight whitespace-nowrap">
+              Conquiste o topo da sua aprovação.
+            </h2>
+            <p className="text-white/80 text-lg leading-relaxed">
+              Videoaulas, flashcards, simulados e muito mais em uma plataforma completa para o seu sucesso.
+            </p>
+          </div>
+
+          {/* Slogan */}
+          <p className="text-3xl xl:text-4xl font-black italic text-white/95 tracking-tight">
+            Rumo ao topo!
           </p>
+
+          {/* Motivational message */}
+          <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-5 max-w-lg">
+            <p className="text-white/90 text-base leading-relaxed">
+              Sua dedicação é o que faz a diferença. Cada hora de estudo te aproxima
+              da aprovação que vai transformar a sua vida.
+            </p>
+          </div>
         </div>
 
         {/* Bottom — Feature pills */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5">
           <FeaturePill icon={<BookOpen className="h-3.5 w-3.5" />} label="Videoaulas" />
           <FeaturePill icon={<Zap className="h-3.5 w-3.5" />} label="Flashcards" />
           <FeaturePill icon={<Mountain className="h-3.5 w-3.5" />} label="Simulados" />
+          <FeaturePill icon={<Library className="h-3.5 w-3.5" />} label="Acervo Digital" />
+          <FeaturePill icon={<HelpCircle className="h-3.5 w-3.5" />} label="Quizzes" />
+          <FeaturePill icon={<ClipboardList className="h-3.5 w-3.5" />} label="Banco de Questões" />
+          <FeaturePill icon={<FileText className="h-3.5 w-3.5" />} label="Provas" />
+          <FeaturePill icon={<PenTool className="h-3.5 w-3.5" />} label="Redação" />
+          <FeaturePill icon={<MessageSquare className="h-3.5 w-3.5" />} label="Comunidade" />
           <FeaturePill icon={<Trophy className="h-3.5 w-3.5" />} label="Ranking" />
         </div>
       </div>
