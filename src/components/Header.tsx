@@ -1,33 +1,18 @@
-import { useState, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Menu, Search, Mountain, Eye } from 'lucide-react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Menu, Search, Mountain } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { MobileSidebar } from './MobileSidebar'
 import { ThemeToggle } from './ThemeToggle'
 import { CommandPalette } from './CommandPalette'
+import { ViewAsStudentPicker } from './ViewAsStudentPicker'
 import { useAuth } from '@/hooks/use-auth'
-import { useViewMode } from '@/contexts/view-mode-context'
 import { SidebarTrigger } from './ui/sidebar'
 
 export const Header = () => {
-  const { profile, realRole, viewingAsStudent } = useAuth()
-  const { toggleViewAsStudent, exitStudentView } = useViewMode()
-  const navigate = useNavigate()
+  const { profile, realRole } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  const handleToggleViewMode = useCallback(() => {
-    if (viewingAsStudent) {
-      // Exiting student mode
-      exitStudentView()
-      setTimeout(() => navigate('/admin'), 0)
-    } else {
-      // Entering generic student mode
-      try { sessionStorage.setItem('everest-view-as-student', 'true') } catch {}
-      toggleViewAsStudent()
-      setTimeout(() => navigate('/dashboard'), 0)
-    }
-  }, [toggleViewAsStudent, exitStudentView, viewingAsStudent, navigate])
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border/40 bg-card px-4 md:px-6">
@@ -98,15 +83,7 @@ export const Header = () => {
 
       <div className="flex items-center gap-1 md:gap-2">
         {profile && (realRole === 'administrator' || realRole === 'teacher') && (
-          <Button
-            variant={viewingAsStudent ? 'default' : 'ghost'}
-            size="sm"
-            className="flex gap-1.5 text-xs"
-            onClick={handleToggleViewMode}
-          >
-            <Eye className="h-3.5 w-3.5" />
-            {viewingAsStudent ? 'Modo Aluno' : 'Ver como Aluno'}
-          </Button>
+          <ViewAsStudentPicker />
         )}
         {profile ? (
           <ThemeToggle />
