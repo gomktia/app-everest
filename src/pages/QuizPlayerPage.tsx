@@ -111,11 +111,10 @@ export default function QuizPlayerPage() {
         : 0
 
       // Salvar tentativa no banco de dados
-      const attemptId = await quizService.saveQuizAttempt(
+      const attemptId = await quizService.submitQuizAttempt(
         user.id,
         quiz.id,
         selectedAnswers,
-        correctCount,
         durationSeconds
       )
 
@@ -329,7 +328,7 @@ export default function QuizPlayerPage() {
                     onValueChange={handleAnswerSelect}
                     className="space-y-3"
                   >
-                    {currentQuestion.options.map((option, index) => (
+                    {(Array.isArray(currentQuestion.options) ? currentQuestion.options : []).map((option, index) => (
                       <div
                         key={index}
                         className={cn(

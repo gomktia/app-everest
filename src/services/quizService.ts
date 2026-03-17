@@ -3,6 +3,18 @@ import { offlineStorage } from '@/lib/offlineStorage'
 import { syncService } from '@/lib/syncService'
 import { logger } from '@/lib/logger'
 
+/** Safely parse JSONB options to string array */
+function parseOptionsToArray(options: unknown): string[] {
+  if (Array.isArray(options)) return options.map(String)
+  if (typeof options === 'string') {
+    try { return JSON.parse(options) } catch { return [] }
+  }
+  if (typeof options === 'object' && options !== null) {
+    return Object.values(options).map(String)
+  }
+  return []
+}
+
 export interface QuizSubject {
   id: string
   name: string
@@ -86,7 +98,7 @@ export const getQuizzes = async (): Promise<Quiz[]> => {
         id: q.id,
         question_text: q.question_text,
         question_type: q.question_type,
-        options: q.options as string[],
+        options: parseOptionsToArray(q.options),
         correct_answer: q.correct_answer,
         explanation: q.explanation,
         points: q.points,
@@ -196,7 +208,7 @@ export const quizService = {
           id: q.id,
           question_text: q.question_text,
           question_type: q.question_type,
-          options: (Array.isArray(q.options) ? q.options : []) as string[],
+          options: parseOptionsToArray(q.options),
           correct_answer: q.correct_answer,
           explanation: q.explanation || '',
           points: q.points,
