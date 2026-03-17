@@ -151,7 +151,7 @@ export const quizService = {
           name: topic.name,
           description: topic.description,
           questionCount: topic.quizzes?.reduce((total: number, quiz: any) => total + (quiz.quiz_questions?.length || 0), 0) || 0,
-          quizzes: topic.quizzes?.map((quiz: any) => ({
+          quizzes: topic.quizzes?.filter((quiz: any) => (quiz.quiz_questions?.length || 0) > 0).map((quiz: any) => ({
             id: quiz.id,
             title: quiz.title,
             description: quiz.description,
