@@ -253,7 +253,7 @@ export async function getRecentActivities(limit: number = 5): Promise<RecentActi
     const { count: pendingEssays } = await supabase
       .from('essays')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending')
+      .eq('status', 'submitted')
 
     if (pendingEssays && pendingEssays > 0) {
       activities.push({
@@ -268,14 +268,14 @@ export async function getRecentActivities(limit: number = 5): Promise<RecentActi
     // Get recent courses
     const { data: recentCourses } = await supabase
       .from('video_courses')
-      .select('title, created_at')
+      .select('name, created_at')
       .order('created_at', { ascending: false })
       .limit(1)
 
     if (recentCourses && recentCourses.length > 0) {
       activities.push({
         type: 'course',
-        message: `Curso "${recentCourses[0].title}" publicado`,
+        message: `Curso "${(recentCourses[0] as any).name}" publicado`,
         time: getRelativeTime(new Date(recentCourses[0].created_at)),
         icon: 'BookOpen',
         timestamp: new Date(recentCourses[0].created_at)
@@ -343,7 +343,7 @@ export async function getSystemAlerts(): Promise<Alert[]> {
     const { count: oldPendingEssays } = await supabase
       .from('essays')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending')
+      .eq('status', 'submitted')
       .lt('created_at', twoDaysAgo.toISOString())
 
     if (oldPendingEssays && oldPendingEssays > 0) {

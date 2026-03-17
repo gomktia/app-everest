@@ -159,7 +159,7 @@ export default function AdminLiveEventsPage() {
     const [livesData, classesData, coursesData] = await Promise.all([
       getLiveEvents(),
       supabase.from('classes').select('id, name').order('name'),
-      supabase.from('video_courses').select('id, title').order('title'),
+      supabase.from('video_courses').select('id, name').order('name'),
     ])
     setLives(livesData)
     setClasses(classesData.data || [])
@@ -551,7 +551,7 @@ export default function AdminLiveEventsPage() {
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
                   {courses.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{(c as any).name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
