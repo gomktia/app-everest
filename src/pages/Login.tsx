@@ -24,15 +24,6 @@ import {
   MailCheck,
   KeyRound,
   Mountain,
-  BookOpen,
-  Trophy,
-  Zap,
-  Library,
-  MessageSquare,
-  FileText,
-  PenTool,
-  HelpCircle,
-  ClipboardList,
 } from 'lucide-react'
 
 const loginSchema = z.object({
@@ -351,19 +342,8 @@ function HeroPanel() {
           </div>
         </div>
 
-        {/* Bottom — Feature pills */}
-        <div className="flex flex-wrap gap-2.5">
-          <FeaturePill icon={<BookOpen className="h-3.5 w-3.5" />} label="Videoaulas" />
-          <FeaturePill icon={<Zap className="h-3.5 w-3.5" />} label="Flashcards" />
-          <FeaturePill icon={<Mountain className="h-3.5 w-3.5" />} label="Simulados" />
-          <FeaturePill icon={<Library className="h-3.5 w-3.5" />} label="Acervo Digital" />
-          <FeaturePill icon={<HelpCircle className="h-3.5 w-3.5" />} label="Quizzes" />
-          <FeaturePill icon={<ClipboardList className="h-3.5 w-3.5" />} label="Banco de Questões" />
-          <FeaturePill icon={<FileText className="h-3.5 w-3.5" />} label="Provas" />
-          <FeaturePill icon={<PenTool className="h-3.5 w-3.5" />} label="Redação" />
-          <FeaturePill icon={<MessageSquare className="h-3.5 w-3.5" />} label="Comunidade" />
-          <FeaturePill icon={<Trophy className="h-3.5 w-3.5" />} label="Ranking" />
-        </div>
+        {/* Bottom spacer */}
+        <div />
       </div>
 
       {/* CSS for float animation */}
@@ -374,15 +354,6 @@ function HeroPanel() {
           66% { transform: translateY(10px) rotate(-1deg); }
         }
       `}</style>
-    </div>
-  )
-}
-
-function FeaturePill({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm font-medium text-white/90">
-      {icon}
-      {label}
     </div>
   )
 }
