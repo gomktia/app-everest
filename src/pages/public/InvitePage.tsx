@@ -145,6 +145,7 @@ export default function InvitePage() {
         title={invite.title}
         description={invite.description}
         courseName={invite.video_courses?.name}
+        motivationalMessage={invite.motivational_message}
         slotsAvailable={slotsAvailable}
         isFull={isFull}
       />
@@ -345,11 +346,14 @@ interface InviteHeroPanelProps {
   title: string
   description?: string
   courseName?: string
+  motivationalMessage?: string | null
   slotsAvailable: number | null
   isFull: boolean
 }
 
-function InviteHeroPanel({ title, description, courseName, slotsAvailable, isFull }: InviteHeroPanelProps) {
+const DEFAULT_MOTIVATIONAL = 'Sua dedicação é o que faz a diferença. Cada hora de estudo te aproxima da aprovação que vai transformar a sua vida.'
+
+function InviteHeroPanel({ title, description, courseName, motivationalMessage, slotsAvailable, isFull }: InviteHeroPanelProps) {
   return (
     <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500">
       {/* Animated background shapes */}
@@ -416,8 +420,7 @@ function InviteHeroPanel({ title, description, courseName, slotsAvailable, isFul
           {/* Motivational message */}
           <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-5 max-w-lg">
             <p className="text-white/90 text-base leading-relaxed">
-              Sua família torce por você! Cada hora de estudo é um passo mais perto da aprovação —
-              e de uma conquista que transforma a vida de toda a sua família.
+              {motivationalMessage || DEFAULT_MOTIVATIONAL}
             </p>
           </div>
 

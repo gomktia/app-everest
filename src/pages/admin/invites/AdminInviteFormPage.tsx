@@ -55,6 +55,7 @@ export default function AdminInviteFormPage() {
   const [classId, setClassId] = useState<string>('')
   const [accessDurationDays, setAccessDurationDays] = useState<string>('')
   const [maxSlots, setMaxSlots] = useState<string>('')
+  const [motivationalMessage, setMotivationalMessage] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
   const [status, setStatus] = useState<'active' | 'archived'>('active')
 
@@ -123,6 +124,7 @@ export default function AdminInviteFormPage() {
         setAccessDurationDays(data.access_duration_days?.toString() || '')
         setMaxSlots(data.max_slots?.toString() || '')
         setCoverImageUrl(data.cover_image_url || '')
+        setMotivationalMessage(data.motivational_message || '')
         setStatus(data.status || 'active')
         setSlugManuallyEdited(true) // Don't auto-update slug when editing
       } catch (error) {
@@ -197,6 +199,7 @@ export default function AdminInviteFormPage() {
         access_duration_days: accessDurationDays ? parseInt(accessDurationDays, 10) : null,
         max_slots: maxSlots ? parseInt(maxSlots, 10) : null,
         cover_image_url: coverImageUrl || null,
+        motivational_message: motivationalMessage.trim() || null,
         status,
         created_by_user_id: profile?.id,
       }
@@ -277,9 +280,23 @@ export default function AdminInviteFormPage() {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Descricao do convite que aparece na pagina de inscricao..."
-                rows={6}
+                placeholder="Descrição do convite que aparece na página de inscrição..."
+                rows={4}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="motivational">Mensagem motivacional</Label>
+              <Textarea
+                id="motivational"
+                value={motivationalMessage}
+                onChange={(e) => setMotivationalMessage(e.target.value)}
+                placeholder="Ex: Sua família torce por você! Cada hora de estudo é um passo mais perto da aprovação."
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                Aparece em destaque na página do convite. Se vazio, usa uma mensagem padrão.
+              </p>
             </div>
           </CardContent>
         </Card>

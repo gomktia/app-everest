@@ -11,6 +11,7 @@ export interface Invite {
   access_duration_days?: number | null
   max_slots?: number | null
   cover_image_url?: string | null
+  motivational_message?: string | null
   status: 'active' | 'archived'
   created_by_user_id?: string
 }
