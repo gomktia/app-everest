@@ -139,7 +139,6 @@ export default function InvitePage() {
         title={invite.title}
         description={invite.description}
         courseName={invite.video_courses?.name}
-        coverUrl={invite.cover_image_url || invite.video_courses?.thumbnail_url}
         slotsAvailable={slotsAvailable}
         isFull={isFull}
       />
@@ -336,22 +335,13 @@ interface InviteHeroPanelProps {
   title: string
   description?: string
   courseName?: string
-  coverUrl?: string
   slotsAvailable: number | null
   isFull: boolean
 }
 
-function InviteHeroPanel({ title, description, courseName, coverUrl, slotsAvailable, isFull }: InviteHeroPanelProps) {
+function InviteHeroPanel({ title, description, courseName, slotsAvailable, isFull }: InviteHeroPanelProps) {
   return (
     <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500">
-      {/* Cover image overlay if available */}
-      {coverUrl && (
-        <div className="absolute inset-0">
-          <img src={coverUrl} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-600/90 via-orange-500/85 to-amber-500/90" />
-        </div>
-      )}
-
       {/* Animated background shapes */}
       <div className="absolute inset-0">
         <div className="absolute top-[10%] left-[15%] w-64 h-64 rounded-full bg-white/[0.07] animate-[float_20s_ease-in-out_infinite]" />
@@ -384,25 +374,43 @@ function InviteHeroPanel({ title, description, courseName, coverUrl, slotsAvaila
         </div>
 
         {/* Center — Invite info */}
-        <div className="space-y-6 max-w-md">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/10 text-sm font-medium">
-            <UserPlus className="h-4 w-4" />
-            Convite Especial
+        <div className="space-y-8">
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/10 text-sm font-medium">
+              <UserPlus className="h-4 w-4" />
+              Convite Especial
+            </div>
+            <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight whitespace-nowrap">
+              {title}
+            </h2>
+            {description && (
+              <p className="text-white/80 text-lg leading-relaxed">
+                {description}
+              </p>
+            )}
+            {courseName && (
+              <p className="text-white/80 text-base flex items-center gap-2">
+                <BookOpen className="h-4 w-4 shrink-0" />
+                Curso: {courseName}
+              </p>
+            )}
           </div>
-          <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.1] tracking-tight">
-            {title}
-          </h2>
-          {description && (
-            <p className="text-white/70 text-lg leading-relaxed">
-              {description}
+
+          {/* Slogan */}
+          <div className="space-y-2">
+            <p className="text-3xl xl:text-4xl font-black italic text-white/95 tracking-tight">
+              Rumo ao topo!
             </p>
-          )}
-          {courseName && (
-            <p className="text-white/80 text-base flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Curso: {courseName}
+          </div>
+
+          {/* Motivational message */}
+          <div className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/15 p-5 max-w-lg">
+            <p className="text-white/90 text-base leading-relaxed">
+              Sua família torce por você! Cada hora de estudo é um passo mais perto da aprovação —
+              e de uma conquista que transforma a vida de toda a sua família.
             </p>
-          )}
+          </div>
+
           {slotsAvailable !== null && !isFull && (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-sm font-semibold">
               {slotsAvailable} {slotsAvailable === 1 ? 'vaga restante' : 'vagas restantes'}
