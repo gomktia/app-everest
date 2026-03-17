@@ -111,7 +111,7 @@ const studentMenuGroups: MenuGroup[] = [
     icon: Archive,
     collapsible: true,
     items: [
-      { label: 'Acervo Digital', href: '/acervo', icon: Archive },
+      { label: 'Acervo Digital', href: '/acervo', icon: Archive, featureKey: FEATURE_KEYS.ACERVO },
       { label: 'Minhas Anotações', href: '/anotacoes', icon: StickyNote },
       { label: 'Evercast', href: '/evercast', icon: Mic, featureKey: FEATURE_KEYS.EVERCAST },
     ],
@@ -121,8 +121,8 @@ const studentMenuGroups: MenuGroup[] = [
     icon: Calendar,
     collapsible: true,
     items: [
-      { label: 'Calendário', href: '/calendario', icon: Calendar },
-      { label: 'Plano de Estudos', href: '/study-planner', icon: Target },
+      { label: 'Calendário', href: '/calendario', icon: Calendar, featureKey: FEATURE_KEYS.CALENDAR },
+      { label: 'Plano de Estudos', href: '/study-planner', icon: Target, featureKey: FEATURE_KEYS.STUDY_PLANNER },
     ],
   },
   {
@@ -131,7 +131,7 @@ const studentMenuGroups: MenuGroup[] = [
     collapsible: true,
     items: [
       { label: 'Progresso', href: '/progresso', icon: TrendingUp },
-      { label: 'Ranking', href: '/ranking', icon: Trophy },
+      { label: 'Ranking', href: '/ranking', icon: Trophy, featureKey: FEATURE_KEYS.RANKING },
       { label: 'Conquistas', href: '/achievements', icon: Award },
     ],
   },
@@ -140,7 +140,7 @@ const studentMenuGroups: MenuGroup[] = [
     icon: MessageSquare,
     collapsible: true,
     items: [
-      { label: 'Comunidade', href: '/comunidade', icon: MessageSquare },
+      { label: 'Comunidade', href: '/comunidade', icon: MessageSquare, featureKey: FEATURE_KEYS.COMMUNITY },
     ],
   },
 ]

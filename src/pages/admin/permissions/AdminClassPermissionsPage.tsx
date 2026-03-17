@@ -68,9 +68,15 @@ interface FeatureOption {
 }
 
 // Recursos CONTROLAVEIS por turma
-// NOTA: Os recursos abaixo sao NAO marcados sao SEMPRE VISIVEIS para todos os alunos:
-// Dashboard, Calendario, Ranking, Forum, Conquistas, Progresso, Notificacoes, Configuracoes
+// NOTA: Recursos sempre visiveis: Dashboard, Notificacoes, Conquistas, Progresso, Configuracoes, Minhas Anotacoes
 const FEATURE_OPTIONS: FeatureOption[] = [
+  {
+    key: FEATURE_KEYS.VIDEO_LESSONS,
+    label: 'Videoaulas',
+    description: 'Cursos em video',
+    icon: BookOpen,
+    category: 'core'
+  },
   {
     key: FEATURE_KEYS.FLASHCARDS,
     label: 'Flashcards',
@@ -81,7 +87,7 @@ const FEATURE_OPTIONS: FeatureOption[] = [
   {
     key: FEATURE_KEYS.QUIZ,
     label: 'Quizzes',
-    description: 'Quizzes e simulados',
+    description: 'Quizzes, banco de questoes e simulados',
     icon: Target,
     category: 'content'
   },
@@ -100,11 +106,46 @@ const FEATURE_OPTIONS: FeatureOption[] = [
     category: 'content'
   },
   {
-    key: FEATURE_KEYS.VIDEO_LESSONS,
-    label: 'Videoaulas',
-    description: 'Cursos em video',
+    key: FEATURE_KEYS.ACERVO,
+    label: 'Acervo Digital',
+    description: 'Biblioteca de PDFs, provas e materiais',
     icon: BookOpen,
     category: 'content'
+  },
+  {
+    key: FEATURE_KEYS.LIVE_EVENTS,
+    label: 'Ao Vivo',
+    description: 'Aulas e eventos ao vivo',
+    icon: Mic,
+    category: 'content'
+  },
+  {
+    key: FEATURE_KEYS.CALENDAR,
+    label: 'Calendario',
+    description: 'Calendario de aulas e eventos',
+    icon: Calendar,
+    category: 'gamification'
+  },
+  {
+    key: FEATURE_KEYS.STUDY_PLANNER,
+    label: 'Plano de Estudos',
+    description: 'Planejamento e pomodoro',
+    icon: Target,
+    category: 'gamification'
+  },
+  {
+    key: FEATURE_KEYS.RANKING,
+    label: 'Ranking',
+    description: 'Ranking de pontuacao entre alunos',
+    icon: Trophy,
+    category: 'gamification'
+  },
+  {
+    key: FEATURE_KEYS.COMMUNITY,
+    label: 'Comunidade',
+    description: 'Feed de posts e interacao entre alunos (degustacao: somente leitura)',
+    icon: Users,
+    category: 'gamification'
   },
 ]
 

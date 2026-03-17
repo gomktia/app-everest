@@ -59,6 +59,7 @@ const studentMenuGroups: MenuGroup[] = [
       { label: 'Meus Cursos', href: '/courses', icon: BookOpen, featureKey: FEATURE_KEYS.VIDEO_LESSONS },
       { label: 'Flashcards', href: '/flashcards', icon: Brain, featureKey: FEATURE_KEYS.FLASHCARDS },
       { label: 'Banco de Questões', href: '/banco-de-questoes', icon: Search, featureKey: FEATURE_KEYS.QUIZ },
+      { label: 'Quizzes', href: '/quizzes', icon: Target, featureKey: FEATURE_KEYS.QUIZ },
       { label: 'Ao Vivo', href: '/lives', icon: Radio, featureKey: FEATURE_KEYS.LIVE_EVENTS },
     ],
   },
@@ -72,29 +73,29 @@ const studentMenuGroups: MenuGroup[] = [
   {
     group: 'Conteúdo',
     items: [
-      { label: 'Acervo Digital', href: '/acervo', icon: Archive },
+      { label: 'Acervo Digital', href: '/acervo', icon: Archive, featureKey: FEATURE_KEYS.ACERVO },
       { label: 'Evercast', href: '/evercast', icon: Mic, featureKey: FEATURE_KEYS.EVERCAST },
     ],
   },
   {
     group: 'Agenda',
     items: [
-      { label: 'Calendário', href: '/calendario', icon: Calendar },
-      { label: 'Plano de Estudos', href: '/study-planner', icon: Target },
+      { label: 'Calendário', href: '/calendario', icon: Calendar, featureKey: FEATURE_KEYS.CALENDAR },
+      { label: 'Plano de Estudos', href: '/study-planner', icon: Target, featureKey: FEATURE_KEYS.STUDY_PLANNER },
     ],
   },
   {
     group: 'Desempenho',
     items: [
       { label: 'Progresso', href: '/progresso', icon: TrendingUp },
-      { label: 'Ranking', href: '/ranking', icon: Trophy },
+      { label: 'Ranking', href: '/ranking', icon: Trophy, featureKey: FEATURE_KEYS.RANKING },
       { label: 'Conquistas', href: '/achievements', icon: Award },
     ],
   },
   {
     group: 'Social',
     items: [
-      { label: 'Comunidade', href: '/comunidade', icon: MessageSquare },
+      { label: 'Comunidade', href: '/comunidade', icon: MessageSquare, featureKey: FEATURE_KEYS.COMMUNITY },
     ],
   },
 ]

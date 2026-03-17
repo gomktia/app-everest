@@ -26,6 +26,11 @@ export const FEATURE_KEYS = {
   ESSAYS: 'essays',
   VIDEO_LESSONS: 'video_lessons',
   LIVE_EVENTS: 'live_events',
+  ACERVO: 'acervo',
+  CALENDAR: 'calendar',
+  STUDY_PLANNER: 'study_planner',
+  RANKING: 'ranking',
+  COMMUNITY: 'community',
 } as const
 
 export type FeatureKey = typeof FEATURE_KEYS[keyof typeof FEATURE_KEYS]
