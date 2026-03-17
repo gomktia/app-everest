@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
 import { useAccessExpiration } from '@/hooks/use-access-expiration'
 import { PageLoader } from '@/components/PageLoader'
 import { ForcePasswordChangeModal } from '@/components/ForcePasswordChangeModal'
 import type { UserProfile } from '@/contexts/auth-provider'
-import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
 interface ProtectedRouteProps {
@@ -23,29 +21,6 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
   const { profile, loading, session, profileFetchAttempted, getRedirectPath, viewingAsStudent, refreshProfile } = useAuth()
   const location = useLocation()
   const { expired, expirationLoading } = useAccessExpiration()
-  const [mustChangePassword, setMustChangePassword] = useState<boolean | null>(null)
-
-  // Check must_change_password flag (with timeout fallback)
-  useEffect(() => {
-    if (!profile?.id) { setMustChangePassword(null); return }
-    // Timeout fallback: if query takes too long, assume false
-    const timeout = setTimeout(() => setMustChangePassword(false), 5000)
-    supabase
-      .from('users')
-      .select('must_change_password')
-      .eq('id', profile.id)
-      .single()
-      .then(({ data, error }) => {
-        clearTimeout(timeout)
-        if (error) { setMustChangePassword(false); return }
-        setMustChangePassword(data?.must_change_password === true)
-      })
-      .catch(() => {
-        clearTimeout(timeout)
-        setMustChangePassword(false)
-      })
-    return () => clearTimeout(timeout)
-  }, [profile?.id])
 
   // Show loading while authentication is being determined
   if (loading) {
@@ -111,17 +86,12 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
     )
   }
 
-  // Wait for must_change_password check to complete before rendering anything
-  if (mustChangePassword === null && profile?.id) {
-    return <PageLoader />
-  }
-
-  // Force password change on first access
-  if (mustChangePassword) {
+  // Force password change on first access (field comes from profile, no extra query)
+  if (profile.must_change_password) {
     return (
       <ForcePasswordChangeModal
         userId={profile.id}
-        onSuccess={() => setMustChangePassword(false)}
+        onSuccess={() => refreshProfile()}
       />
     )
   }

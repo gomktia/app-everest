@@ -34,9 +34,12 @@ try {
         },
         fetch: (url, options = {}) => {
           // Edge Functions (AI correction) need longer timeout (3 min)
-          // Regular DB queries use 30s timeout
-          const isEdgeFunction = typeof url === 'string' && url.includes('/functions/v1/')
-          const timeout = isEdgeFunction ? 180000 : 30000
+          // Auth token refresh: 10s (critical path on page load)
+          // Regular DB queries: 15s
+          const urlStr = typeof url === 'string' ? url : ''
+          const isEdgeFunction = urlStr.includes('/functions/v1/')
+          const isAuth = urlStr.includes('/auth/v1/')
+          const timeout = isEdgeFunction ? 180000 : isAuth ? 10000 : 15000
 
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), timeout)

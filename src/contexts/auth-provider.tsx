@@ -26,6 +26,7 @@ export interface UserProfile {
   updated_at: string
   avatar_url?: string
   bio?: string
+  must_change_password?: boolean
   // Optional extended data
   student_id_number?: string
   employee_id_number?: string
@@ -75,6 +76,7 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
           is_active,
           bio,
           avatar_url,
+          must_change_password,
           created_at,
           updated_at
         `)
@@ -254,15 +256,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        // Get initial session - getSession() reads localStorage first (fast).
-        // Race with a SHORT timeout (5s) to stop the loading spinner quickly.
-        // If session fetch takes longer, onAuthStateChange will handle it.
+        // Get initial session - reads localStorage first (should be instant).
+        // Race with 3s timeout — if it takes longer, let onAuthStateChange handle it.
         let initialSession: Session | null = null
         try {
           const result = await Promise.race([
             supabase.auth.getSession(),
             new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error('Auth timeout')), 5000)
+              setTimeout(() => reject(new Error('Auth timeout')), 3000)
             )
           ])
           initialSession = result.data.session
