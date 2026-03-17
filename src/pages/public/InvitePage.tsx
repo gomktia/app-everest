@@ -22,6 +22,12 @@ import {
   Zap,
   ArrowLeft,
   CheckCircle2,
+  Library,
+  MessageSquare,
+  FileText,
+  PenTool,
+  HelpCircle,
+  ClipboardList,
 } from 'lucide-react'
 
 export default function InvitePage() {
@@ -212,29 +218,29 @@ export default function InvitePage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-semibold">WhatsApp</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="tel"
-                        placeholder="(00) 00000-0000"
-                        className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
-                        value={form.phone}
-                        onChange={e => setForm({ ...form, phone: e.target.value })}
-                      />
-                    </div>
+                    <Label className="text-sm font-semibold flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                      WhatsApp
+                    </Label>
+                    <Input
+                      type="tel"
+                      placeholder="(00) 00000-0000"
+                      className="h-11 rounded-xl border-border/60 focus:border-primary"
+                      value={form.phone}
+                      onChange={e => setForm({ ...form, phone: e.target.value })}
+                    />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-semibold">CPF <span className="text-muted-foreground font-normal">(opcional)</span></Label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="000.000.000-00"
-                        className="pl-10 h-11 rounded-xl border-border/60 focus:border-primary"
-                        value={form.cpf}
-                        onChange={e => setForm({ ...form, cpf: e.target.value })}
-                      />
-                    </div>
+                    <Label className="text-sm font-semibold flex items-center gap-1.5">
+                      <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+                      CPF <span className="text-muted-foreground font-normal">(opcional)</span>
+                    </Label>
+                    <Input
+                      placeholder="000.000.000-00"
+                      className="h-11 rounded-xl border-border/60 focus:border-primary"
+                      value={form.cpf}
+                      onChange={e => setForm({ ...form, cpf: e.target.value })}
+                    />
                   </div>
                 </div>
 
@@ -419,10 +425,16 @@ function InviteHeroPanel({ title, description, courseName, slotsAvailable, isFul
         </div>
 
         {/* Bottom — Feature pills */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5">
           <FeaturePill icon={<BookOpen className="h-3.5 w-3.5" />} label="Videoaulas" />
           <FeaturePill icon={<Zap className="h-3.5 w-3.5" />} label="Flashcards" />
           <FeaturePill icon={<Mountain className="h-3.5 w-3.5" />} label="Simulados" />
+          <FeaturePill icon={<Library className="h-3.5 w-3.5" />} label="Acervo Digital" />
+          <FeaturePill icon={<HelpCircle className="h-3.5 w-3.5" />} label="Quizzes" />
+          <FeaturePill icon={<ClipboardList className="h-3.5 w-3.5" />} label="Banco de Questões" />
+          <FeaturePill icon={<FileText className="h-3.5 w-3.5" />} label="Provas" />
+          <FeaturePill icon={<PenTool className="h-3.5 w-3.5" />} label="Redação" />
+          <FeaturePill icon={<MessageSquare className="h-3.5 w-3.5" />} label="Comunidade" />
           <FeaturePill icon={<Trophy className="h-3.5 w-3.5" />} label="Ranking" />
         </div>
       </div>

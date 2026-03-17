@@ -36,12 +36,11 @@ export async function getInviteBySlug(slug: string) {
 }
 
 export async function getRegistrationCount(inviteId: string): Promise<number> {
-  const { count, error } = await supabase
-    .from('invite_registrations')
-    .select('*', { count: 'exact', head: true })
-    .eq('invite_id', inviteId)
+  const { data, error } = await supabase.rpc('get_invite_registration_count', {
+    p_invite_id: inviteId,
+  })
   if (error) throw error
-  return count || 0
+  return data || 0
 }
 
 export async function createInvite(invite: Omit<Invite, 'id'>) {
