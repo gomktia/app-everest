@@ -40,6 +40,7 @@ import { logger } from '@/lib/logger'
 import { useAuth } from '@/hooks/use-auth'
 import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
+import { useContentAccess } from '@/hooks/useContentAccess'
 import { usePageTitle } from '@/hooks/usePageTitle'
 
 interface Question {
@@ -59,6 +60,7 @@ interface Question {
   year?: number
   quiz_id: string
   topics: {
+    id: string
     name: string
     subjects: {
       name: string
@@ -89,6 +91,7 @@ export default function QuestionBankPage() {
   const { toast } = useToast()
   const { isStudent } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
+  const { isRestricted, isAllowed, loading: contentAccessLoading } = useContentAccess('quiz_topic')
   const [allQuestions, setAllQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -117,6 +120,7 @@ export default function QuestionBankPage() {
         .select(`
           *,
           topics (
+            id,
             name,
             subjects (
               name
@@ -143,19 +147,26 @@ export default function QuestionBankPage() {
     }
   }
 
-  // Extract unique subjects and topics
-  const subjects = Array.from(new Set(allQuestions.map(q => q.topics?.subjects?.name).filter(Boolean))) as string[]
+  // Filter questions by content access first
+  const accessibleQuestions = isStudent && isRestricted
+    ? allQuestions.filter(q => q.topics?.id && isAllowed(q.topics.id))
+    : allQuestions
+
+  // Extract unique subjects and topics from accessible questions
+  const subjects = Array.from(new Set(accessibleQuestions.map(q => q.topics?.subjects?.name).filter(Boolean))) as string[]
 
   const filteredTopics = selectedSubject === 'all'
-    ? Array.from(new Set(allQuestions.map(q => q.topics?.name).filter(Boolean))) as string[]
+    ? Array.from(new Set(accessibleQuestions.map(q => q.topics?.name).filter(Boolean))) as string[]
     : Array.from(new Set(
-        allQuestions
+        accessibleQuestions
           .filter(q => q.topics?.subjects?.name === selectedSubject)
           .map(q => q.topics?.name)
           .filter(Boolean)
       )) as string[]
 
   const availableQuestions = allQuestions.filter(q => {
+    // Content access: if student has restricted topics, filter by allowed
+    if (isStudent && isRestricted && q.topics?.id && !isAllowed(q.topics.id)) return false
     if (selectedSubject !== 'all' && q.topics?.subjects?.name !== selectedSubject) return false
     if (selectedTopic !== 'all' && q.topics?.name !== selectedTopic) return false
     // Exclude questions with no valid options
@@ -234,7 +245,7 @@ export default function QuestionBankPage() {
     }
   }, [phase, studyQuestions, currentQuestion])
 
-  if (loading || permissionsLoading) return <SectionLoader />
+  if (loading || permissionsLoading || contentAccessLoading) return <SectionLoader />
 
   if (isStudent && !hasFeature(FEATURE_KEYS.QUESTION_BANK)) {
     return (
@@ -274,7 +285,7 @@ export default function QuestionBankPage() {
           <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
             <CardContent className="p-4 text-center">
               <Layers className="h-5 w-5 text-blue-500 mx-auto mb-1.5" />
-              <div className="text-xl font-bold text-foreground">{allQuestions.length}</div>
+              <div className="text-xl font-bold text-foreground">{accessibleQuestions.length}</div>
               <div className="text-xs text-muted-foreground">Total Questões</div>
             </CardContent>
           </Card>
