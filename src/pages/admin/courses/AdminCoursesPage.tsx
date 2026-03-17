@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -41,6 +42,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { SectionLoader } from '@/components/SectionLoader'
 
 export default function AdminCoursesPage() {
+  usePageTitle('Cursos')
   const [courses, setCourses] = useState<AdminCourse[]>([])
   const [loading, setLoading] = useState(true)
   const [duplicating, setDuplicating] = useState<string | null>(null)

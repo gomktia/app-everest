@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -30,6 +31,7 @@ import { getAllQuestions, deleteQuestion } from '@/services/adminQuizService'
 import { useToast } from '@/components/ui/use-toast'
 
 export default function AdminQuestionsPage() {
+  usePageTitle('Banco de Questões')
   const [isImportOpen, setIsImportOpen] = useState(false)
   const [questions, setQuestions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

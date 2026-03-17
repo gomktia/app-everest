@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, PlusCircle, MoreHorizontal, Edit, Trash2, Star, Loader2, FileText } from 'lucide-react'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -41,6 +42,7 @@ import { ciaarCorrectionService } from '@/services/ciaarCorrectionService'
 import type { CorrectionTemplate } from '@/types/essay-correction'
 
 export default function AdminEssaySettingsPage() {
+  usePageTitle('Configurações de Redação')
   const { toast } = useToast()
   const [templates, setTemplates] = useState<CorrectionTemplate[]>([])
   const [loading, setLoading] = useState(true)

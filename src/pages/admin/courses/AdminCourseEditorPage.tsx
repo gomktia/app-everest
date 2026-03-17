@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
@@ -524,6 +525,7 @@ function SortableLessonItem({
 export default function AdminCourseEditorPage() {
   const { courseId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Editor de Curso')
   const { user } = useAuth()
   const { toast } = useToast()
   const isNewCourse = !courseId || courseId === 'new'

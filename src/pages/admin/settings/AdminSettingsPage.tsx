@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -70,6 +71,7 @@ const DEFAULTS: Record<SettingsKey, Record<string, any>> = {
 }
 
 export default function AdminSettingsPage() {
+  usePageTitle('Configurações')
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

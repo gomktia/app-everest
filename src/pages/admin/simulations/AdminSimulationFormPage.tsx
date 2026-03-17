@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   Card,
   CardContent,
@@ -142,6 +143,7 @@ const newReadingText = (): ReadingTextFormData => ({
 export default function AdminSimulationFormPage() {
   const { simulationId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Editor de Simulado')
   const { toast } = useToast()
   const { user } = useAuth()
   const isEditing = !!simulationId

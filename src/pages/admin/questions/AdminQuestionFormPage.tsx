@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
@@ -99,6 +100,7 @@ type QuestionFormValues = z.infer<typeof questionSchema>
 export default function AdminQuestionFormPage() {
   const { questionId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Editor de Questão')
   const { toast } = useToast()
   const isEditing = !!questionId
   const [loading, setLoading] = useState(false)

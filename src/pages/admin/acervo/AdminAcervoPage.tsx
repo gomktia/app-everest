@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { logger } from '@/lib/logger'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -89,6 +90,7 @@ type EditFormData = {
 }
 
 export default function AdminAcervoPage() {
+  usePageTitle('Acervo Digital')
   const [items, setItems] = useState<AcervoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')

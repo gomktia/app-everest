@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,7 @@ type TopicFormValues = z.infer<typeof topicSchema>
 export default function AdminTopicFormPage() {
   const { subjectId, topicId } = useParams<{ subjectId: string; topicId?: string }>()
   const navigate = useNavigate()
+  usePageTitle('Tópico')
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [subjectName, setSubjectName] = useState('')

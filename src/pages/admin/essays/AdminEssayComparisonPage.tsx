@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import {
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils'
 export default function AdminEssayComparisonPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  usePageTitle('Comparar Redações')
   const [essays, setEssays] = useState<EssayForCorrection[]>([])
   const [errorCategories, setErrorCategories] = useState<ErrorCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -77,6 +78,7 @@ import { Progress } from '@/components/ui/progress'
 export default function AdminEssayCorrectionPage() {
   const { submissionId } = useParams<{ submissionId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Correção de Redação')
   const { user } = useAuth()
   const { toast } = useToast()
 

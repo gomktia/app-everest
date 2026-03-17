@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -58,6 +59,7 @@ import {
 } from '@/services/gamificationService'
 
 export default function AdminGamificationPage() {
+  usePageTitle('Gamificação')
   const [achievements, setAchievements] = useState<Achievement[]>([])
   const [ranking, setRanking] = useState<RankingEntry[]>([])
   const [loading, setLoading] = useState(true)

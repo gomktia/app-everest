@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -47,6 +48,7 @@ interface LinkedCourse {
 }
 
 export default function AdminClassesPage() {
+  usePageTitle('Turmas')
   const [classes, setClasses] = useState<Class[]>([])
   const [classCourseMap, setClassCourseMap] = useState<Record<string, LinkedCourse>>({})
   const [loading, setLoading] = useState(true)

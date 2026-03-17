@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -86,6 +87,7 @@ const eventConfig = {
 type EventType = keyof typeof eventConfig
 
 export default function AdminCalendarPage() {
+  usePageTitle('Calendário')
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [events, setEvents] = useState<CalendarEvent[]>([])

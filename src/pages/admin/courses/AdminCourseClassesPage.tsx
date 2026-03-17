@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -47,6 +48,7 @@ interface AvailableClass {
 export default function AdminCourseClassesPage() {
   const { courseId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Turmas do Curso')
   const { toast } = useToast()
 
   const [courseName, setCourseName] = useState('')

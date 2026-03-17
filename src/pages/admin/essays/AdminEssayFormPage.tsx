@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   Card,
   CardContent,
@@ -46,6 +47,7 @@ interface FormData {
 export default function AdminEssayFormPage() {
   const { promptId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Editor de Tema')
   const { toast } = useToast()
   const { user } = useAuth()
   const isEditing = !!promptId

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { logger } from '@/lib/logger'
@@ -65,6 +66,7 @@ export default function AdminFlashcardsManagementPage() {
     topicId: string
   }>()
   const navigate = useNavigate()
+  usePageTitle('Gerenciar Flashcards')
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importErrors, setImportErrors] = useState<ImportError[]>([])

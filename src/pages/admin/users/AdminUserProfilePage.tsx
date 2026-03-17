@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -74,6 +75,7 @@ interface EnrollmentState {
 export default function AdminUserProfilePage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Perfil do Usuário')
   const { toast } = useToast()
   const { startImpersonating } = useViewMode()
 

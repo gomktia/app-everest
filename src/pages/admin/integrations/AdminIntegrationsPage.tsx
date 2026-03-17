@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useToast } from '@/hooks/use-toast'
 import { testPandaConnection } from '@/services/pandaVideo'
 import { supabase } from '@/lib/supabase/client'
@@ -137,6 +138,7 @@ const INTEGRATIONS_CONFIG: Omit<Integration, 'status' | 'statusMessage'>[] = [
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function AdminIntegrationsPage() {
+  usePageTitle('Integrações')
   const { toast } = useToast()
   const [integrations, setIntegrations] = useState<Integration[]>(
     INTEGRATIONS_CONFIG.map(c => ({ ...c, status: 'checking' as const }))

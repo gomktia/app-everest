@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ interface ClassEssayStats {
 }
 
 export default function AdminEssaysPage() {
+  usePageTitle('Redações')
   const [classStats, setClassStats] = useState<ClassEssayStats[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()

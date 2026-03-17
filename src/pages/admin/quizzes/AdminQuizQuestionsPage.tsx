@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
@@ -59,6 +60,7 @@ type QuizQuestionsFormValues = z.infer<typeof quizQuestionsSchema>
 export default function AdminQuizQuestionsPage() {
   const { quizId } = useParams<{ quizId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Questões do Quiz')
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [importErrors, setImportErrors] = useState<ImportError[]>([])

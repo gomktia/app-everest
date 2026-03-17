@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useAuth } from '@/hooks/use-auth'
 import { useTeacherClasses } from '@/hooks/useTeacherClasses'
@@ -41,6 +42,7 @@ import {
 } from 'recharts'
 
 export default function AdminReportsPage() {
+  usePageTitle('Relatórios')
   const { isAdmin } = useAuth()
   const { isTeacher } = useTeacherClasses()
   const [dateRange, setDateRange] = useState('30d')

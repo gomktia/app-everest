@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -57,6 +58,7 @@ interface LogEntry {
 let logIdCounter = 0
 
 export default function MemberkitImportPage() {
+  usePageTitle('Importar MemberKit')
   const { profile } = useAuth()
   const { toast } = useToast()
 

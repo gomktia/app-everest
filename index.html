@@ -50,7 +50,16 @@
         document.documentElement.classList.add(theme);
       })();
     </script>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Inline loading shown before React mounts - prevents black screen -->
+      <div id="initial-loader" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--background,#0a0a0a);">
+        <div style="text-align:center;">
+          <div style="width:32px;height:32px;border:3px solid rgba(255,107,53,0.2);border-top-color:#ff6b35;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;"></div>
+          <p style="margin-top:16px;color:rgba(255,255,255,0.5);font-family:system-ui;font-size:14px;">Carregando...</p>
+        </div>
+      </div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}.light #initial-loader{background:#fff!important}.light #initial-loader p{color:rgba(0,0,0,0.4)!important}</style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

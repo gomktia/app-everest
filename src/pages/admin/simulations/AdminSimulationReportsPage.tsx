@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { SectionLoader } from '@/components/SectionLoader'
@@ -93,6 +94,7 @@ interface AttemptRow {
 export default function AdminSimulationReportsPage() {
   const { simulationId } = useParams<{ simulationId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Relatório do Simulado')
   const { handleError } = useErrorHandler()
   const [loading, setLoading] = useState(true)
   const [simulation, setSimulation] = useState<SimulationReport | null>(null)

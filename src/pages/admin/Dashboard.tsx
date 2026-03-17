@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/use-auth'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
@@ -58,6 +59,7 @@ import {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
 export default function AdminDashboard() {
+  usePageTitle('Dashboard Admin')
   const { profile } = useAuth()
   const { classIds, studentIds, isTeacher, loading: teacherLoading, error: teacherError } = useTeacherClasses()
   const [loading, setLoading] = useState(true)

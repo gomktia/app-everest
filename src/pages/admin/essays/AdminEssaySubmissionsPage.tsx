@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -66,6 +67,7 @@ interface EssaySubmission {
 export default function AdminEssaySubmissionsPage() {
   const { classId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Submissões de Redação')
   const { toast } = useToast()
 
   const [loading, setLoading] = useState(true)

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -39,6 +40,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { ImportQuestionsToQuizDialog } from '@/components/admin/ImportQuestionsToQuizDialog'
 
 export default function AdminQuizzesPage() {
+  usePageTitle('Quizzes')
   const [quizzes, setQuizzes] = useState<AdminQuiz[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [importTarget, setImportTarget] = useState<{ id: string; title: string } | null>(null)

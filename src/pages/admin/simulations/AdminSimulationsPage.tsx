@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -32,6 +33,7 @@ import { SectionLoader } from '@/components/SectionLoader'
 import { ImportQuestionsToQuizDialog } from '@/components/admin/ImportQuestionsToQuizDialog'
 
 export default function AdminSimulationsPage() {
+  usePageTitle('Simulados')
   const [simulations, setSimulations] = useState<AdminSimulation[]>([])
   const [loading, setLoading] = useState(true)
   const [importTarget, setImportTarget] = useState<{ id: string; title: string } | null>(null)

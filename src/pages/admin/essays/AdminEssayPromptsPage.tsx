@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Table,
@@ -31,6 +32,7 @@ import {
 } from '@/services/adminEssayService'
 
 export default function AdminEssayPromptsPage() {
+  usePageTitle('Temas de Redação')
   const { toast } = useToast()
   const [prompts, setPrompts] = useState<AdminEssayPrompt[]>([])
   const [isLoading, setIsLoading] = useState(true)

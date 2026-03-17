@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -38,6 +39,7 @@ interface ClassOption {
 export default function AdminInviteFormPage() {
   const { inviteId } = useParams()
   const isEditing = !!inviteId
+  usePageTitle('Editor de Convite')
   const navigate = useNavigate()
   const { toast } = useToast()
   const { profile } = useAuth()

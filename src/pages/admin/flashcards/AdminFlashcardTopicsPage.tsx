@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -35,6 +36,7 @@ import type { Subject, TopicWithCardCount } from '@/services/flashcardService'
 export default function AdminFlashcardTopicsPage() {
   const { subjectId } = useParams<{ subjectId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Tópicos de Flashcard')
   const { toast } = useToast()
   const [subject, setSubject] = useState<Subject | null>(null)
   const [topics, setTopics] = useState<TopicWithCardCount[]>([])

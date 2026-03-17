@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { logger } from '@/lib/logger'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -296,6 +297,7 @@ function VideoAnalyticsTabs({ courses, filteredLessons, students, searchTerm, se
 }
 
 export default function VideoAnalyticsPage() {
+  usePageTitle('Análise de Vídeos')
   const { isAdmin } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)

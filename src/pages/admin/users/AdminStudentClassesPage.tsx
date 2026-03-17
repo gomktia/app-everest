@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -71,6 +72,7 @@ interface AvailableClass {
 export default function AdminStudentClassesPage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Turmas do Aluno')
   const { toast } = useToast()
 
   const [user, setUser] = useState<User | null>(null)

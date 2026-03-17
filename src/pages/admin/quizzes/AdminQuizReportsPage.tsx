@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   Card,
   CardContent,
@@ -34,6 +35,7 @@ import { AttemptDetailsDialog } from '@/components/admin/quizzes/AttemptDetailsD
 export default function AdminQuizReportsPage() {
   const { quizId } = useParams<{ quizId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Relatório do Quiz')
   const [report, setReport] = useState<QuizReport | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAttempt, setSelectedAttempt] = useState<StudentAttempt | null>(

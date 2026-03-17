@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useToast } from '@/hooks/use-toast'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -67,6 +68,7 @@ const WEBHOOK_URL =
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function AdminKiwifyProductsPage() {
+  usePageTitle('Produtos Kiwify')
   const { toast } = useToast()
   const [products, setProducts] = useState<KiwifyProduct[]>([])
   const [classes, setClasses] = useState<ClassOption[]>([])

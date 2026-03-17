@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { createInvite, generateSlug } from '@/services/inviteService'
 import { saveContentAccess } from '@/services/contentAccessService'
 import { saveAllModuleRules, type ModuleRule } from '@/services/moduleRulesService'
@@ -204,6 +205,7 @@ function initialState(): WizardState {
 // ---------------------------------------------------------------------------
 
 export default function TrialClassWizard() {
+  usePageTitle('Wizard de Turma Trial')
   const navigate = useNavigate()
   const { profile } = useAuth()
   const { toast } = useToast()

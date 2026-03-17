@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PageTabs } from '@/components/PageTabs'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Card, CardContent } from '@/components/ui/card'
 import { UserManagement } from '@/components/admin/management/UserManagement'
 import { ClassManagement } from '@/components/admin/management/ClassManagement'
@@ -18,6 +19,7 @@ import { supabase } from '@/lib/supabase/client'
 import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 
 export default function AdminManagementPage() {
+  usePageTitle('Gestão de Usuários')
   const { isTeacher, isAdmin, studentIds, loading: teacherLoading } = useTeacherClasses()
   const [activeTab, setActiveTab] = useState('users')
 

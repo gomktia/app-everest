@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   Select,
   SelectContent,
@@ -118,6 +119,7 @@ const emptyForm: FormData = {
 }
 
 export default function AdminLiveEventsPage() {
+  usePageTitle('Eventos ao Vivo')
   const { user } = useAuth()
   const { toast } = useToast()
 

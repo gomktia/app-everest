@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
@@ -46,6 +47,7 @@ type EvercastFormValues = z.infer<typeof evercastSchema>
 export default function AdminEvercastFormPage() {
   const { evercastId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Editor de Evercast')
   const { toast } = useToast()
   const isEditing = !!evercastId
   const [loading, setLoading] = useState(false)

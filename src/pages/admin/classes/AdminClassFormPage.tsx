@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { logger } from '@/lib/logger'
@@ -49,6 +50,7 @@ import { getTeachers, Teacher } from '@/services/teacherService'
 export default function AdminClassFormPage() {
   const { classId } = useParams<{ classId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Configurar Turma')
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [teachers, setTeachers] = useState<Teacher[]>([])

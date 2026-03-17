@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { logger } from '@/lib/logger'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -52,6 +53,7 @@ type QuizFormValues = z.infer<typeof quizSchema>
 export default function AdminQuizFormPage() {
   const { quizId } = useParams()
   const navigate = useNavigate()
+  usePageTitle('Editor de Quiz')
   const isEditing = !!quizId
   const { toast } = useToast()
   const [topics, setTopics] = useState<AdminTopic[]>([])

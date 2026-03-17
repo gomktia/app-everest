@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   Card,
   CardContent,
@@ -38,6 +39,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function AdminEvercastPage() {
+  usePageTitle('Evercast')
   const [lessons, setLessons] = useState<AudioLesson[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<string | null>(null)

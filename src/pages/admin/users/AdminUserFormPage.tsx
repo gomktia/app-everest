@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
@@ -50,6 +51,7 @@ type UserFormValues = z.infer<typeof userSchema>
 export default function AdminUserFormPage() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
+  usePageTitle('Editar Usuário')
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
 

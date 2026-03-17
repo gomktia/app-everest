@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { logger } from '@/lib/logger'
 import { useToast } from '@/hooks/use-toast'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -166,6 +167,7 @@ const FEATURE_OPTIONS: FeatureOption[] = [
 ]
 
 export default function AdminClassPermissionsPage() {
+  usePageTitle('Permissões de Turma')
   const { toast } = useToast()
   const [classes, setClasses] = useState<Class[]>([])
   const [selectedClassId, setSelectedClassId] = useState<string>('')

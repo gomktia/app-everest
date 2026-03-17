@@ -204,10 +204,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const profileFetchAttemptedRef = useRef(false)
   const isFetchingProfileRef = useRef(false)
   const initCompleteRef = useRef(false)
+  const isSigningOutRef = useRef(false)
 
   // Keep refs in sync with state
   profileRef.current = profile
   profileFetchAttemptedRef.current = profileFetchAttempted
+  isSigningOutRef.current = isSigningOut
 
   // Refresh profile function
   const refreshProfile = useCallback(async () => {
@@ -324,7 +326,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Only handle meaningful events
         if (event === 'TOKEN_REFRESHED') {
-          setSession(newSession)
+          if (newSession) {
+            setSession(newSession)
+          } else {
+            // Token refresh failed — session was likely revoked (another device logged in)
+            setSession(null)
+            setProfile(null)
+            setProfileFetchAttempted(false)
+            isFetchingProfileRef.current = false
+            toast({
+              title: 'Sessão encerrada',
+              description: 'Sua sessão foi encerrada porque outro dispositivo fez login na sua conta.',
+              variant: 'destructive',
+            })
+          }
           return
         }
 
@@ -333,6 +348,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfile(null)
           setProfileFetchAttempted(false)
           isFetchingProfileRef.current = false
+          // Show message if user didn't initiate the sign out
+          if (!isSigningOutRef.current) {
+            toast({
+              title: 'Sessão encerrada',
+              description: 'Você foi desconectado. Faça login novamente.',
+              variant: 'destructive',
+            })
+          }
           return
         }
 
@@ -354,8 +377,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const data = await res.json()
                 if (data.removedSessions > 0) {
                   toast({
-                    title: 'Sessao anterior encerrada',
-                    description: `Voce tinha ${data.removedSessions + data.activeSessions} dispositivo(s) conectado(s). O mais antigo foi desconectado. Limite: ${data.maxSessions} dispositivos.`,
+                    title: 'Sessão anterior encerrada',
+                    description: 'O login anterior em outro dispositivo foi desconectado.',
                   })
                 }
               }
@@ -378,9 +401,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     )
 
+    // When user comes back to this tab, check if session is still valid
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState !== 'visible') return
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession()
+        if (error || !currentSession) {
+          // Session was revoked while tab was in background
+          if (mounted && profileRef.current) {
+            setSession(null)
+            setProfile(null)
+            setProfileFetchAttempted(false)
+            toast({
+              title: 'Sessão encerrada',
+              description: 'Sua sessão foi encerrada porque outro dispositivo fez login na sua conta.',
+              variant: 'destructive',
+            })
+          }
+        }
+      } catch {
+        // Ignore network errors on visibility check
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     return () => {
       mounted = false
       subscription.unsubscribe()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [handleSessionChange, toast])
 
