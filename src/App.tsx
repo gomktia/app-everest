@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { lazyWithRetry as lazy } from '@/lib/lazyWithRetry'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from '@/components/ui/toaster'
@@ -246,6 +246,19 @@ const MyNotesPage = lazy(
   () => import('@/pages/MyNotesPage'),
 )
 
+// Remove initial loader once React has rendered
+function RemoveInitialLoader() {
+  useEffect(() => {
+    const loader = document.getElementById('initial-loader')
+    if (loader) {
+      loader.style.transition = 'opacity 0.2s'
+      loader.style.opacity = '0'
+      setTimeout(() => loader.remove(), 200)
+    }
+  }, [])
+  return null
+}
+
 const App = () => (
   <ErrorBoundary>
     <BrowserRouter
@@ -254,6 +267,7 @@ const App = () => (
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
           <TooltipProvider>
+          <RemoveInitialLoader />
           <Toaster />
           <Sonner />
           <PWAUpdatePrompt />
