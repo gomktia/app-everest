@@ -45,13 +45,17 @@ export default function InvitePage() {
       setError('A senha deve ter pelo menos 8 caracteres')
       return
     }
+    if (!form.phone || form.phone.replace(/\D/g, '').length < 10) {
+      setError('Informe um numero de WhatsApp valido')
+      return
+    }
 
     setRegistering(true)
     try {
       await registerForInvite(invite.id, {
         name: form.name,
         email: form.email,
-        phone: form.phone || undefined,
+        phone: form.phone,
         cpf_cnpj: form.cpf || undefined,
         password: form.password,
       })
@@ -62,6 +66,8 @@ export default function InvitePage() {
         setError('Voce ja tem uma conta. Faca login para acessar.')
       } else if (err.message === 'Vagas esgotadas') {
         setError('Desculpe, as vagas foram esgotadas.')
+      } else if (err.message === 'WEAK_PASSWORD') {
+        setError('Senha muito fraca. Use uma senha mais complexa com letras, numeros e simbolos.')
       } else {
         setError('Erro ao criar conta. Tente novamente.')
       }
@@ -168,7 +174,7 @@ export default function InvitePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>WhatsApp (opcional)</Label>
+                  <Label>WhatsApp</Label>
                   <Input
                     type="tel"
                     placeholder="(00) 00000-0000"

@@ -111,6 +111,9 @@ export async function registerForInvite(inviteId: string, userData: {
   let userId: string
 
   if (authError) {
+    if (authError.message?.includes('weak_password') || authError.message?.includes('weak password') || (authError as any)?.code === 'weak_password') {
+      throw new Error('WEAK_PASSWORD')
+    }
     if (authError.message?.includes('already registered') || authError.message?.includes('already been registered')) {
       // User exists — try to sign in to get their ID and still enroll them
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -166,6 +169,18 @@ export async function registerForInvite(inviteId: string, userData: {
     throw new Error('Erro ao registrar. Tente novamente.')
   } else if (slotOk === false) {
     throw new Error('Vagas esgotadas')
+  }
+
+  // 6. Set subscription expiration (RPC should handle this but as fallback)
+  if (invite.access_duration_days && invite.class_id) {
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + invite.access_duration_days)
+    await supabase
+      .from('student_classes')
+      .update({ subscription_expires_at: expiresAt.toISOString() })
+      .eq('user_id', userId)
+      .eq('class_id', invite.class_id)
+      .is('subscription_expires_at', null)
   }
 
   return { userId, isNewUser: true }
