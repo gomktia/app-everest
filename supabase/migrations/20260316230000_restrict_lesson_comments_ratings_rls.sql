@@ -22,7 +22,7 @@ CREATE POLICY "lesson_comments_select" ON public.lesson_comments
     EXISTS (
       SELECT 1
       FROM public.video_lessons vl
-      JOIN public.course_modules cm ON cm.id = vl.module_id
+      JOIN public.video_modules cm ON cm.id = vl.module_id
       JOIN public.class_courses cc ON cc.course_id = cm.course_id
       JOIN public.student_classes sc ON sc.class_id = cc.class_id
       WHERE vl.id = lesson_comments.lesson_id
@@ -44,7 +44,7 @@ CREATE POLICY "lesson_ratings_select" ON public.lesson_ratings
     EXISTS (
       SELECT 1
       FROM public.video_lessons vl
-      JOIN public.course_modules cm ON cm.id = vl.module_id
+      JOIN public.video_modules cm ON cm.id = vl.module_id
       JOIN public.class_courses cc ON cc.course_id = cm.course_id
       JOIN public.student_classes sc ON sc.class_id = cc.class_id
       WHERE vl.id = lesson_ratings.lesson_id
