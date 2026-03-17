@@ -265,7 +265,7 @@ export default function LessonPlayerPage() {
         // Check enrollment before allowing lesson access
         const { data: enrollment } = await supabase
           .from('student_classes')
-          .select('id, classes!inner(class_courses!inner(course_id))')
+          .select('id, class_id, enrollment_date, classes!inner(class_courses!inner(course_id))')
           .eq('user_id', user.id)
 
         const enrolledCourseIds = (enrollment || []).flatMap((sc: any) =>
