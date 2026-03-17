@@ -194,7 +194,7 @@ export const MobileSidebar = () => {
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10 ring-2 ring-primary/20">
               <AvatarImage
-                src={`https://img.usecurling.com/ppl/medium?seed=${profile.id}`}
+                src={profile.avatar_url}
                 alt="Avatar"
               />
               <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">

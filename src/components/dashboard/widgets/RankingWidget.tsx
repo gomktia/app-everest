@@ -133,7 +133,7 @@ function RankingWidget({ className }: RankingWidgetProps) {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userPosition.email}`} />
+                  <AvatarImage src={userPosition.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10">
                     {userPosition.first_name[0]}{userPosition.last_name[0]}
                   </AvatarFallback>
@@ -198,7 +198,7 @@ function RankingWidget({ className }: RankingWidgetProps) {
                 </div>
 
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} />
+                  <AvatarImage src={user.avatar_url} />
                   <AvatarFallback className="text-xs">
                     {user.first_name[0]}{user.last_name[0]}
                   </AvatarFallback>

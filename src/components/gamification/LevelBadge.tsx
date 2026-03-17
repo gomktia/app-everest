@@ -78,7 +78,7 @@ export function LevelBadge({
     return (
       <div className={cn("relative", className)}>
         <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-          <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} />
+          <AvatarImage src={user?.avatar_url} />
           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10">
             {user?.first_name?.[0]}{user?.last_name?.[0]}
           </AvatarFallback>

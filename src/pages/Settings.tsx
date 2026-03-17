@@ -217,7 +217,7 @@ export default function SettingsPage() {
       lastName: profile?.last_name || '',
       email: profile?.email || '',
       bio: profile?.bio || '',
-      avatar: profile?.avatar_url || `https://img.usecurling.com/ppl/medium?seed=${profile?.id || 'default'}`
+      avatar: profile?.avatar_url || ''
     },
     notifications: loadStoredPrefs('everest_notification_prefs', defaultNotifications),
     privacy: loadStoredPrefs('everest_privacy_prefs', defaultPrivacy),
@@ -235,7 +235,7 @@ export default function SettingsPage() {
           lastName: profile.last_name || '',
           email: profile.email || '',
           bio: profile.bio || '',
-          avatar: profile.avatar_url || `https://img.usecurling.com/ppl/medium?seed=${profile.id}`
+          avatar: profile.avatar_url || ''
         }
       }))
     }
