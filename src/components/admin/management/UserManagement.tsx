@@ -43,7 +43,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { MoreHorizontal, PlusCircle, Search, Edit, Trash2, UserX, UserCheck, RefreshCw, GraduationCap, Users as UsersIcon, Loader2, Circle } from 'lucide-react'
+import { MoreHorizontal, PlusCircle, Search, Edit, Trash2, UserX, UserCheck, RefreshCw, GraduationCap, Users as UsersIcon, Loader2, Circle, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { getUsers, updateUser, type User, getUsersWithClasses, type UserWithClasses } from '@/services/adminUserService'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -72,6 +72,10 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
   const [editLastName, setEditLastName] = useState('')
   const [editRole, setEditRole] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deletingUser, setDeletingUser] = useState<UserWithClasses | null>(null)
   const [newUserEmail, setNewUserEmail] = useState('')
   const [newUserFirstName, setNewUserFirstName] = useState('')
   const [newUserLastName, setNewUserLastName] = useState('')
@@ -210,17 +214,20 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
   }
 
   const handleToggleStatus = async (user: User) => {
+    const action = user.is_active ? 'desativar' : 'ativar'
+    const name = `${user.first_name} ${user.last_name}`.trim() || user.email
     try {
       await updateUser(user.id, { is_active: !user.is_active })
       toast({
-        title: 'Sucesso',
-        description: `Usuário ${user.is_active ? 'desativado' : 'ativado'} com sucesso.`,
+        title: user.is_active ? 'Usuário desativado' : 'Usuário ativado',
+        description: `${name} foi ${user.is_active ? 'desativado' : 'ativado'} com sucesso.`,
       })
       loadUsers()
     } catch (error) {
+      logger.error(`Erro ao ${action} usuário:`, error)
       toast({
-        title: 'Erro',
-        description: 'Não foi possível atualizar o status do usuário.',
+        title: `Erro ao ${action}`,
+        description: `Não foi possível ${action} ${name}. Tente novamente.`,
         variant: 'destructive'
       })
     }
@@ -236,6 +243,8 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
 
   const handleEditUser = async () => {
     if (!editingUser) return
+    const name = `${editFirstName} ${editLastName}`.trim() || editingUser.email
+    setIsSaving(true)
     try {
       const updates: Record<string, any> = {
         first_name: editFirstName,
@@ -246,26 +255,58 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
         updates.role = editRole as 'student' | 'teacher' | 'administrator'
       }
       await updateUser(editingUser.id, updates)
-      toast({ title: 'Sucesso', description: 'Usuário atualizado com sucesso.' })
+      toast({
+        title: 'Alterações salvas',
+        description: `Os dados de ${name} foram atualizados.`,
+      })
       setShowEditDialog(false)
       setEditingUser(null)
       loadUsers()
     } catch (error) {
       logger.error('Erro ao editar usuário:', error)
-      toast({ title: 'Erro', description: 'Não foi possível atualizar o usuário.', variant: 'destructive' })
+      toast({
+        title: 'Erro ao salvar',
+        description: `Não foi possível salvar as alterações de ${name}. Tente novamente.`,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSaving(false)
     }
   }
 
-  const handleDeleteUser = async (user: User) => {
-    if (!confirm(`Deseja realmente deletar "${user.first_name} ${user.last_name}"? Esta ação não pode ser desfeita.`)) return
+  const openDeleteDialog = (user: UserWithClasses) => {
+    setDeletingUser(user)
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return
+    const name = `${deletingUser.first_name} ${deletingUser.last_name}`.trim() || deletingUser.email
+    setIsDeleting(true)
     try {
-      const { error } = await supabase.from('users').delete().eq('id', user.id)
+      const { error } = await supabase.rpc('admin_delete_user', { p_user_id: deletingUser.id })
       if (error) throw error
-      toast({ title: 'Sucesso', description: 'Usuário deletado com sucesso.' })
+      toast({
+        title: 'Usuário removido',
+        description: `${name} foi removido permanentemente da plataforma.`,
+      })
+      setShowDeleteDialog(false)
+      setDeletingUser(null)
       loadUsers()
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Erro ao deletar usuário:', error)
-      toast({ title: 'Erro', description: 'Não foi possível deletar o usuário.', variant: 'destructive' })
+      const msg = error?.message?.includes('administradores')
+        ? error.message
+        : error?.message?.includes('própria')
+          ? error.message
+          : `Não foi possível remover ${name}. Tente novamente.`
+      toast({
+        title: 'Erro ao remover',
+        description: msg,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -627,10 +668,10 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-destructive"
-                                onClick={() => handleDeleteUser(user)}
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => openDeleteDialog(user)}
                               >
-                                <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                                <Trash2 className="mr-2 h-4 w-4" /> Remover Usuário
                               </DropdownMenuItem>
                             </>
                           )}
@@ -756,11 +797,58 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: Us
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+          <Button variant="outline" onClick={() => setShowEditDialog(false)} disabled={isSaving}>
             Cancelar
           </Button>
-          <Button onClick={handleEditUser}>
-            Salvar Alterações
+          <Button onClick={handleEditUser} disabled={isSaving}>
+            {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+            )}
+            {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    {/* Delete Confirmation Dialog */}
+    <Dialog open={showDeleteDialog} onOpenChange={(open) => { if (!isDeleting) setShowDeleteDialog(open) }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            Remover Usuário
+          </DialogTitle>
+          <DialogDescription>
+            Esta ação é permanente e não pode ser desfeita.
+          </DialogDescription>
+        </DialogHeader>
+        {deletingUser && (
+          <div className="py-4 space-y-3">
+            <div className="p-3 rounded-lg border border-destructive/20 bg-destructive/5">
+              <p className="text-sm font-medium">
+                {deletingUser.first_name} {deletingUser.last_name}
+              </p>
+              <p className="text-xs text-muted-foreground">{deletingUser.email}</p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Todos os dados deste usuário serão removidos, incluindo progresso em cursos,
+              flashcards, tentativas de simulados, posts no fórum e matrículas em turmas.
+            </p>
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
+            Cancelar
+          </Button>
+          <Button variant="destructive" onClick={handleDeleteUser} disabled={isDeleting}>
+            {isDeleting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="mr-2 h-4 w-4" />
+            )}
+            {isDeleting ? 'Removendo...' : 'Sim, Remover Permanentemente'}
           </Button>
         </DialogFooter>
       </DialogContent>
