@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/lib/logger'
@@ -36,6 +37,7 @@ import {
 } from '@/components/ui/table'
 import { SectionLoader } from '@/components/SectionLoader'
 import {
+  ArrowLeft,
   Plus,
   Copy,
   Edit,
@@ -52,6 +54,7 @@ const formatBRL = (cents: number) =>
 
 export default function AffiliatesPage() {
   usePageTitle('Afiliados')
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([])
@@ -234,7 +237,16 @@ export default function AffiliatesPage() {
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Afiliados</h1>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/admin/financeiro')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">Afiliados</h1>
+        </div>
         <Button onClick={() => { resetCreateForm(); setCreateDialogOpen(true) }}>
           <Plus className="mr-2 h-4 w-4" /> Criar Afiliado
         </Button>

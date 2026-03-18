@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, FileText, TrendingUp, TrendingDown, DollarSign, BarChart3, Users, Percent } from 'lucide-react'
+import { ArrowLeft, Download, FileText, TrendingUp, TrendingDown, DollarSign, BarChart3, Users, Percent } from 'lucide-react'
 import { getFinancialStats, getRevenueByMonth, getOrders, type FinancialStats, type Order } from '@/services/financialService'
 import { logger } from '@/lib/logger'
 import {
@@ -69,6 +70,7 @@ function getPeriodDates(period: PeriodKey) {
 
 export default function ReportsPage() {
   usePageTitle('Relatórios')
+  const navigate = useNavigate()
 
   const [period, setPeriod] = useState<PeriodKey>('this_month')
   const [stats, setStats] = useState<FinancialStats | null>(null)
@@ -219,7 +221,16 @@ export default function ReportsPage() {
     <div className="space-y-6 p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold">Relatórios Financeiros</h1>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/admin/financeiro')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">Relatórios Financeiros</h1>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={exportCSV} disabled={loading}>
             <Download className="mr-2 h-4 w-4" />

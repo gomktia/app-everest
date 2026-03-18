@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -32,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SectionLoader } from '@/components/SectionLoader'
-import { Plus, Copy, Edit, Package, Check, X } from 'lucide-react'
+import { ArrowLeft, Plus, Copy, Edit, Package, Check, X } from 'lucide-react'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -73,6 +74,7 @@ const generateSlug = (name: string) =>
 
 export default function StripeProductsPage() {
   usePageTitle('Produtos Stripe')
+  const navigate = useNavigate()
   const { toast } = useToast()
   const [products, setProducts] = useState<StripeProduct[]>([])
   const [classes, setClasses] = useState<ClassOption[]>([])
@@ -324,13 +326,22 @@ export default function StripeProductsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Produtos Stripe
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Gerencie produtos, precos e vincule turmas para venda via Stripe.
-          </p>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/admin/financeiro')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Produtos Stripe
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Gerencie produtos, precos e vincule turmas para venda via Stripe.
+            </p>
+          </div>
         </div>
         <Button onClick={openCreateDialog} className="w-full md:w-auto">
           <Plus className="h-4 w-4 mr-2" />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageTabs } from '@/components/PageTabs'
 import { SectionLoader } from '@/components/SectionLoader'
@@ -20,6 +21,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import {
+  ArrowLeft,
   DollarSign,
   ShoppingCart,
   Receipt,
@@ -246,11 +248,20 @@ export default function FinancialDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Financeiro</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Visão geral de receitas, vendas e métricas financeiras
-        </p>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/admin')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Financeiro</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Visão geral de receitas, vendas e métricas financeiras
+          </p>
+        </div>
       </div>
 
       {/* Tabs */}

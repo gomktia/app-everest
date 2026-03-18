@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/lib/logger'
@@ -39,6 +40,7 @@ import {
 } from '@/components/ui/select'
 import { SectionLoader } from '@/components/SectionLoader'
 import {
+  ArrowLeft,
   Search,
   Download,
   RefreshCw,
@@ -139,6 +141,7 @@ function getPeriodDates(period: string): { startDate?: string; endDate?: string 
 
 export default function SalesListPage() {
   usePageTitle('Vendas')
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   // Tab state
@@ -363,11 +366,20 @@ export default function SalesListPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Vendas</h1>
-        <p className="text-sm text-muted-foreground">
-          Gerencie pedidos, reembolsos e carrinhos abandonados.
-        </p>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/admin/financeiro')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Vendas</h1>
+          <p className="text-sm text-muted-foreground">
+            Gerencie pedidos, reembolsos e carrinhos abandonados.
+          </p>
+        </div>
       </div>
 
       {/* Sub-tabs */}
