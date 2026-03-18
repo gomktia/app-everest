@@ -31,6 +31,8 @@ import { useAuth } from '@/hooks/use-auth'
 import { useContentAccess } from '@/hooks/useContentAccess'
 import { cachedFetch } from '@/lib/offlineCache'
 import { OfflineBanner } from '@/components/OfflineBanner'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
 
 const CONCURSO_COLORS: Record<string, { bg: string; text: string; badge: string; border: string; btn: string; hoverBorder: string }> = {
   livros: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-500', border: 'border-emerald-500/20', btn: 'bg-emerald-600 hover:bg-green-600', hoverBorder: 'hover:border-emerald-500/40' },
@@ -60,6 +62,30 @@ interface SelectedCategory {
   items: AcervoItem[]
   group?: ProvaGroup
 }
+
+const ACERVO_TOUR_STEPS: DriveStep[] = [
+  {
+    element: '[data-tour="acervo-categories"]',
+    popover: {
+      title: 'Categorias',
+      description: 'Navegue pelas categorias: Livros, Provas, Apostilas, Exercicios e mais. Clique em "Ver arquivos" para abrir.',
+    },
+  },
+  {
+    element: '[data-tour="acervo-search"]',
+    popover: {
+      title: 'Busca',
+      description: 'Pesquise materiais pelo nome para encontrar rapidamente o que precisa.',
+    },
+  },
+  {
+    element: '[data-tour="acervo-stats"]',
+    popover: {
+      title: 'Estatisticas',
+      description: 'Veja o total de materiais disponiveis, livros e provas no acervo.',
+    },
+  },
+]
 
 export default function AcervoDigitalPage() {
   const { isStudent } = useAuth()
@@ -518,17 +544,20 @@ export default function AcervoDigitalPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Acervo Digital</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Livros, apostilas e provas anteriores para seu estudo
-        </p>
+      <div className="flex items-center gap-2">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Acervo Digital</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Livros, apostilas e provas anteriores para seu estudo
+          </p>
+        </div>
+        <TourButton steps={ACERVO_TOUR_STEPS} />
       </div>
 
       <OfflineBanner fromCache={fromCache} />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4" data-tour="acervo-stats">
         <Card className="border-border shadow-sm">
           <CardContent className="p-4">
             <div className="p-2 rounded-lg w-fit mb-3 bg-blue-500/10">
@@ -559,7 +588,7 @@ export default function AcervoDigitalPage() {
       </div>
 
       {/* Search */}
-      <div className="relative">
+      <div className="relative" data-tour="acervo-search">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Buscar material por nome..."
@@ -570,7 +599,7 @@ export default function AcervoDigitalPage() {
       </div>
 
       {/* Category Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-tour="acervo-categories">
         {/* Livros Card */}
         {filteredLivros.length > 0 && (() => {
           const colors = CONCURSO_COLORS.livros

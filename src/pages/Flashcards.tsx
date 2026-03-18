@@ -26,6 +26,16 @@ import { useContentAccess } from '@/hooks/useContentAccess'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { cachedFetch } from '@/lib/offlineCache'
 import { OfflineBanner } from '@/components/OfflineBanner'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const FLASHCARDS_TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="flashcards-stats"]', popover: { title: 'Estatísticas', description: 'Veja quantas matérias, tópicos e cards estão disponíveis para estudo.' } },
+  { element: '[data-tour="flashcards-subject"]', popover: { title: 'Card de Matéria', description: 'Cada card representa uma matéria com seus tópicos e quantidade de flashcards.' } },
+  { element: '[data-tour="flashcards-progress"]', popover: { title: 'Progresso por Matéria', description: 'A barra mostra quanto você já revisou dos cards desta matéria.' } },
+  { element: '[data-tour="flashcards-study"]', popover: { title: 'Estudar Cards', description: 'Clique para iniciar a sessão de estudo com os flashcards desta matéria.' } },
+  { element: '[data-tour="flashcards-locked"]', popover: { title: 'Tópicos Bloqueados', description: 'Tópicos com cadeado não estão liberados para sua turma. Fale com seu professor.' } },
+]
 
 interface Subject {
   id: string
@@ -124,16 +134,19 @@ export default function FlashcardsPage() {
             Domine qualquer assunto com flashcards inteligentes
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setShowTutorial(true)} className="gap-2 w-fit">
-          <HelpCircle className="h-4 w-4" />
-          Ajuda
-        </Button>
+        <div className="flex items-center gap-2">
+          <TourButton steps={FLASHCARDS_TOUR_STEPS} />
+          <Button variant="outline" size="sm" onClick={() => setShowTutorial(true)} className="gap-2 w-fit">
+            <HelpCircle className="h-4 w-4" />
+            Ajuda
+          </Button>
+        </div>
       </div>
 
       <OfflineBanner fromCache={fromCache} />
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+      <div data-tour="flashcards-stats" className="grid grid-cols-3 gap-2 sm:gap-4">
         <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
           <CardContent className="p-2.5 sm:p-4 text-center">
             <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 mx-auto mb-1" />
@@ -191,6 +204,7 @@ export default function FlashcardsPage() {
               <Link
                 to={`/flashcards/${subject.id}`}
                 key={subject.id}
+                {...(idx === 0 ? { 'data-tour': 'flashcards-subject' } : {})}
                 className={cn(
                   'group relative flex flex-col rounded-xl border bg-card p-5 transition-all duration-200 shadow-sm hover:shadow-lg',
                   colors.border, colors.hoverBorder
@@ -212,7 +226,7 @@ export default function FlashcardsPage() {
                 </h3>
 
                 {/* Progress */}
-                <div className="mt-3 space-y-1.5">
+                <div {...(idx === 0 ? { 'data-tour': 'flashcards-progress' } : {})} className="mt-3 space-y-1.5">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{subjectTopics.length} tópicos · {subjectCards} cards</span>
                     <span className={cn('font-semibold', allDone ? 'text-green-500' : 'text-foreground')}>
@@ -227,7 +241,7 @@ export default function FlashcardsPage() {
                   {previewTopics.map((topic) => {
                     const topicLocked = (topic as any)._locked
                     return (
-                      <li key={topic.id} className={cn('flex items-center gap-2 min-w-0', topicLocked && 'opacity-50')}>
+                      <li key={topic.id} {...(topicLocked ? { 'data-tour': 'flashcards-locked' } : {})} className={cn('flex items-center gap-2 min-w-0', topicLocked && 'opacity-50')}>
                         {topicLocked
                           ? <Lock className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                           : <Layers className={cn('h-3.5 w-3.5 flex-shrink-0', colors.text)} />
@@ -250,6 +264,7 @@ export default function FlashcardsPage() {
 
                 {/* Botão */}
                 <div
+                  {...(idx === 0 ? { 'data-tour': 'flashcards-study' } : {})}
                   className={cn(
                     'mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 text-white hover:shadow-md',
                     colors.btn

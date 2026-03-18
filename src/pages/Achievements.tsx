@@ -26,6 +26,14 @@ import {
 } from '@/services/rankingService'
 import { SectionLoader } from '@/components/SectionLoader'
 import { logger } from '@/lib/logger'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const ACHIEVEMENTS_TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="achievements-stats"]', popover: { title: 'Resumo das Conquistas', description: 'Veja quantas conquistas você desbloqueou, quantas faltam, seu percentual de conclusão e o XP total acumulado.' } },
+  { element: '[data-tour="achievements-tabs"]', popover: { title: 'Filtrar Conquistas', description: 'Alterne entre Desbloqueadas, Pendentes ou veja Todas de uma vez.' } },
+  { element: '[data-tour="achievements-cards"]', popover: { title: 'Cards de Conquista', description: 'Cada card mostra o nome, descrição, raridade (Comum a Lendário) e a recompensa em XP. Conquistas bloqueadas aparecem com opacidade reduzida.' } },
+]
 
 export default function AchievementsPage() {
   const { user } = useAuth()
@@ -285,9 +293,12 @@ export default function AchievementsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Conquistas</h1>
-          <p className="text-sm text-muted-foreground mt-1">Complete desafios e desbloqueie recompensas</p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Conquistas</h1>
+            <p className="text-sm text-muted-foreground mt-1">Complete desafios e desbloqueie recompensas</p>
+          </div>
+          <TourButton steps={ACHIEVEMENTS_TOUR_STEPS} />
         </div>
         <Button
           variant="outline"
@@ -300,7 +311,7 @@ export default function AchievementsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div data-tour="achievements-stats" className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-green-500/30">
           <CardContent className="p-4 text-center">
             <Trophy className="h-5 w-5 text-green-500 mx-auto mb-1.5" />
@@ -332,6 +343,7 @@ export default function AchievementsPage() {
       </div>
 
         {/* Tabs de conquistas */}
+        <div data-tour="achievements-tabs">
         <PageTabs
           value={activeTab}
           onChange={setActiveTab}
@@ -343,7 +355,7 @@ export default function AchievementsPage() {
               icon: <CheckCircle className="h-4 w-4" />,
               count: unlockedAchievements.length,
               content: unlockedAchievements.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div data-tour="achievements-cards" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {unlockedAchievements.map((achievement) => {
                     const ua = userAchievements.find(u => u.achievement_id === achievement.id)
                     return (
@@ -421,6 +433,7 @@ export default function AchievementsPage() {
             },
           ]}
         />
+        </div>
 
       {/* Tutorial Modal */}
       <AchievementsTutorial

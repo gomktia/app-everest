@@ -21,6 +21,32 @@ import {
   CheckCircle,
   Loader2
 } from 'lucide-react'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const NOTIFICATIONS_TOUR_STEPS: DriveStep[] = [
+  {
+    element: '[data-tour="notif-filters"]',
+    popover: {
+      title: 'Filtros',
+      description: 'Filtre suas notificacoes: veja todas, apenas as nao lidas ou as ja lidas.',
+    },
+  },
+  {
+    element: '[data-tour="notif-mark-all"]',
+    popover: {
+      title: 'Marcar Todas como Lidas',
+      description: 'Clique aqui para marcar todas as notificacoes como lidas de uma vez.',
+    },
+  },
+  {
+    element: '[data-tour="notif-list"]',
+    popover: {
+      title: 'Suas Notificacoes',
+      description: 'Aqui aparecem suas notificacoes. Use os botoes para marcar como lida ou remover.',
+    },
+  },
+]
 
 export default function NotificationsPage() {
   const {
@@ -131,7 +157,10 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Notificações</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground">Notificações</h1>
+        <TourButton steps={NOTIFICATIONS_TOUR_STEPS} />
+      </div>
 
       <div className="space-y-6">
         {/* Header */}
@@ -157,6 +186,7 @@ export default function NotificationsPage() {
                   variant="outline"
                   onClick={handleMarkAllAsRead}
                   disabled={unreadCount === 0}
+                  data-tour="notif-mark-all"
                 >
                   <Check className="mr-2 h-4 w-4" />
                   Marcar todas como lidas
@@ -167,7 +197,7 @@ export default function NotificationsPage() {
         </Card>
 
         {/* Filters */}
-        <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
+        <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200" data-tour="notif-filters">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-muted-foreground">Filtrar:</span>
@@ -209,7 +239,7 @@ export default function NotificationsPage() {
         </Card>
 
         {/* Notifications List */}
-        <div className="space-y-4">
+        <div className="space-y-4" data-tour="notif-list">
           {filteredNotifications.length === 0 ? (
             <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
               <CardContent className="p-12 text-center">

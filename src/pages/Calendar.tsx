@@ -10,6 +10,8 @@ import {
   type CalendarEvent,
 } from '@/services/calendarService'
 import { SectionLoader } from '@/components/SectionLoader'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
 
 import {
   Calendar as CalendarIcon,
@@ -60,6 +62,30 @@ const eventConfig = {
 }
 
 type EventType = keyof typeof eventConfig
+
+const CALENDAR_TOUR_STEPS: DriveStep[] = [
+  {
+    element: '[data-tour="calendar-widget"]',
+    popover: {
+      title: 'Calendário',
+      description: 'Clique em uma data para ver os eventos agendados para aquele dia.',
+    },
+  },
+  {
+    element: '[data-tour="calendar-filters"]',
+    popover: {
+      title: 'Filtros por Tipo',
+      description: 'Filtre os eventos por categoria: Mentorias, Simulados, Redações ou veja todos de uma vez.',
+    },
+  },
+  {
+    element: '[data-tour="calendar-day-events"]',
+    popover: {
+      title: 'Eventos do Dia',
+      description: 'Aqui aparecem os detalhes dos eventos do dia selecionado, com horário e tipo.',
+    },
+  },
+]
 
 export default function CalendarPage() {
   const [date, setDate] = useState<Date | undefined>(new Date())
@@ -119,9 +145,12 @@ export default function CalendarPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Calendário</h1>
-          <p className="text-sm text-muted-foreground mt-1">Seus eventos, mentorias e simulados</p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Calendário</h1>
+            <p className="text-sm text-muted-foreground mt-1">Seus eventos, mentorias e simulados</p>
+          </div>
+          <TourButton steps={CALENDAR_TOUR_STEPS} />
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarIcon className="h-4 w-4" />
@@ -130,7 +159,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Type Filter Pills */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" data-tour="calendar-filters">
         <Button
           variant={activeFilter === 'ALL' ? 'default' : 'outline'}
           size="sm"
@@ -166,7 +195,7 @@ export default function CalendarPage() {
       {/* Main Grid */}
       <div className="grid gap-6 lg:grid-cols-5">
         {/* Calendar */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3" data-tour="calendar-widget">
           <Card className="border-border shadow-sm">
             <CardContent className="p-4">
               <Calendar
@@ -194,7 +223,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Selected Day Events */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2" data-tour="calendar-day-events">
           <Card className="border-border shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold">

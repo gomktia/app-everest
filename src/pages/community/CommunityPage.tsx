@@ -10,6 +10,14 @@ import { useAuth } from '@/hooks/use-auth'
 import { useContentAccess } from '@/hooks/useContentAccess'
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const COMMUNITY_TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="community-sidebar"]', popover: { title: 'Espaços da Comunidade', description: 'Filtre os posts por espaço: Geral, turmas específicas ou outros temas. No mobile, use o botão de menu.' } },
+  { element: '[data-tour="community-feed"]', popover: { title: 'Feed de Posts', description: 'Veja as publicações dos colegas e professores. Curta e comente para interagir com a comunidade.' } },
+  { element: '[data-tour="community-create"]', popover: { title: 'Criar Post', description: 'Clique no botão flutuante para criar uma nova publicação. Escolha o espaço e escreva seu conteúdo.' } },
+]
 
 export default function CommunityPage() {
   const { user, isStudent, effectiveUserId } = useAuth()
@@ -87,11 +95,14 @@ export default function CommunityPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Comunidade</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Interaja, compartilhe e tire suas duvidas
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Comunidade</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Interaja, compartilhe e tire suas duvidas
+            </p>
+          </div>
+          <TourButton steps={COMMUNITY_TOUR_STEPS} />
         </div>
 
         {/* Mobile sidebar trigger */}
@@ -111,12 +122,12 @@ export default function CommunityPage() {
 
       <div className="flex gap-6">
         {/* Desktop sidebar */}
-        <div className="hidden lg:block">
+        <div data-tour="community-sidebar" className="hidden lg:block">
           <SpacesSidebar />
         </div>
 
         {/* Feed */}
-        <div className="flex-1 min-w-0">
+        <div data-tour="community-feed" className="flex-1 min-w-0">
           <PostFeed key={feedKey} allowedSpaceIds={feedAllowedSpaceIds} />
         </div>
       </div>
@@ -124,6 +135,7 @@ export default function CommunityPage() {
       {/* Floating create button */}
       {!(isStudent && isReadOnly) && (
         <Button
+          data-tour="community-create"
           size="lg"
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-40"
           onClick={() => setEditorOpen(true)}

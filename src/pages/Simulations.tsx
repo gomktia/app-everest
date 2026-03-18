@@ -42,6 +42,15 @@ import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { logger } from '@/lib/logger'
 import { SectionLoader } from '@/components/SectionLoader'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const SIMULATIONS_TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="simulations-tabs"]', popover: { title: 'Tipos de Avaliação', description: 'Alterne entre Simulados Online (prova digital) e Cartões Resposta (provas presenciais).' } },
+  { element: '[data-tour="simulations-stats"]', popover: { title: 'Suas Estatísticas', description: 'Veja quantos simulados estão disponíveis, quantos você realizou, sua média e melhor nota.' } },
+  { element: '[data-tour="simulations-table"]', popover: { title: 'Lista de Simulados', description: 'Veja todos os simulados com data, status (Disponível, Realizado, Encerrado) e sua nota.' } },
+  { element: '[data-tour="simulations-actions"]', popover: { title: 'Ações', description: 'Clique em "Iniciar" para começar um simulado disponível ou "Relatório" para ver o resultado de um já realizado.' } },
+]
 
 interface Quiz {
   id: string
@@ -196,7 +205,7 @@ export default function SimulationsPage() {
   ) => (
     <div className="space-y-6 mt-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div data-tour="simulations-stats" className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-green-500/30">
           <CardContent className="p-4 text-center">
             {tabType === 'online'
@@ -233,7 +242,7 @@ export default function SimulationsPage() {
       </div>
 
       {/* Table */}
-      <Card className="border-border shadow-sm">
+      <Card data-tour="simulations-table" className="border-border shadow-sm">
         <CardContent className="p-5 space-y-4">
           <h2 className="text-lg font-semibold text-foreground">
             {tabType === 'online' ? 'Simulados Online' : 'Provas Presenciais'}
@@ -247,7 +256,7 @@ export default function SimulationsPage() {
                   <TableHead className="hidden md:table-cell font-semibold">Data</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
                   <TableHead className="text-right font-semibold">Nota</TableHead>
-                  <TableHead className="text-right font-semibold">
+                  <TableHead data-tour="simulations-actions" className="text-right font-semibold">
                     <span className="sr-only">Ações</span>
                   </TableHead>
                 </TableRow>
@@ -369,9 +378,12 @@ export default function SimulationsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Sistema de Avaliações</h1>
-          <p className="text-sm text-muted-foreground mt-1">Simulados online e cartões resposta de provas presenciais</p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Sistema de Avaliações</h1>
+            <p className="text-sm text-muted-foreground mt-1">Simulados online e cartões resposta de provas presenciais</p>
+          </div>
+          <TourButton steps={SIMULATIONS_TOUR_STEPS} />
         </div>
         <Button variant="outline" size="sm" onClick={() => setShowTutorial(true)} className="gap-2 w-fit">
           <HelpCircle className="h-4 w-4" />
@@ -380,6 +392,7 @@ export default function SimulationsPage() {
       </div>
 
       {/* Tabs + Stats + Table */}
+      <div data-tour="simulations-tabs">
       <PageTabs
         value={activeTab}
         onChange={setActiveTab}
@@ -399,6 +412,7 @@ export default function SimulationsPage() {
           },
         ]}
       />
+      </div>
 
       {showTutorial && <SimulationsTutorial onClose={handleCloseTutorial} />}
     </div>

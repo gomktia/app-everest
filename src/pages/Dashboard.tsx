@@ -36,6 +36,16 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="dashboard-kpis"]', popover: { title: 'Seus Indicadores', description: 'Acompanhe cursos ativos, progresso médio, aulas concluídas, horas de estudo e dias em sequência.' } },
+  { element: '[data-tour="dashboard-courses"]', popover: { title: 'Meus Cursos', description: 'Veja seus cursos mais recentes e continue de onde parou. Clique em um curso para acessá-lo.' } },
+  { element: '[data-tour="dashboard-ranking"]', popover: { title: 'Ranking', description: 'Confira sua posição no ranking e compare-se com os outros alunos da plataforma.' } },
+  { element: '[data-tour="dashboard-progress-chart"]', popover: { title: 'Progresso por Curso', description: 'Gráfico com o percentual de avanço em cada curso matriculado.' } },
+  { element: '[data-tour="dashboard-events"]', popover: { title: 'Próximos Eventos', description: 'Fique por dentro de provas, prazos e lives que estão chegando.' } },
+]
 
 const chartConfig = {
   progress: {
@@ -210,13 +220,16 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Olá, {profile?.first_name || 'Aluno'}!
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Acompanhe seu progresso e continue aprendendo.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Olá, {profile?.first_name || 'Aluno'}!
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Acompanhe seu progresso e continue aprendendo.
+          </p>
+        </div>
+        <TourButton steps={TOUR_STEPS} />
       </div>
 
       <OfflineBanner fromCache={fromCache} />
@@ -225,7 +238,7 @@ export default function DashboardPage() {
       <LiveBanner />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div data-tour="dashboard-kpis" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {kpis.map((kpi) => (
           <Card key={kpi.label} className="border-border shadow-sm">
             <CardContent className="p-4">
@@ -242,7 +255,7 @@ export default function DashboardPage() {
       {/* Main Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Meus Cursos - spans 2 cols */}
-        <div className="lg:col-span-2">
+        <div data-tour="dashboard-courses" className="lg:col-span-2">
           <Card className="border-border shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -298,7 +311,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Ranking */}
-        <Card className="border-border shadow-sm">
+        <Card data-tour="dashboard-ranking" className="border-border shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
@@ -383,7 +396,7 @@ export default function DashboardPage() {
       {/* Second Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Progresso por Curso */}
-        <Card className="border-border shadow-sm">
+        <Card data-tour="dashboard-progress-chart" className="border-border shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Progresso por Curso</CardTitle>
             <CardDescription>Seu avanço em cada curso</CardDescription>
@@ -416,7 +429,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Próximos Eventos */}
-        <Card className="border-border shadow-sm">
+        <Card data-tour="dashboard-events" className="border-border shadow-sm">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>

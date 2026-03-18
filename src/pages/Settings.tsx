@@ -34,6 +34,39 @@ import {
   Image as ImageIcon
 } from 'lucide-react'
 import { updateUserPassword } from '@/services/authService'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const SETTINGS_TOUR_STEPS: DriveStep[] = [
+  {
+    element: '[data-tour="settings-profile"]',
+    popover: {
+      title: 'Perfil',
+      description: 'Edite sua foto, nome e bio. Clique na camera para alterar o avatar.',
+    },
+  },
+  {
+    element: '[data-tour="settings-notifications"]',
+    popover: {
+      title: 'Preferencias de Notificacao',
+      description: 'Ative ou desative notificacoes por email, push, conquistas e lembretes.',
+    },
+  },
+  {
+    element: '[data-tour="settings-security"]',
+    popover: {
+      title: 'Seguranca',
+      description: 'Defina uma senha para usar como alternativa ao link magico de acesso.',
+    },
+  },
+  {
+    element: '[data-tour="settings-data"]',
+    popover: {
+      title: 'Exportar Dados',
+      description: 'Exporte seus dados de perfil em formato JSON ou solicite a exclusao da conta.',
+    },
+  },
+]
 
 // MD5 implementation for Gravatar (SubtleCrypto doesn't support MD5)
 function md5(input: string): string {
@@ -565,11 +598,14 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground">Configurações</h1>
+        <TourButton steps={SETTINGS_TOUR_STEPS} />
+      </div>
 
       <div className="space-y-8">
         {/* Profile Settings */}
-        <Card className="border-border shadow-sm">
+        <Card className="border-border shadow-sm" data-tour="settings-profile">
           <CardHeader>
             <CardTitle className="flex items-center gap-4">
               <User className="h-6 w-6 text-primary" />
@@ -674,7 +710,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Notifications */}
-        <Card className="border-border shadow-sm">
+        <Card className="border-border shadow-sm" data-tour="settings-notifications">
           <CardHeader>
             <CardTitle className="flex items-center gap-4">
               <Bell className="h-6 w-6 text-primary" />
@@ -918,7 +954,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Security */}
-        <Card className="border-border shadow-sm">
+        <Card className="border-border shadow-sm" data-tour="settings-security">
           <CardHeader>
             <CardTitle className="flex items-center gap-4">
               <Lock className="h-6 w-6 text-primary" />
@@ -937,7 +973,7 @@ export default function SettingsPage() {
         </Card>
 
         {/* Data Management */}
-        <Card className="border-border shadow-sm">
+        <Card className="border-border shadow-sm" data-tour="settings-data">
           <CardHeader>
             <CardTitle className="flex items-center gap-4">
               <Download className="h-6 w-6 text-primary" />

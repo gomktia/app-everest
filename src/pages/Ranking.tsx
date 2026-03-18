@@ -38,6 +38,15 @@ import { logger } from '@/lib/logger'
 import { useAuth } from '@/hooks/use-auth'
 import { cachedFetch } from '@/lib/offlineCache'
 import { OfflineBanner } from '@/components/OfflineBanner'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const RANKING_TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="ranking-stats"]', popover: { title: 'Estatísticas Gerais', description: 'Veja o total de estudantes, XP distribuído, média e o máximo de XP da plataforma.' } },
+  { element: '[data-tour="ranking-tabs"]', popover: { title: 'Categorias de Ranking', description: 'Alterne entre ranking da sua Turma, Global, Flashcards e Quizzes.' } },
+  { element: '[data-tour="ranking-cards"]', popover: { title: 'Cards de Posição', description: 'Cada card mostra a posição, nível, XP e progresso do aluno. Os 3 primeiros ganham destaque especial.' } },
+  { element: '[data-tour="ranking-achievements"]', popover: { title: 'Suas Conquistas', description: 'Veja as conquistas que você já desbloqueou e o XP ganho com cada uma.' } },
+]
 
 export default function RankingPage() {
   const { user } = useAuth()
@@ -318,9 +327,12 @@ export default function RankingPage() {
     <div className="space-y-6">
       <OfflineBanner fromCache={fromCache} />
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Ranking</h1>
-          <p className="text-sm text-muted-foreground mt-1">Compete e evolua com outros estudantes</p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Ranking</h1>
+            <p className="text-sm text-muted-foreground mt-1">Compete e evolua com outros estudantes</p>
+          </div>
+          <TourButton steps={RANKING_TOUR_STEPS} />
         </div>
         {userPosition && (
           <div className="text-left md:text-right">
@@ -332,7 +344,7 @@ export default function RankingPage() {
 
       {/* Stats */}
       {xpStats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div data-tour="ranking-stats" className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
             <CardContent className="p-4 text-center">
               <Users className="h-5 w-5 text-blue-500 mx-auto mb-1.5" />
@@ -365,6 +377,7 @@ export default function RankingPage() {
       )}
 
       {/* Tabs de ranking */}
+      <div data-tour="ranking-tabs">
       <PageTabs
         value={activeTab}
         onChange={setActiveTab}
@@ -423,7 +436,7 @@ export default function RankingPage() {
                 <CardContent className="p-5">
                   <h2 className="text-lg font-semibold mb-4">Ranking Global</h2>
                   {globalRanking.length > 0 ? (
-                    <div className="space-y-3">
+                    <div data-tour="ranking-cards" className="space-y-3">
                       {globalRanking.map((user, index) => (
                         <RankingCard
                           key={user.user_id}
@@ -504,10 +517,11 @@ export default function RankingPage() {
           },
         ]}
       />
+      </div>
 
       {/* Seção de Conquistas */}
       {userAchievements.length > 0 && (
-        <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
+        <Card data-tour="ranking-achievements" className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
           <CardContent className="p-5">
             <h2 className="text-lg font-semibold mb-4">Suas Conquistas</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -14,6 +14,15 @@ import { CourseTrailCard } from '@/components/courses/CourseTrailCard'
 import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { logger } from '@/lib/logger'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="courses-search"]', popover: { title: 'Busca de Cursos', description: 'Pesquise pelo nome do curso e filtre por categoria para encontrar rapidamente o que precisa.' } },
+  { element: '[data-tour="courses-filters"]', popover: { title: 'Filtros por Categoria', description: 'Use os botões para filtrar cursos por categoria. Clique em "Todos" para ver tudo.' } },
+  { element: '[data-tour="courses-cards"]', popover: { title: 'Seus Cursos', description: 'Cada card mostra o curso, quantidade de aulas, duração e sua barra de progresso.' } },
+  { element: '[data-tour="courses-card-link"]', popover: { title: 'Acessar Curso', description: 'Clique em qualquer card para abrir o curso e ver os módulos e aulas disponíveis.' } },
+]
 
 export default function CoursesPage() {
   const { user, isStudent } = useAuth()
@@ -92,7 +101,10 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Meus Cursos</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground">Meus Cursos</h1>
+        <TourButton steps={TOUR_STEPS} />
+      </div>
 
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Stats */}
@@ -150,7 +162,7 @@ export default function CoursesPage() {
         <Card className="border-border shadow-sm">
           <CardContent className="pt-6">
             <div className="flex flex-col gap-3 md:gap-4">
-              <div className="relative w-full">
+              <div data-tour="courses-search" className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar cursos..."
@@ -159,7 +171,7 @@ export default function CoursesPage() {
                   className="pl-10 border-border"
                 />
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <div data-tour="courses-filters" className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {categories.map((category) => (
                   <Button
                     key={category}
@@ -227,9 +239,9 @@ export default function CoursesPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {trail.courses.map((course) => (
-                    <Link key={course.id} to={`/meus-cursos/${course.id}`} className="group block h-full">
+                <div data-tour="courses-cards" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {trail.courses.map((course, courseIndex) => (
+                    <Link key={course.id} to={`/meus-cursos/${course.id}`} className="group block h-full" {...(courseIndex === 0 ? { 'data-tour': 'courses-card-link' } : {})}>
                       <Card className="h-full flex flex-col overflow-hidden border-border hover:shadow-md transition-all duration-300 group-hover:border-primary/50 p-0">
                         {/* Course Thumbnail */}
                         <div className="relative aspect-video w-full overflow-hidden bg-muted">

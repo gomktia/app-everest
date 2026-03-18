@@ -58,6 +58,16 @@ import { useAuth } from '@/hooks/use-auth'
 import * as studyPlannerService from '@/services/studyPlannerService'
 import { PomodoroWidget } from '@/components/study-planner/PomodoroWidget'
 import { cachedFetch } from '@/lib/offlineCache'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const STUDY_PLANNER_TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="planner-stats"]', popover: { title: 'Estatísticas de Estudo', description: 'Acompanhe seus conteúdos completos, total de tópicos, pomodoros realizados e progresso geral.' } },
+  { element: '[data-tour="planner-tabs"]', popover: { title: 'Abas do Plano', description: 'Alterne entre Planejamento (seus tópicos), Cronômetro Pomodoro e Histórico de estudo.' } },
+  { element: '[data-tour="planner-topics"]', popover: { title: 'Lista de Tópicos', description: 'Veja e organize seus tópicos de estudo. Marque como concluído, em andamento ou pendente.' } },
+  { element: '[data-tour="planner-timer"]', popover: { title: 'Cronômetro Pomodoro', description: 'Use a técnica Pomodoro: 25 min de estudo + 5 min de pausa. Controle com play, pause e reset.' } },
+  { element: '[data-tour="planner-pip"]', popover: { title: 'Janela Flutuante (PiP)', description: 'Abra o timer em uma mini-janela flutuante para acompanhar o tempo enquanto navega em outras páginas.' } },
+]
 import { OfflineBanner } from '@/components/OfflineBanner'
 
 type StudyTopic = {
@@ -538,6 +548,7 @@ export default function StudyPlannerPage() {
           <p className="text-sm text-muted-foreground mt-1">Organize seus estudos com a técnica Pomodoro</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
+          <TourButton steps={STUDY_PLANNER_TOUR_STEPS} />
           <Button
             variant="outline"
             size="icon"
@@ -570,7 +581,7 @@ export default function StudyPlannerPage() {
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
 
         {/* Stats */}
-        <Card className="border-border shadow-sm">
+        <Card data-tour="planner-stats" className="border-border shadow-sm">
           <CardContent className="pt-6">
           <div className="space-y-6">
 
@@ -630,6 +641,7 @@ export default function StudyPlannerPage() {
         </Card>
 
         {/* Tabs */}
+        <div data-tour="planner-tabs">
         <PageTabs
           value={activeTab}
           onChange={(v) => setActiveTab(v as 'planner' | 'timer' | 'history')}
@@ -719,7 +731,7 @@ export default function StudyPlannerPage() {
                       </CardContent>
                     </Card>
                   ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                    <div data-tour="planner-topics" className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                       {Object.entries(topicsByCategory).map(([key, categoryTopics]) => {
                         if (categoryTopics.length === 0) return null
 
@@ -808,6 +820,7 @@ export default function StudyPlannerPage() {
             },
           ]}
         />
+        </div>
 
       </div>
 
@@ -1144,7 +1157,7 @@ function PomodoroTimer({
   const progress = ((totalTime - timeLeft) / totalTime) * 100
 
   return (
-    <Card className="border-border shadow-sm max-w-3xl mx-auto">
+    <Card data-tour="planner-timer" className="border-border shadow-sm max-w-3xl mx-auto">
       <CardContent className="pt-6">
       <div className="space-y-8">
         <div className="text-center space-y-2">
@@ -1269,6 +1282,7 @@ function PomodoroTimer({
             {notificationsEnabled ? <Bell className="h-5 w-5 text-green-600" /> : <BellOff className="h-5 w-5" />}
           </Button>
 
+          <span data-tour="planner-pip">
           <PomodoroWidget
             timerActive={timerActive}
             timerMode={timerMode}
@@ -1279,6 +1293,7 @@ function PomodoroTimer({
             onResetTimer={onResetTimer}
             formatTime={formatTime}
           />
+          </span>
         </div>
       </div>
       </CardContent>

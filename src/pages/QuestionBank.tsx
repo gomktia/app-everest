@@ -42,6 +42,17 @@ import { useFeaturePermissions } from '@/hooks/use-feature-permissions'
 import { FEATURE_KEYS } from '@/services/classPermissionsService'
 import { useContentAccess } from '@/hooks/useContentAccess'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const QUESTION_BANK_TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="qb-stats"]', popover: { title: 'Estatísticas', description: 'Veja o total de questões, matérias, tópicos e questões disponíveis com os filtros atuais.' } },
+  { element: '[data-tour="qb-subject-select"]', popover: { title: 'Selecionar Matéria', description: 'Escolha uma matéria para filtrar as questões. Você também pode clicar nos cards abaixo.' } },
+  { element: '[data-tour="qb-topic-select"]', popover: { title: 'Selecionar Tópico', description: 'Refine ainda mais escolhendo um tópico específico dentro da matéria.' } },
+  { element: '[data-tour="qb-quantity"]', popover: { title: 'Quantidade de Questões', description: 'Defina quantas questões deseja responder nesta sessão de estudo.' } },
+  { element: '[data-tour="qb-subject-cards"]', popover: { title: 'Cards de Matérias', description: 'Clique em um card para selecionar a matéria rapidamente. O card selecionado fica destacado.' } },
+  { element: '[data-tour="qb-start"]', popover: { title: 'Iniciar Estudo', description: 'Quando estiver pronto, clique aqui para começar a sessão de questões.' } },
+]
 
 interface Question {
   id: string
@@ -273,15 +284,18 @@ export default function QuestionBankPage() {
   if (phase === 'select') {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Banco de Questões</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Selecione o conteúdo e pratique com questões comentadas
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Banco de Questões</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Selecione o conteúdo e pratique com questões comentadas
+            </p>
+          </div>
+          <TourButton steps={QUESTION_BANK_TOUR_STEPS} />
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div data-tour="qb-stats" className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
             <CardContent className="p-4 text-center">
               <Layers className="h-5 w-5 text-blue-500 mx-auto mb-1.5" />
@@ -318,7 +332,7 @@ export default function QuestionBankPage() {
             <h2 className="text-lg font-semibold text-foreground">Configurar Sessão de Estudo</h2>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
+              <div data-tour="qb-subject-select" className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Matéria</label>
                 <Select value={selectedSubject} onValueChange={(v) => { setSelectedSubject(v); setSelectedTopic('all') }}>
                   <SelectTrigger>
@@ -331,7 +345,7 @@ export default function QuestionBankPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
+              <div data-tour="qb-topic-select" className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Tópico</label>
                 <Select value={selectedTopic} onValueChange={setSelectedTopic}>
                   <SelectTrigger>
@@ -344,7 +358,7 @@ export default function QuestionBankPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
+              <div data-tour="qb-quantity" className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Quantidade</label>
                 <Select value={quantity.toString()} onValueChange={v => setQuantity(parseInt(v))}>
                   <SelectTrigger>
@@ -365,7 +379,7 @@ export default function QuestionBankPage() {
             {subjects.length > 0 && (
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">Matérias disponíveis</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div data-tour="qb-subject-cards" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {subjects.map((subjectName, index) => {
                     const subjectQuestions = allQuestions.filter(q => q.topics?.subjects?.name === subjectName)
                     const subjectTopicNames = Array.from(new Set(subjectQuestions.map(q => q.topics?.name).filter(Boolean))) as string[]
@@ -429,6 +443,7 @@ export default function QuestionBankPage() {
                 {availableQuestions.length} questões disponíveis com os filtros atuais
               </p>
               <Button
+                data-tour="qb-start"
                 onClick={startStudy}
                 disabled={availableQuestions.length === 0}
                 className="px-6 font-semibold transition-all duration-200 hover:shadow-md hover:bg-green-600"

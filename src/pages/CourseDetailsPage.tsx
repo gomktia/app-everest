@@ -25,6 +25,16 @@ import {
 } from 'lucide-react'
 import { cn, getCategoryColor } from '@/lib/utils'
 import { logger } from '@/lib/logger'
+import { TourButton } from '@/components/TourButton'
+import type { DriveStep } from 'driver.js'
+
+const TOUR_STEPS: DriveStep[] = [
+  { element: '[data-tour="course-header"]', popover: { title: 'Informações do Curso', description: 'Veja o nome, descrição e estatísticas gerais do curso.' } },
+  { element: '[data-tour="course-progress"]', popover: { title: 'Barra de Progresso', description: 'Acompanhe quantas aulas você já concluiu e quantas faltam para terminar o curso.' } },
+  { element: '[data-tour="course-modules"]', popover: { title: 'Módulos do Curso', description: 'Clique em um módulo para expandir e ver todas as aulas disponíveis.' } },
+  { element: '[data-tour="course-lesson"]', popover: { title: 'Acessar Aula', description: 'Clique em qualquer aula para assistir ao vídeo e acompanhar o material.' } },
+  { element: '[data-tour="course-continue"]', popover: { title: 'Continuar de Onde Parou', description: 'Clique aqui para retomar o curso direto de onde você parou.' } },
+]
 
 interface CourseModule {
   id: string
@@ -135,13 +145,16 @@ export default function CourseDetailsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Detalhes do Curso</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground">Detalhes do Curso</h1>
+        <TourButton steps={TOUR_STEPS} />
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-3 max-w-7xl mx-auto">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Course Header */}
-          <Card className="border-border shadow-sm">
+          <Card data-tour="course-header" className="border-border shadow-sm">
             <CardContent className="pt-6">
               <div className="space-y-6">
                 <div className="flex items-start justify-between">
@@ -167,7 +180,7 @@ export default function CourseDetailsPage() {
                 </div>
 
                 {/* Progress Section */}
-                <div className="space-y-4">
+                <div data-tour="course-progress" className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Progresso do Curso</h3>
                     <span className="text-sm text-muted-foreground">
@@ -219,7 +232,7 @@ export default function CourseDetailsPage() {
                 <h2 className="text-2xl font-bold text-foreground">
                   Conteúdo do Curso
                 </h2>
-                <Accordion type="multiple" defaultValue={course.modules.length > 0 ? [course.modules[0].id] : []} className="space-y-4">
+                <Accordion data-tour="course-modules" type="multiple" defaultValue={course.modules.length > 0 ? [course.modules[0].id] : []} className="space-y-4">
                   {course.modules.map((module, index) => {
                     const completedInModule = module.lessons.filter(
                       (l) => l.is_completed,
@@ -275,6 +288,7 @@ export default function CourseDetailsPage() {
                                 <Link
                                   key={lesson.id}
                                   to={`/meus-cursos/${courseId}/lesson/${lesson.id}`}
+                                  {...(index === 0 && lessonIndex === 0 ? { 'data-tour': 'course-lesson' } : {})}
                                   className={cn(
                                     "group flex items-center justify-between p-4 rounded-xl transition-colors duration-300",
                                     "hover:bg-muted/50",
@@ -359,6 +373,7 @@ export default function CourseDetailsPage() {
               </div>
 
               <Button
+                data-tour="course-continue"
                 className="w-full font-semibold py-3 rounded-xl hover:shadow-md transition-all duration-300 inline-flex items-center justify-center"
                 size="lg"
               >
