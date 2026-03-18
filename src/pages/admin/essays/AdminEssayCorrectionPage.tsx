@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/logger'
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -560,7 +561,7 @@ export default function AdminEssayCorrectionPage() {
         user.id
       )
 
-      await supabase
+      const { error: updateError } = await supabase
         .from('essays')
         .update({
           status: 'corrected',
@@ -569,9 +570,15 @@ export default function AdminEssayCorrectionPage() {
           teacher_feedback_text: teacherFeedback || null,
           annotated_text_html: annotatedTextHtml || null,
           annotation_image_url: annotationImageUrl || null,
-          teacher_feedback_audio_url: (feedbackAudioUrl && !feedbackAudioUrl.startsWith('http')) ? feedbackAudioUrl : undefined,
+          teacher_feedback_audio_url: feedbackAudioUrl || null,
         } as any)
         .eq('id', submissionId)
+
+      if (updateError) {
+        logger.error(`Failed to update essay status to corrected for essay ${submissionId}:`, updateError)
+        toast({ title: 'Correção salva, mas falhou ao atualizar status da redação. Tente finalizar novamente.', variant: 'destructive' })
+        return
+      }
 
       const gradeDisplay = correctionType === 'enem' ? `${finalGrade}` : finalGrade.toFixed(3)
       await createNotification({
@@ -585,7 +592,8 @@ export default function AdminEssayCorrectionPage() {
 
       toast({ title: 'Correção finalizada e aluno notificado!' })
       navigate(classId ? `/admin/essays/turma/${classId}` : '/admin/essays')
-    } catch {
+    } catch (err) {
+      logger.error(`Error finalizing correction for essay ${submissionId}:`, err)
       toast({ title: 'Erro ao finalizar correção', variant: 'destructive' })
     } finally {
       setIsSaving(false)

@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import {
   Accordion,
@@ -17,11 +17,9 @@ import {
   PlayCircle,
   Clock,
   BookOpen,
-  Users,
   Star,
   ArrowRight,
-  Calendar,
-  Award
+  Calendar
 } from 'lucide-react'
 import { cn, getCategoryColor } from '@/lib/utils'
 import { logger } from '@/lib/logger'
@@ -68,6 +66,7 @@ interface CourseDetails {
 
 export default function CourseDetailsPage() {
   const { courseId } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [course, setCourse] = useState<CourseDetails | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -142,6 +141,32 @@ export default function CourseDetailsPage() {
   const totalLessons = course.total_lessons
   const completedLessons = course.completed_lessons
   const courseProgress = course.progress_percentage
+  const totalModules = course.modules.length
+
+  // Calculate real total duration from lessons
+  const totalDurationSeconds = course.modules.reduce((acc, mod) =>
+    acc + mod.lessons.reduce((lAcc, l) => lAcc + (l.duration_seconds || 0), 0), 0)
+  const totalDurationHours = Math.floor(totalDurationSeconds / 3600)
+  const totalDurationMinutes = Math.floor((totalDurationSeconds % 3600) / 60)
+  const durationLabel = totalDurationHours > 0
+    ? `${totalDurationHours}h${totalDurationMinutes > 0 ? `${totalDurationMinutes}min` : ''}`
+    : `${totalDurationMinutes}min`
+
+  // Find the first incomplete lesson to continue
+  const getNextLessonPath = () => {
+    for (const mod of course.modules) {
+      for (const lesson of mod.lessons) {
+        if (!lesson.is_completed) {
+          return `/meus-cursos/${courseId}/lesson/${lesson.id}`
+        }
+      }
+    }
+    // All completed — go to first lesson
+    if (course.modules.length > 0 && course.modules[0].lessons.length > 0) {
+      return `/meus-cursos/${courseId}/lesson/${course.modules[0].lessons[0].id}`
+    }
+    return `/meus-cursos`
+  }
 
   return (
     <div className="space-y-6">
@@ -207,18 +232,18 @@ export default function CourseDetailsPage() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                     <Clock className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-blue-600">12h</div>
+                    <div className="text-2xl font-bold text-blue-600">{durationLabel}</div>
                     <div className="text-sm text-muted-foreground">Duração</div>
                   </div>
                   <div className="text-center p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                    <Users className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-green-600">2.4k</div>
-                    <div className="text-sm text-muted-foreground">Estudantes</div>
+                    <PlayCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-green-600">{totalLessons}</div>
+                    <div className="text-sm text-muted-foreground">Aulas</div>
                   </div>
                   <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                    <Award className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-purple-600">Certificado</div>
-                    <div className="text-sm text-muted-foreground">Incluído</div>
+                    <BookOpen className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-purple-600">{totalModules}</div>
+                    <div className="text-sm text-muted-foreground">Módulos</div>
                   </div>
                 </div>
               </div>
@@ -376,6 +401,7 @@ export default function CourseDetailsPage() {
                 data-tour="course-continue"
                 className="w-full font-semibold py-3 rounded-xl hover:shadow-md transition-all duration-300 inline-flex items-center justify-center"
                 size="lg"
+                onClick={() => navigate(getNextLessonPath())}
               >
                 <PlayCircle className="h-5 w-5 mr-2" />
                 Continuar Curso

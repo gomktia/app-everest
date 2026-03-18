@@ -32,6 +32,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useEffect, useState } from 'react'
 import { audioLessonService, AudioLesson, AudioModule } from '@/services/audioLessonService'
 import { Loader2, ArrowLeft } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
 
 const evercastSchema = z.object({
   title: z.string().min(3, 'O título é muito curto.'),
@@ -49,7 +50,17 @@ export default function AdminEvercastFormPage() {
   const navigate = useNavigate()
   usePageTitle('Editor de Evercast')
   const { toast } = useToast()
+  const { profile } = useAuth()
+  const isTeacher = profile?.role === 'teacher'
   const isEditing = !!evercastId
+
+  // Teacher cannot create/edit Evercast
+  useEffect(() => {
+    if (isTeacher) {
+      toast({ title: 'Acesso negado', description: 'Apenas administradores podem gerenciar Evercast.', variant: 'destructive' })
+      navigate('/admin/evercast')
+    }
+  }, [isTeacher, navigate, toast])
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(isEditing)
   const [modules, setModules] = useState<AudioModule[]>([])

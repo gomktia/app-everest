@@ -103,8 +103,9 @@ export default function QuestionBankPage() {
   const { isStudent } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
   const { isRestricted, isAllowed, loading: contentAccessLoading } = useContentAccess('quiz_topic')
-  const [allQuestions, setAllQuestions] = useState<Question[]>([])
+  const [subjectTopicData, setSubjectTopicData] = useState<{ subjects: string[]; topics: { name: string; subjectName: string; topicId: string }[]; totalCount: number }>({ subjects: [], topics: [], totalCount: 0 })
   const [loading, setLoading] = useState(true)
+  const [studyLoading, setStudyLoading] = useState(false)
 
   // Selection phase
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
@@ -120,13 +121,46 @@ export default function QuestionBankPage() {
   const [readingTextDialog, setReadingTextDialog] = useState<{ title: string; content: string } | null>(null)
 
   useEffect(() => {
-    fetchQuestions()
+    fetchMetadata()
   }, [])
 
-  const fetchQuestions = async () => {
+  const fetchMetadata = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      // Only fetch topic/subject metadata, not full question data
+      const { data: topicsData, error: topicsError } = await supabase
+        .from('topics')
+        .select('id, name, subjects ( name )')
+
+      if (topicsError) throw topicsError
+
+      const topics = (topicsData || []).map((t: any) => ({
+        name: t.name as string,
+        subjectName: t.subjects?.name as string,
+        topicId: t.id as string,
+      })).filter(t => t.subjectName)
+
+      const subjects = Array.from(new Set(topics.map(t => t.subjectName))) as string[]
+
+      // Get total count efficiently
+      const { count, error: countError } = await supabase
+        .from('quiz_questions')
+        .select('id', { count: 'exact', head: true })
+
+      if (countError) throw countError
+
+      setSubjectTopicData({ subjects, topics, totalCount: count || 0 })
+    } catch (error) {
+      logger.error('Error fetching question metadata:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchStudyQuestions = async (): Promise<Question[]> => {
+    try {
+      setStudyLoading(true)
+      let query = supabase
         .from('quiz_questions')
         .select(`
           *,
@@ -144,50 +178,70 @@ export default function QuestionBankPage() {
           )
         `)
 
+      if (selectedSubject !== 'all') {
+        // Filter by subject via topic join
+        const topicIds = subjectTopicData.topics
+          .filter(t => t.subjectName === selectedSubject)
+          .map(t => t.topicId)
+        if (topicIds.length > 0) {
+          query = query.in('topic_id', topicIds)
+        }
+        if (selectedTopic !== 'all') {
+          const topicId = subjectTopicData.topics.find(t => t.name === selectedTopic && t.subjectName === selectedSubject)?.topicId
+          if (topicId) {
+            query = query.eq('topic_id', topicId)
+          }
+        }
+      }
+
+      // Fetch more than needed for shuffling, but cap it
+      const fetchLimit = Math.min(quantity * 3, 200)
+      const { data, error } = await query.limit(fetchLimit)
+
       if (error) throw error
-      // Normalize data: reading_text comes as array from Supabase join
+
       const normalized = (data || []).map((q: any) => ({
         ...q,
         reading_text: Array.isArray(q.reading_text) ? q.reading_text[0] || null : q.reading_text,
       }))
-      setAllQuestions(normalized)
+
+      // Filter out questions with no valid options, apply content access
+      const filtered = normalized.filter((q: Question) => {
+        if (isStudent && isRestricted && q.topics?.id && !isAllowed(q.topics.id)) return false
+        if (parseOptions(q.options).length === 0) return false
+        return true
+      })
+
+      return filtered
     } catch (error) {
-      logger.error('Error fetching questions:', error)
+      logger.error('Error fetching study questions:', error)
+      return []
     } finally {
-      setLoading(false)
+      setStudyLoading(false)
     }
   }
 
-  // Filter questions by content access first
-  const accessibleQuestions = isStudent && isRestricted
-    ? allQuestions.filter(q => q.topics?.id && isAllowed(q.topics.id))
-    : allQuestions
+  // Derive subjects and topics from metadata
+  const accessibleTopics = isStudent && isRestricted
+    ? subjectTopicData.topics.filter(t => isAllowed(t.topicId))
+    : subjectTopicData.topics
 
-  // Extract unique subjects and topics from accessible questions
-  const subjects = Array.from(new Set(accessibleQuestions.map(q => q.topics?.subjects?.name).filter(Boolean))) as string[]
+  const subjects = Array.from(new Set(accessibleTopics.map(t => t.subjectName)))
 
   const filteredTopics = selectedSubject === 'all'
-    ? Array.from(new Set(accessibleQuestions.map(q => q.topics?.name).filter(Boolean))) as string[]
+    ? Array.from(new Set(accessibleTopics.map(t => t.name)))
     : Array.from(new Set(
-        accessibleQuestions
-          .filter(q => q.topics?.subjects?.name === selectedSubject)
-          .map(q => q.topics?.name)
-          .filter(Boolean)
-      )) as string[]
+        accessibleTopics
+          .filter(t => t.subjectName === selectedSubject)
+          .map(t => t.name)
+      ))
 
-  const availableQuestions = allQuestions.filter(q => {
-    // Content access: if student has restricted topics, filter by allowed
-    if (isStudent && isRestricted && q.topics?.id && !isAllowed(q.topics.id)) return false
-    if (selectedSubject !== 'all' && q.topics?.subjects?.name !== selectedSubject) return false
-    if (selectedTopic !== 'all' && q.topics?.name !== selectedTopic) return false
-    // Exclude questions with no valid options
-    if (parseOptions(q.options).length === 0) return false
-    return true
-  })
+  const totalAccessibleCount = subjectTopicData.totalCount
 
-  // Start study session
-  const startStudy = () => {
-    if (availableQuestions.length === 0) {
+  // Start study session — fetches questions on demand
+  const startStudy = async () => {
+    const fetched = await fetchStudyQuestions()
+    if (fetched.length === 0) {
       toast({
         title: 'Nenhuma questão disponível',
         description: 'Selecione uma matéria ou tópico que tenha questões.',
@@ -195,7 +249,7 @@ export default function QuestionBankPage() {
       })
       return
     }
-    const shuffled = [...availableQuestions].sort(() => Math.random() - 0.5)
+    const shuffled = [...fetched].sort(() => Math.random() - 0.5)
     const selected = shuffled.slice(0, quantity)
     setStudyQuestions(selected)
     setCurrentIndex(0)
@@ -299,7 +353,7 @@ export default function QuestionBankPage() {
           <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-500/30">
             <CardContent className="p-4 text-center">
               <Layers className="h-5 w-5 text-blue-500 mx-auto mb-1.5" />
-              <div className="text-xl font-bold text-foreground">{accessibleQuestions.length}</div>
+              <div className="text-xl font-bold text-foreground">{totalAccessibleCount}</div>
               <div className="text-xs text-muted-foreground">Total Questões</div>
             </CardContent>
           </Card>
@@ -320,8 +374,8 @@ export default function QuestionBankPage() {
           <Card className="border-border shadow-sm transition-all duration-200 hover:shadow-md hover:border-orange-500/30">
             <CardContent className="p-4 text-center">
               <Search className="h-5 w-5 text-orange-500 mx-auto mb-1.5" />
-              <div className="text-xl font-bold text-foreground">{availableQuestions.length}</div>
-              <div className="text-xs text-muted-foreground">Disponíveis</div>
+              <div className="text-xl font-bold text-foreground">{filteredTopics.length > 0 ? '---' : '0'}</div>
+              <div className="text-xs text-muted-foreground">Tópicos Filtrados</div>
             </CardContent>
           </Card>
         </div>
@@ -381,8 +435,8 @@ export default function QuestionBankPage() {
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">Matérias disponíveis</h3>
                 <div data-tour="qb-subject-cards" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {subjects.map((subjectName, index) => {
-                    const subjectQuestions = allQuestions.filter(q => q.topics?.subjects?.name === subjectName)
-                    const subjectTopicNames = Array.from(new Set(subjectQuestions.map(q => q.topics?.name).filter(Boolean))) as string[]
+                    const subjectTopicEntries = accessibleTopics.filter(t => t.subjectName === subjectName)
+                    const subjectTopicNames = Array.from(new Set(subjectTopicEntries.map(t => t.name)))
                     const isSelected = selectedSubject === subjectName
                     const previewTopics = subjectTopicNames.slice(0, 4)
                     const colors = getCategoryColor(index)
@@ -407,7 +461,7 @@ export default function QuestionBankPage() {
                             isSelected ? 'bg-green-500' : colors.badge
                           )}
                         >
-                          {subjectQuestions.length} questões
+                          {subjectTopicNames.length} tópicos
                         </div>
 
                         <h3 className="mt-2 font-semibold text-foreground leading-snug line-clamp-2">
@@ -440,17 +494,24 @@ export default function QuestionBankPage() {
 
             <div className="flex items-center justify-between pt-2 border-t border-border">
               <p className="text-sm text-muted-foreground">
-                {availableQuestions.length} questões disponíveis com os filtros atuais
+                {selectedSubject === 'all' ? 'Todas as matérias' : selectedSubject}
+                {selectedTopic !== 'all' ? ` · ${selectedTopic}` : ''} · {quantity} questões
               </p>
               <Button
                 data-tour="qb-start"
                 onClick={startStudy}
-                disabled={availableQuestions.length === 0}
+                disabled={studyLoading || subjects.length === 0}
                 className="px-6 font-semibold transition-all duration-200 hover:shadow-md hover:bg-green-600"
               >
-                <Play className="mr-2 h-4 w-4" />
-                Iniciar Estudo
-                <ChevronRight className="ml-1 h-4 w-4" />
+                {studyLoading ? (
+                  <>Carregando...</>
+                ) : (
+                  <>
+                    <Play className="mr-2 h-4 w-4" />
+                    Iniciar Estudo
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -818,17 +879,13 @@ export default function QuestionBankPage() {
             <RotateCcw className="h-4 w-4" />
             Nova Sessão
           </Button>
-          <Button onClick={() => {
+          <Button onClick={async () => {
             setStudyQuestions([])
             setAnswers({})
             setCurrentIndex(0)
             setShowExplanation(false)
-            // Keep filters, just restart with new shuffle
-            const shuffled = [...availableQuestions].sort(() => Math.random() - 0.5)
-            const selected = shuffled.slice(0, quantity)
-            setStudyQuestions(selected)
-            setCurrentIndex(0)
-            setPhase('study')
+            // Keep filters, fetch fresh questions
+            await startStudy()
           }} className="gap-2 transition-all duration-200 hover:shadow-md hover:bg-green-600">
             <Play className="h-4 w-4" />
             Repetir Mesmos Filtros

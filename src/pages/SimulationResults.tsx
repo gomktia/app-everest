@@ -88,7 +88,36 @@ export default function SimulationResultsPage() {
 
   if (loading) return <SectionLoader />
 
-  if (!result) return null
+  if (!result) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/simulados')}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Resultado não encontrado</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Não foi possível carregar o resultado deste simulado.
+            </p>
+          </div>
+        </div>
+        <Card className="border-border shadow-sm">
+          <CardContent className="text-center py-16 space-y-4">
+            <Target className="h-12 w-12 text-muted-foreground mx-auto" />
+            <h2 className="text-xl font-bold text-foreground">Resultado não encontrado</h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              O resultado deste simulado não está disponível. Pode ser que você ainda não tenha finalizado o simulado ou ocorreu um erro ao carregar.
+            </p>
+            <Button onClick={() => navigate('/simulados')} className="gap-2 mt-4">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar para Simulados
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   const percentage = Math.round(result.percentage || 0)
   const totalQuestions = result.answers?.length || 0

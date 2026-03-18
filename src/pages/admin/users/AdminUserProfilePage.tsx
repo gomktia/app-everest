@@ -42,6 +42,7 @@ import {
   Eye,
 } from 'lucide-react'
 import { useViewMode } from '@/contexts/view-mode-context'
+import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 
 interface CourseRow {
   id: string
@@ -78,6 +79,7 @@ export default function AdminUserProfilePage() {
   usePageTitle('Perfil do Usuário')
   const { toast } = useToast()
   const { startImpersonating } = useViewMode()
+  const { isTeacher, studentIds, loading: teacherLoading } = useTeacherClasses()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -311,7 +313,20 @@ export default function AdminUserProfilePage() {
     }
   }
 
-  if (loading) return <SectionLoader />
+  if (loading || teacherLoading) return <SectionLoader />
+
+  // Teacher scope: can only view/edit students in their own classes
+  if (isTeacher && userId && !studentIds.includes(userId)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
+        <h2 className="text-xl font-semibold text-foreground">Acesso negado</h2>
+        <p className="text-muted-foreground">Você não tem permissão para visualizar este perfil.</p>
+        <Button variant="outline" onClick={() => navigate('/admin/management')}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+        </Button>
+      </div>
+    )
+  }
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '--'

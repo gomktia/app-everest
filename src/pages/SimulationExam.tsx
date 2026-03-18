@@ -54,6 +54,7 @@ export default function SimulationExamPage() {
   const [loading, setLoading] = useState(true)
   const [timeLeft, setTimeLeft] = useState(0)
   const [showAnswerSheet, setShowAnswerSheet] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useAuth()
   const { scoreSimulationActivity } = useActivityScoring()
 
@@ -64,10 +65,23 @@ export default function SimulationExamPage() {
   useEffect(() => {
     if (!simulation) return
     const timer = setInterval(() => {
-      setTimeLeft(prev => (prev > 0 ? prev - 1 : 0))
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer)
+          return 0
+        }
+        return prev - 1
+      })
     }, 1000)
     return () => clearInterval(timer)
   }, [simulation])
+
+  // Auto-submit when time runs out
+  useEffect(() => {
+    if (timeLeft === 0 && simulation && attemptId && !isSubmitting) {
+      handleFinish()
+    }
+  }, [timeLeft])
 
   const loadSimulation = async () => {
     try {
@@ -111,8 +125,9 @@ export default function SimulationExamPage() {
   }
 
   const handleFinish = async () => {
-    if (!attemptId || !simulation) return
+    if (!attemptId || !simulation || isSubmitting) return
     try {
+      setIsSubmitting(true)
       setLoading(true)
       await submitSimulation(attemptId)
 
@@ -127,6 +142,7 @@ export default function SimulationExamPage() {
       navigate(`/simulados/${simulationId}/resultado`)
     } catch {
       toast({ title: 'Erro ao enviar', description: 'Tente novamente.', variant: 'destructive' })
+      setIsSubmitting(false)
       setLoading(false)
     }
   }
@@ -328,7 +344,9 @@ export default function SimulationExamPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleFinish}>Confirmar e Enviar</AlertDialogAction>
+                <AlertDialogAction onClick={handleFinish} disabled={isSubmitting}>
+                  {isSubmitting ? 'Enviando...' : 'Confirmar e Enviar'}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

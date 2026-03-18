@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { logger } from '@/lib/logger'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -159,15 +160,24 @@ export default function AdminLiveEventsPage() {
 
   const loadData = async () => {
     setLoading(true)
-    const [livesData, classesData, coursesData] = await Promise.all([
-      getLiveEvents(),
-      supabase.from('classes').select('id, name').order('name'),
-      supabase.from('video_courses').select('id, name').order('name'),
-    ])
-    setLives(livesData)
-    setClasses(classesData.data || [])
-    setCourses(coursesData.data || [])
-    setLoading(false)
+    try {
+      const [livesData, classesData, coursesData] = await Promise.all([
+        getLiveEvents(),
+        supabase.from('classes').select('id, name').order('name'),
+        supabase.from('video_courses').select('id, name').order('name'),
+      ])
+      setLives(livesData)
+      setClasses(classesData.data || [])
+      setCourses(coursesData.data || [])
+    } catch (err) {
+      logger.error('Failed to load live events data:', err)
+      toast({ title: 'Erro ao carregar dados de lives', variant: 'destructive' })
+      setLives([])
+      setClasses([])
+      setCourses([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const filteredLives = lives.filter(l => {

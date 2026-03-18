@@ -27,6 +27,7 @@ import { useEffect, useState } from 'react'
 import { audioLessonService, AudioLesson } from '@/services/audioLessonService'
 import { useToast } from '@/components/ui/use-toast'
 import { logger } from '@/lib/logger'
+import { useAuth } from '@/hooks/use-auth'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,8 @@ import {
 
 export default function AdminEvercastPage() {
   usePageTitle('Evercast')
+  const { profile } = useAuth()
+  const isTeacher = profile?.role === 'teacher'
   const [lessons, setLessons] = useState<AudioLesson[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -85,12 +88,14 @@ export default function AdminEvercastPage() {
               Adicione, edite ou remova áudio-aulas.
             </CardDescription>
           </div>
-          <Button asChild>
-            <Link to="/admin/evercast/new">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Nova Áudio-aula
-            </Link>
-          </Button>
+          {!isTeacher && (
+            <Button asChild>
+              <Link to="/admin/evercast/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Nova Áudio-aula
+              </Link>
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -120,23 +125,25 @@ export default function AdminEvercastPage() {
                     <TableCell>{item.series}</TableCell>
                     <TableCell>{item.duration_minutes} min</TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link to={`/admin/evercast/${item.id}/edit`}>
-                              Editar
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(item.id)}>
-                            Deletar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {!isTeacher && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link to={`/admin/evercast/${item.id}/edit`}>
+                                Editar
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(item.id)}>
+                              Deletar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

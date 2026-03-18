@@ -44,6 +44,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
 import { getUserById } from '@/services/adminUserService'
 import type { User } from '@/services/adminUserService'
+import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 
 interface StudentClass {
   id: string
@@ -74,6 +75,7 @@ export default function AdminStudentClassesPage() {
   const navigate = useNavigate()
   usePageTitle('Turmas do Aluno')
   const { toast } = useToast()
+  const { isTeacher, classIds: teacherClassIds, studentIds, loading: teacherLoading } = useTeacherClasses()
 
   const [user, setUser] = useState<User | null>(null)
   const [studentClasses, setStudentClasses] = useState<StudentClass[]>([])
@@ -138,9 +140,13 @@ export default function AdminStudentClassesPage() {
       if (allClassesError) throw allClassesError
 
       const enrolledClassIds = (classesData || []).map((sc: any) => sc.class_id)
-      const available = (allClasses || []).filter(
+      let available = (allClasses || []).filter(
         (c: any) => !enrolledClassIds.includes(c.id)
       )
+      // Teacher scope: only show classes owned by the teacher
+      if (isTeacher && teacherClassIds.length > 0) {
+        available = available.filter((c: any) => teacherClassIds.includes(c.id))
+      }
       setAvailableClasses(available)
 
     } catch (error) {
@@ -160,6 +166,16 @@ export default function AdminStudentClassesPage() {
       toast({
         title: 'Erro',
         description: 'Selecione uma turma',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    // Teacher scope: block adding to classes not owned by the teacher
+    if (isTeacher && !teacherClassIds.includes(selectedClassId)) {
+      toast({
+        title: 'Acesso negado',
+        description: 'Você só pode adicionar alunos às suas próprias turmas',
         variant: 'destructive'
       })
       return
@@ -194,7 +210,17 @@ export default function AdminStudentClassesPage() {
     }
   }
 
-  const handleRemoveClass = async (studentClassId: string) => {
+  const handleRemoveClass = async (studentClassId: string, classId?: string) => {
+    // Teacher scope: block removing from classes not owned by the teacher
+    if (isTeacher && classId && !teacherClassIds.includes(classId)) {
+      toast({
+        title: 'Acesso negado',
+        description: 'Você só pode remover alunos das suas próprias turmas',
+        variant: 'destructive'
+      })
+      return
+    }
+
     if (!confirm('Deseja realmente remover este aluno da turma?')) return
 
     try {
@@ -226,8 +252,21 @@ export default function AdminStudentClassesPage() {
     sc.class?.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (loading) {
+  if (loading || teacherLoading) {
     return <SectionLoader />
+  }
+
+  // Teacher scope: can only manage students in their own classes
+  if (isTeacher && userId && !studentIds.includes(userId)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
+        <h2 className="text-xl font-semibold text-foreground">Acesso negado</h2>
+        <p className="text-muted-foreground">Você não tem permissão para gerenciar as turmas deste aluno.</p>
+        <Button variant="outline" onClick={() => navigate('/admin/management')}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -353,7 +392,7 @@ export default function AdminStudentClassesPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleRemoveClass(studentClass.id)}
+                            onClick={() => handleRemoveClass(studentClass.id, studentClass.class_id)}
                             className="text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />

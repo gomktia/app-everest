@@ -50,6 +50,7 @@ import {
 import { getClasses, type Class } from '@/services/classService'
 import { useToast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
+import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 
 const eventConfig = {
   LIVE_CLASS: {
@@ -90,6 +91,7 @@ type EventType = keyof typeof eventConfig
 
 export default function AdminCalendarPage() {
   usePageTitle('Calendário')
+  const { isTeacher, classIds: teacherClassIds, loading: teacherLoading } = useTeacherClasses()
   const [activeTab, setActiveTab] = useState('calendar')
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [currentMonth, setCurrentMonth] = useState(new Date())
@@ -121,7 +123,12 @@ export default function AdminCalendarPage() {
         getClasses(),
       ])
       setEvents(eventsData)
-      setClasses(classesData)
+      // Teacher scope: only show teacher's own classes in dropdown
+      if (isTeacher && teacherClassIds.length > 0) {
+        setClasses(classesData.filter(c => teacherClassIds.includes(c.id)))
+      } else {
+        setClasses(classesData)
+      }
     } catch {
       toast({ title: 'Erro ao carregar', variant: 'destructive' })
     } finally {
@@ -200,6 +207,11 @@ export default function AdminCalendarPage() {
       toast({ title: 'Título obrigatório', variant: 'destructive' })
       return
     }
+    // Teacher scope: verify classId belongs to teacher
+    if (isTeacher && formData.classId !== 'global' && !teacherClassIds.includes(formData.classId)) {
+      toast({ title: 'Acesso negado', description: 'Você só pode criar eventos para suas próprias turmas.', variant: 'destructive' })
+      return
+    }
     try {
       setIsSubmitting(true)
       const startDateTime = new Date(`${formData.date}T${formData.startTime}:00`)
@@ -235,6 +247,14 @@ export default function AdminCalendarPage() {
   }
 
   const handleDeleteEvent = async (id: string) => {
+    // Teacher scope: verify the event belongs to teacher's class
+    if (isTeacher) {
+      const event = events.find(e => e.id === id)
+      if (event?.class_id && !teacherClassIds.includes(event.class_id)) {
+        toast({ title: 'Acesso negado', description: 'Você só pode excluir eventos das suas próprias turmas.', variant: 'destructive' })
+        return
+      }
+    }
     if (!confirm('Excluir este evento?')) return
     try {
       await deleteEvent(id)
