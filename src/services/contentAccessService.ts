@@ -29,11 +29,13 @@ export async function getAllContentAccessForClass(classId: string): Promise<Reco
 
 export async function saveContentAccess(classId: string, contentType: string, contentIds: string[]): Promise<void> {
   // Delete existing entries for this class + content_type
-  await supabase
+  const { error: deleteError } = await supabase
     .from('class_content_access')
     .delete()
     .eq('class_id', classId)
     .eq('content_type', contentType)
+
+  if (deleteError) throw deleteError
 
   // If empty array = everything is free (no restrictions)
   if (contentIds.length === 0) return

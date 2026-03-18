@@ -286,32 +286,17 @@ export default function AdminClassFormPage() {
           }
         }
 
-        // Save content access
-        if (!contentToggles.flashcard_topic) await saveContentAccess(classId!, 'flashcard_topic', contentAccess.flashcard_topic || [])
-        else await saveContentAccess(classId!, 'flashcard_topic', [])
-
-        if (!contentToggles.quiz_topic) await saveContentAccess(classId!, 'quiz_topic', contentAccess.quiz_topic || [])
-        else await saveContentAccess(classId!, 'quiz_topic', [])
-
-        if (!contentToggles.acervo) {
-          await saveContentAccess(classId!, 'acervo_category', contentAccess.acervo_category || [])
-          await saveContentAccess(classId!, 'acervo_concurso', contentAccess.acervo_concurso || [])
-        } else {
-          await saveContentAccess(classId!, 'acervo_category', [])
-          await saveContentAccess(classId!, 'acervo_concurso', [])
-        }
-
-        if (!contentToggles.simulation) await saveContentAccess(classId!, 'simulation', contentAccess.simulation || [])
-        else await saveContentAccess(classId!, 'simulation', [])
-
-        if (!contentToggles.essay_limit) await saveContentAccess(classId!, 'essay_limit', [essayLimit])
-        else await saveContentAccess(classId!, 'essay_limit', [])
-
-        if (!contentToggles.community_readonly) await saveContentAccess(classId!, 'community_readonly', ['true'])
-        else await saveContentAccess(classId!, 'community_readonly', [])
-
-        if (!contentToggles.community_space) await saveContentAccess(classId!, 'community_space', contentAccess.community_space || [])
-        else await saveContentAccess(classId!, 'community_space', [])
+        // Save content access (parallel for speed)
+        await Promise.all([
+          saveContentAccess(classId!, 'flashcard_topic', contentToggles.flashcard_topic ? [] : contentAccess.flashcard_topic || []),
+          saveContentAccess(classId!, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
+          saveContentAccess(classId!, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
+          saveContentAccess(classId!, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
+          saveContentAccess(classId!, 'simulation', contentToggles.simulation ? [] : contentAccess.simulation || []),
+          saveContentAccess(classId!, 'essay_limit', contentToggles.essay_limit ? [] : [essayLimit]),
+          saveContentAccess(classId!, 'community_readonly', contentToggles.community_readonly ? [] : ['true']),
+          saveContentAccess(classId!, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
+        ])
 
         toast({
           title: 'Sucesso',
