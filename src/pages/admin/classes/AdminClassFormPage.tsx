@@ -605,8 +605,8 @@ export default function AdminClassFormPage() {
                     <span className="text-sm text-muted-foreground">dias</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input type="checkbox" checked={isDefault} onChange={e => setIsDefault(e.target.checked)} />
-                    <label className="text-sm">Turma padrao - Ingressar membros com acesso ilimitado nesta turma</label>
+                    <Switch checked={isDefault} onCheckedChange={setIsDefault} />
+                    <label className="text-sm">Turma padrão — Ingressar membros com acesso ilimitado nesta turma</label>
                   </div>
                 </CardContent>
               </Card>
@@ -797,12 +797,12 @@ export default function AdminClassFormPage() {
                             <p className="text-xs font-semibold text-muted-foreground mb-1">{subject.name}</p>
                             {allTopics.filter(t => t.subject_id === subject.id).map(topic => (
                               <label key={topic.id} className="flex items-center gap-2 text-sm py-0.5">
-                                <input type="checkbox"
+                                <Switch
                                   checked={contentAccess.flashcard_topic?.includes(topic.id) || false}
-                                  onChange={e => {
+                                  onCheckedChange={checked => {
                                     setContentAccess(prev => {
                                       const current = prev.flashcard_topic || []
-                                      return { ...prev, flashcard_topic: e.target.checked
+                                      return { ...prev, flashcard_topic: checked
                                         ? [...current, topic.id]
                                         : current.filter(id => id !== topic.id) }
                                     })
@@ -838,12 +838,12 @@ export default function AdminClassFormPage() {
                             <p className="text-xs font-semibold text-muted-foreground mb-1">{subject.name}</p>
                             {allTopics.filter(t => t.subject_id === subject.id).map(topic => (
                               <label key={topic.id} className="flex items-center gap-2 text-sm py-0.5">
-                                <input type="checkbox"
+                                <Switch
                                   checked={contentAccess.quiz_topic?.includes(topic.id) || false}
-                                  onChange={e => {
+                                  onCheckedChange={checked => {
                                     setContentAccess(prev => {
                                       const current = prev.quiz_topic || []
-                                      return { ...prev, quiz_topic: e.target.checked
+                                      return { ...prev, quiz_topic: checked
                                         ? [...current, topic.id]
                                         : current.filter(id => id !== topic.id) }
                                     })
@@ -879,12 +879,12 @@ export default function AdminClassFormPage() {
                           <div className="flex flex-wrap gap-3">
                             {['prova', 'livro', 'apostila', 'exercicio', 'regulamento', 'mapa_mental'].map(cat => (
                               <label key={cat} className="flex items-center gap-2 text-sm">
-                                <input type="checkbox"
+                                <Switch
                                   checked={contentAccess.acervo_category?.includes(cat) || false}
-                                  onChange={e => {
+                                  onCheckedChange={checked => {
                                     setContentAccess(prev => {
                                       const current = prev.acervo_category || []
-                                      return { ...prev, acervo_category: e.target.checked ? [...current, cat] : current.filter(id => id !== cat) }
+                                      return { ...prev, acervo_category: checked ? [...current, cat] : current.filter(id => id !== cat) }
                                     })
                                   }}
                                 />
@@ -898,12 +898,12 @@ export default function AdminClassFormPage() {
                           <div className="flex flex-wrap gap-3">
                             {['EAOF', 'EAOP', 'CAMAR', 'CADAR', 'CAFAR', 'CFOE'].map(conc => (
                               <label key={conc} className="flex items-center gap-2 text-sm">
-                                <input type="checkbox"
+                                <Switch
                                   checked={contentAccess.acervo_concurso?.includes(conc) || false}
-                                  onChange={e => {
+                                  onCheckedChange={checked => {
                                     setContentAccess(prev => {
                                       const current = prev.acervo_concurso || []
-                                      return { ...prev, acervo_concurso: e.target.checked ? [...current, conc] : current.filter(id => id !== conc) }
+                                      return { ...prev, acervo_concurso: checked ? [...current, conc] : current.filter(id => id !== conc) }
                                     })
                                   }}
                                 />
@@ -934,12 +934,12 @@ export default function AdminClassFormPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4">
                         {allSimulations.map(sim => (
                           <label key={sim.id} className="flex items-center gap-2 text-sm">
-                            <input type="checkbox"
+                            <Switch
                               checked={contentAccess.simulation?.includes(sim.id) || false}
-                              onChange={e => {
+                              onCheckedChange={checked => {
                                 setContentAccess(prev => {
                                   const current = prev.simulation || []
-                                  return { ...prev, simulation: e.target.checked ? [...current, sim.id] : current.filter(id => id !== sim.id) }
+                                  return { ...prev, simulation: checked ? [...current, sim.id] : current.filter(id => id !== sim.id) }
                                 })
                               }}
                             />
@@ -1012,12 +1012,12 @@ export default function AdminClassFormPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4">
                         {allCommunitySpaces.map(space => (
                           <label key={space.id} className="flex items-center gap-2 text-sm py-0.5">
-                            <input type="checkbox"
+                            <Switch
                               checked={contentAccess.community_space?.includes(space.id) || false}
-                              onChange={e => {
+                              onCheckedChange={checked => {
                                 setContentAccess(prev => {
                                   const current = prev.community_space || []
-                                  return { ...prev, community_space: e.target.checked
+                                  return { ...prev, community_space: checked
                                     ? [...current, space.id]
                                     : current.filter(id => id !== space.id) }
                                 })
