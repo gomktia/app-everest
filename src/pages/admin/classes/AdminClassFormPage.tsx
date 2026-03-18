@@ -395,10 +395,6 @@ export default function AdminClassFormPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{isEditing ? 'Editar Turma' : 'Nova Turma'}</h1>
-        <p className="text-sm text-muted-foreground">{isEditing ? 'Edite as informações da turma' : 'Crie uma nova turma no sistema'}</p>
-      </div>
       <div className="max-w-4xl mx-auto space-y-6">
         <Card className="border-border shadow-sm">
           <CardContent className="p-5">
