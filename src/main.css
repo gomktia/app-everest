@@ -4,6 +4,50 @@
 @import './styles/animations.css';
 @import './styles/drawer-apple.css';
 
+/* Driver.js Tour - Dark mode overrides */
+.dark .driver-popover {
+  background-color: hsl(222 47% 11%);
+  color: hsl(210 40% 98%);
+  border: 1px solid hsl(217 33% 17%);
+}
+.dark .driver-popover .driver-popover-title {
+  color: hsl(210 40% 98%);
+}
+.dark .driver-popover .driver-popover-description {
+  color: hsl(215 20% 65%);
+}
+.dark .driver-popover .driver-popover-progress-text {
+  color: hsl(215 20% 55%);
+}
+.dark .driver-popover .driver-popover-prev-btn {
+  color: hsl(215 20% 65%);
+  border-color: hsl(217 33% 17%);
+}
+.dark .driver-popover .driver-popover-prev-btn:hover {
+  background-color: hsl(217 33% 17%);
+  color: hsl(210 40% 98%);
+}
+.driver-popover .driver-popover-next-btn,
+.driver-popover .driver-popover-close-btn {
+  background-color: hsl(25 95% 53%);
+  color: white;
+  text-shadow: none;
+}
+.driver-popover .driver-popover-next-btn:hover,
+.driver-popover .driver-popover-close-btn:hover {
+  background-color: hsl(25 95% 45%);
+}
+.driver-popover .driver-popover-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+.driver-popover .driver-popover-description {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* Everest Design System - Enhanced */
 :root {
   /* Enhanced Primary Colors */

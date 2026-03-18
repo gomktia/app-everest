@@ -23,6 +23,7 @@ import {
   type LessonRatingStats,
 } from '@/services/lessonInteractionService'
 import { logger } from '@/lib/logger'
+import { LessonTourButton } from '@/components/courses/LessonTour'
 import {
   ArrowLeft,
   CheckCircle,
@@ -956,7 +957,7 @@ export default function LessonPlayerPage() {
         </div>
       </div>
       {/* Sidebar footer - always visible */}
-      <div className="shrink-0 border-t border-border bg-muted/20 px-4 py-2.5">
+      <div data-tour="rating" className="shrink-0 border-t border-border bg-muted/20 px-4 py-2.5">
         <div className="flex items-center justify-between">
           <span className="text-sm text-foreground font-medium">Avalie esta aula</span>
           <div className="flex items-center gap-1">
@@ -1055,8 +1056,12 @@ export default function LessonPlayerPage() {
                 </div>
               </div>
 
+              {/* Tour guide */}
+              <LessonTourButton />
+
               {/* Apagar Luz */}
               <button
+                data-tour="theater-mode"
                 onClick={() => setTheaterMode(true)}
                 className="p-2.5 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-all"
                 title="Apagar Luz"
@@ -1066,6 +1071,7 @@ export default function LessonPlayerPage() {
 
               {/* Sidebar toggle */}
               <button
+                data-tour="sidebar-toggle"
                 onClick={() => setDesktopSidebarVisible(!desktopSidebarVisible)}
                 className="hidden lg:block p-2.5 rounded-lg text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10 transition-all"
               >
@@ -1208,7 +1214,7 @@ export default function LessonPlayerPage() {
                 ) : (
                   /* Normal video */
                   <div className={cn("relative w-full transition-all duration-300", theaterMode ? "bg-black" : "px-4 md:px-6 lg:px-8 py-4 sm:py-6 bg-background")}>
-                    <div className={cn("relative bg-black transition-all duration-300", theaterMode ? "w-full" : "rounded-2xl overflow-hidden border border-border shadow-sm")}>
+                    <div data-tour="video-player" className={cn("relative bg-black transition-all duration-300", theaterMode ? "w-full" : "rounded-2xl overflow-hidden border border-border shadow-sm")}>
                       {videoEmbedUrl ? (
                         <div style={{ paddingBottom: theaterMode ? '52%' : '56.25%' }} className="relative transition-all duration-300">
                           <iframe src={videoEmbedUrl} title={lessonData.title}
@@ -1263,6 +1269,7 @@ export default function LessonPlayerPage() {
                   <div className="flex items-center gap-3 shrink-0 relative">
                     {/* Auto-play toggle */}
                     <button
+                      data-tour="auto-play"
                       onClick={toggleAutoPlay}
                       className={cn(
                         "flex items-center gap-1.5 text-xs transition-colors",
@@ -1282,7 +1289,7 @@ export default function LessonPlayerPage() {
                     </button>
 
                     {/* Mark complete */}
-                    <button onClick={handleMarkComplete} disabled={lessonData.completed || isMarkingComplete}
+                    <button data-tour="complete-lesson" onClick={handleMarkComplete} disabled={lessonData.completed || isMarkingComplete}
                       className={cn(
                         "flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px]",
                         lessonData.completed
@@ -1307,7 +1314,7 @@ export default function LessonPlayerPage() {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex flex-col sm:flex-row gap-3 mt-4 pt-5 border-t border-border">
+                <div data-tour="lesson-nav" className="flex flex-col sm:flex-row gap-3 mt-4 pt-5 border-t border-border">
                   {prevLesson && (
                     <Link to={`/courses/${courseId}/lessons/${prevLesson.id}`}
                       className="flex-1 flex items-center gap-3 p-3.5 sm:p-4 rounded-xl border border-border bg-card hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all duration-200 group">
@@ -1341,6 +1348,7 @@ export default function LessonPlayerPage() {
               <div className={cn("px-4 sm:px-6 lg:px-8 py-4 bg-card border-t border-border", theaterMode ? "hidden" : "")}>
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
+                    data-tour="comments-btn"
                     onClick={() => { setActiveTab('comments'); setDrawerOpen(true) }}
                     className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"
                   >
@@ -1354,6 +1362,7 @@ export default function LessonPlayerPage() {
                   </button>
                   {attachments.length > 0 && (
                     <button
+                      data-tour="attachments-btn"
                       onClick={() => { setActiveTab('resources'); setDrawerOpen(true) }}
                       className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"
                     >
@@ -1363,6 +1372,7 @@ export default function LessonPlayerPage() {
                     </button>
                   )}
                   <button
+                    data-tour="notebook-btn"
                     onClick={() => setNotebookOpen(prev => !prev)}
                     className={cn(
                       "flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border",
