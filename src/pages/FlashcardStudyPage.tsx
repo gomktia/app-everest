@@ -297,6 +297,31 @@ export default function FlashcardStudyPage() {
   // ── Swipe support ──
   const swipeHandlers = useSwipe(handleNext, handlePrev)
 
+  // ── Answer handler ──
+  const handleAnswer = useCallback(async (quality: number) => {
+    if (studyState !== 'answer') {
+      toast({ title: 'Veja a resposta primeiro!', variant: 'destructive' })
+      return
+    }
+
+    const card = studyDeck[currentIndex]
+    if (!card) return
+
+    try {
+      if (!user?.id) throw new Error('Usuário não autenticado')
+
+      await updateFlashcardProgress(user.id, card.id, quality)
+      const result: 'correct' | 'incorrect' = quality <= 2 ? 'incorrect' : 'correct'
+
+      setSessionResults((prev) => [...prev, { cardId: card.id, result }])
+      setLastAnswer(result)
+    } catch {
+      toast({ title: 'Erro ao salvar progresso', variant: 'destructive' })
+    }
+
+    setTimeout(handleNext, 1200)
+  }, [studyState, studyDeck, currentIndex, user, toast, handleNext])
+
   // ── Keyboard shortcuts ──
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -319,29 +344,7 @@ export default function FlashcardStudyPage() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [studyState, handleNext, handlePrev])
-
-  // ── Answer handler ──
-  const handleAnswer = async (quality: number) => {
-    if (studyState !== 'answer') {
-      toast({ title: 'Veja a resposta primeiro!', variant: 'destructive' })
-      return
-    }
-
-    try {
-      if (!user?.id) throw new Error('Usuário não autenticado')
-
-      await updateFlashcardProgress(user.id, currentCard.id, quality)
-      const result: 'correct' | 'incorrect' = quality <= 2 ? 'incorrect' : 'correct'
-
-      setSessionResults((prev) => [...prev, { cardId: currentCard.id, result }])
-      setLastAnswer(result)
-    } catch {
-      toast({ title: 'Erro ao salvar progresso', variant: 'destructive' })
-    }
-
-    setTimeout(handleNext, 1200)
-  }
+  }, [studyState, handleNext, handlePrev, handleAnswer])
 
   const handleFlip = () => {
     setIsFlipped((prev) => {

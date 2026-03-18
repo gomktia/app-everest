@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
+// In-memory flag to prevent concurrent checkAndGrantAchievements executions
+const _achievementCheckInProgress = new Set<string>()
+
 export interface UserRanking {
   user_id: string
   first_name: string
@@ -213,6 +216,12 @@ export const rankingService = {
 
   // Verificar e conceder conquistas
   async checkAndGrantAchievements(userId: string): Promise<UserAchievement[]> {
+    // Prevent concurrent execution for the same user (called from multiple pages)
+    if (_achievementCheckInProgress.has(userId)) {
+      logger.debug('checkAndGrantAchievements already in progress for user, skipping')
+      return []
+    }
+    _achievementCheckInProgress.add(userId)
     try {
       // Buscar conquistas já obtidas
       const userAchievements = await this.getUserAchievements(userId)
@@ -335,18 +344,20 @@ export const rankingService = {
         }
 
         if (shouldGrant) {
+          // Use upsert with onConflict to prevent duplicate achievements and double-XP
           const { data, error } = await supabase
             .from('user_achievements')
-            .insert({
+            .upsert({
               user_id: userId,
               achievement_id: achievement.id
-            })
+            }, { onConflict: 'user_id,achievement_id', ignoreDuplicates: true })
             .select(`
               *,
               achievement:achievements(*)
             `)
             .single()
 
+          // Only grant XP for truly new achievements (not duplicates)
           if (!error && data) {
             newAchievements.push(data)
             await this.addUserScore(userId, 'achievement', achievement.xp_reward, achievement.id)
@@ -358,6 +369,8 @@ export const rankingService = {
     } catch (error) {
       logger.error('Erro ao verificar conquistas:', error)
       return []
+    } finally {
+      _achievementCheckInProgress.delete(userId)
     }
   },
 

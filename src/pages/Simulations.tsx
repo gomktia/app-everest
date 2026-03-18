@@ -78,7 +78,7 @@ interface QuizWithAttempt extends Quiz {
 
 export default function SimulationsPage() {
   usePageTitle('Simulados')
-  const { isStudent } = useAuth()
+  const { isStudent, effectiveUserId } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
   const { isAllowed } = useContentAccess('simulation')
   const { toast } = useToast()
@@ -99,8 +99,8 @@ export default function SimulationsPage() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Usuário não autenticado')
+      const userId = effectiveUserId
+      if (!userId) throw new Error('Usuário não autenticado')
 
       const [{ data: simQuizzes, error: simError }, { data: sheetQuizzes, error: sheetError }] = await Promise.all([
         supabase.from('quizzes').select('*').eq('type', 'simulation').eq('status', 'published').order('created_at', { ascending: false }),
@@ -115,7 +115,7 @@ export default function SimulationsPage() {
       let attempts: any[] | null = null
       if (allQuizIds.length > 0) {
         const { data, error } = await supabase
-          .from('quiz_attempts').select('*').eq('user_id', user.id).in('quiz_id', allQuizIds).order('created_at', { ascending: false })
+          .from('quiz_attempts').select('*').eq('user_id', userId).in('quiz_id', allQuizIds).order('created_at', { ascending: false })
         if (error) throw error
         attempts = data
       }

@@ -594,8 +594,21 @@ export default function LessonPlayerPage() {
     }
 
     return () => {
-      if (noteTimerRef.current) clearTimeout(noteTimerRef.current)
-      if (drawingTimerRef.current) clearTimeout(drawingTimerRef.current)
+      // Flush any pending debounced saves on unmount to prevent data loss
+      if (noteTimerRef.current) {
+        clearTimeout(noteTimerRef.current)
+        noteTimerRef.current = null
+        if (user?.id && lessonId) {
+          lessonInteractionService.saveNote(lessonId, user.id, noteContentRef.current)
+        }
+      }
+      if (drawingTimerRef.current) {
+        clearTimeout(drawingTimerRef.current)
+        drawingTimerRef.current = null
+        if (user?.id && lessonId && drawingDataRef.current) {
+          lessonInteractionService.saveDrawing(lessonId, user.id, drawingDataRef.current)
+        }
+      }
     }
   }, [lessonId, user?.id])
 

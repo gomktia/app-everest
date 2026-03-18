@@ -233,36 +233,59 @@ export default function AdminUserProfilePage() {
 
     setSaving(true)
 
+    const errors: string[] = []
+
     try {
       // 1. Update user profile
       const nameParts = fullName.trim().split(/\s+/)
       const firstName = nameParts[0] || ''
       const lastName = nameParts.slice(1).join(' ') || ''
 
-      await updateUser(userId, {
-        first_name: firstName,
-        last_name: lastName,
-        role,
-      } as any)
+      try {
+        await updateUser(userId, {
+          first_name: firstName,
+          last_name: lastName,
+          role,
+        } as any)
+      } catch (err) {
+        errors.push('Erro ao atualizar perfil')
+        logger.error('Erro ao atualizar perfil:', err)
+      }
 
       // Update extra fields via direct query (may not be in typed schema)
-      await (supabase as any)
-        .from('users')
-        .update({
-          phone: phone || null,
-          cpf_cnpj: cpfCnpj || null,
-        })
-        .eq('id', userId)
+      try {
+        const { error: phoneError } = await (supabase as any)
+          .from('users')
+          .update({
+            phone: phone || null,
+            cpf_cnpj: cpfCnpj || null,
+          })
+          .eq('id', userId)
+        if (phoneError) throw phoneError
+      } catch (err) {
+        errors.push('Erro ao atualizar telefone/CPF')
+        logger.error('Erro ao atualizar telefone/CPF:', err)
+      }
 
       // 2. Handle ban/unban
-      if (isBanned) {
-        await banUser(userId)
-      } else {
-        await unbanUser(userId)
+      try {
+        if (isBanned) {
+          await banUser(userId)
+        } else {
+          await unbanUser(userId)
+        }
+      } catch (err) {
+        errors.push('Erro ao atualizar status de banimento')
+        logger.error('Erro ao atualizar ban:', err)
       }
 
       // 3. Handle unlimited access
-      await setUnlimitedAccess(userId, isUnlimitedAccess)
+      try {
+        await setUnlimitedAccess(userId, isUnlimitedAccess)
+      } catch (err) {
+        errors.push('Erro ao atualizar acesso ilimitado')
+        logger.error('Erro ao atualizar acesso ilimitado:', err)
+      }
 
       // 4. Sync enrollments
       // Build map of current enrollments: classId -> enrollmentRow
@@ -284,7 +307,12 @@ export default function AdminUserProfilePage() {
       // Remove enrollments that are no longer desired
       for (const enrollment of enrollments) {
         if (!desiredClassIds.has(enrollment.class_id)) {
-          await unenrollFromClass(userId, enrollment.class_id)
+          try {
+            await unenrollFromClass(userId, enrollment.class_id)
+          } catch (err) {
+            errors.push(`Erro ao remover matrícula da turma`)
+            logger.error('Erro ao remover matrícula:', err)
+          }
         }
       }
 
@@ -293,17 +321,36 @@ export default function AdminUserProfilePage() {
         const existing = currentEnrollmentsByClass.get(classId)
         if (!existing) {
           // New enrollment
-          await addUserToClass(userId, classId, expiresAt || undefined)
+          try {
+            await addUserToClass(userId, classId, expiresAt || undefined)
+          } catch (err) {
+            errors.push(`Erro ao adicionar matrícula`)
+            logger.error('Erro ao adicionar matrícula:', err)
+          }
         } else if (existing.subscription_expires_at !== (expiresAt || null)) {
           // Update expiration date
-          await supabase
-            .from('student_classes')
-            .update({ subscription_expires_at: expiresAt || null })
-            .eq('id', existing.id)
+          try {
+            const { error: expiryError } = await supabase
+              .from('student_classes')
+              .update({ subscription_expires_at: expiresAt || null })
+              .eq('id', existing.id)
+            if (expiryError) throw expiryError
+          } catch (err) {
+            errors.push(`Erro ao atualizar expiração de matrícula`)
+            logger.error('Erro ao atualizar expiração:', err)
+          }
         }
       }
 
-      toast({ title: 'Membro atualizado com sucesso!' })
+      if (errors.length > 0) {
+        toast({
+          title: 'Salvo com erros',
+          description: errors.join('; '),
+          variant: 'destructive',
+        })
+      } else {
+        toast({ title: 'Membro atualizado com sucesso!' })
+      }
       navigate('/admin/management')
     } catch (error) {
       logger.error('Erro ao salvar dados do membro:', error)

@@ -65,6 +65,7 @@ export default function AdminGamificationPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null)
   const [newAchievement, setNewAchievement] = useState({
     name: '',
@@ -128,6 +129,7 @@ export default function AdminGamificationPage() {
       return
     }
 
+    setIsSaving(true)
     try {
       if (editingAchievement) {
         await updateAchievement(editingAchievement.id, newAchievement)
@@ -144,6 +146,8 @@ export default function AdminGamificationPage() {
     } catch (error) {
       logger.error('Erro ao salvar conquista:', error)
       toast({ title: 'Erro', description: 'Não foi possível salvar a conquista', variant: 'destructive' })
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -467,11 +471,11 @@ export default function AdminGamificationPage() {
                             </div>
                           </div>
                           <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isSaving}>
                               Cancelar
                             </Button>
-                            <Button onClick={handleSaveAchievement}>
-                              {editingAchievement ? 'Salvar' : 'Criar Conquista'}
+                            <Button onClick={handleSaveAchievement} disabled={isSaving}>
+                              {isSaving ? 'Salvando...' : editingAchievement ? 'Salvar' : 'Criar Conquista'}
                             </Button>
                           </DialogFooter>
                         </DialogContent>

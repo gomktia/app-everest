@@ -215,20 +215,7 @@ export default function StudyPlannerPage() {
     loadData()
   }, [loadData])
 
-  // Timer effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (timerActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(time => time - 1)
-      }, 1000)
-    } else if (timeLeft === 0) {
-      handleTimerComplete()
-    }
-    return () => clearInterval(interval)
-  }, [timerActive, timeLeft])
-
-  const handleTimerComplete = async () => {
+  const handleTimerComplete = useCallback(async () => {
     setTimerActive(false)
 
     if (soundEnabled) {
@@ -310,7 +297,20 @@ export default function StudyPlannerPage() {
       setTimerMode('study')
       setTimeLeft(25 * 60)
     }
-  }
+  }, [soundEnabled, timerMode, completedPomodoros, user, currentTopicForTimer, notificationsEnabled, toast])
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (timerActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(time => time - 1)
+      }, 1000)
+    } else if (timeLeft === 0 && timerActive) {
+      handleTimerComplete()
+    }
+    return () => clearInterval(interval)
+  }, [timerActive, timeLeft, handleTimerComplete])
 
   const playNotificationSound = () => {
     // Use HTML Audio element for better sound quality

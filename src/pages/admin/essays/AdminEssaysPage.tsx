@@ -64,9 +64,12 @@ export default function AdminEssaysPage() {
           .eq('user_id', profile.id)
           .single()
 
-        if (teacher) {
-          classesQuery = classesQuery.eq('teacher_id', teacher.id)
+        if (!teacher) {
+          setClassStats([])
+          return
         }
+
+        classesQuery = classesQuery.eq('teacher_id', teacher.id)
       }
 
       const { data: classes, error: classesError } = await classesQuery

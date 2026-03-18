@@ -40,6 +40,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/use-toast'
+import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 import { SectionLoader } from '@/components/SectionLoader'
 import { cn } from '@/lib/utils'
 import { createNotification } from '@/services/notificationService'
@@ -69,6 +70,7 @@ export default function AdminEssaySubmissionsPage() {
   const navigate = useNavigate()
   usePageTitle('Submissões de Redação')
   const { toast } = useToast()
+  const { classIds: teacherClassIds, isTeacher, loading: teacherLoading } = useTeacherClasses()
 
   const [loading, setLoading] = useState(true)
   const [className, setClassName] = useState('')
@@ -83,8 +85,14 @@ export default function AdminEssaySubmissionsPage() {
   const [dateTo, setDateTo] = useState('')
 
   useEffect(() => {
+    if (teacherLoading) return
+    if (isTeacher && classId && !teacherClassIds.includes(classId)) {
+      toast({ title: 'Acesso negado', description: 'Você não tem permissão para acessar esta turma.', variant: 'destructive' })
+      navigate('/admin/essays')
+      return
+    }
     if (classId) loadData()
-  }, [classId])
+  }, [classId, teacherLoading])
 
   const loadData = async () => {
     try {

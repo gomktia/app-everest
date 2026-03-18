@@ -58,14 +58,21 @@ export default function AdminReportsPage() {
     async function loadData() {
       try {
         setLoading(true)
-        const [statsData, growthData, activityData] = await Promise.all([
-          getSystemStats().catch(() => null),
-          getUserGrowthData(rangeDays).catch(() => []),
-          getWeeklyActivityData(rangeDays).catch(() => [])
-        ])
-        setStats(statsData)
-        setUserGrowthData(growthData)
-        setWeeklyActivityData(activityData)
+        if (isTeacher) {
+          // Teachers should not see platform-wide stats
+          setStats(null)
+          setUserGrowthData([])
+          setWeeklyActivityData([])
+        } else {
+          const [statsData, growthData, activityData] = await Promise.all([
+            getSystemStats().catch(() => null),
+            getUserGrowthData(rangeDays).catch(() => []),
+            getWeeklyActivityData(rangeDays).catch(() => [])
+          ])
+          setStats(statsData)
+          setUserGrowthData(growthData)
+          setWeeklyActivityData(activityData)
+        }
       } catch (error) {
         logger.error('Erro ao carregar dados dos relatorios:', error)
       } finally {
@@ -73,7 +80,7 @@ export default function AdminReportsPage() {
       }
     }
     loadData()
-  }, [rangeDays])
+  }, [rangeDays, isTeacher])
 
   const handleExport = () => {
     const rows: string[][] = []
@@ -168,12 +175,22 @@ export default function AdminReportsPage() {
       </div>
 
       {isTeacher && (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
-          Os relatórios mostram dados gerais da plataforma. Para ver dados específicos dos seus alunos, acesse a página de Redações.
-        </div>
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-0">
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                <BarChart3 className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-2">Relatórios globais disponíveis apenas para administradores</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Para ver dados específicos dos seus alunos, acesse a página de Redações ou Turmas.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+      {!isTeacher && <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
         {/* Header Actions */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <Tabs value={dateRange} onValueChange={setDateRange} className="w-full md:w-auto">
@@ -468,7 +485,7 @@ export default function AdminReportsPage() {
             },
           ]}
         />
-      </div>
+      </div>}
     </div>
   )
 }

@@ -49,6 +49,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 import { SectionLoader } from '@/components/SectionLoader'
+import { supabase } from '@/lib/supabase/client'
 import {
   getSimulationById,
   createSimulation,
@@ -416,7 +417,14 @@ export default function AdminSimulationFormPage() {
         }
       }
 
-      // 3. Save questions
+      // 3. Save questions — delete all existing first to avoid duplicates on retry
+      if (isEditing) {
+        await supabase
+          .from('quiz_questions')
+          .delete()
+          .eq('quiz_id', quizId!)
+      }
+
       for (let i = 0; i < questions.length; i++) {
         const q = questions[i]
         const qData: any = {
@@ -434,11 +442,7 @@ export default function AdminSimulationFormPage() {
           display_order: i + 1,
         }
 
-        if (q.id) {
-          await updateQuestion(q.id, qData)
-        } else {
-          await createQuestion(qData as QuizQuestionInsert)
-        }
+        await createQuestion(qData as QuizQuestionInsert)
       }
 
       toast({ title: `Simulado ${isEditing ? 'atualizado' : 'criado'} com sucesso!` })

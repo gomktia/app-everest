@@ -92,16 +92,23 @@ export default function AdminBroadcastPage() {
         .order('name')
 
       if (classData) {
-        const classesWithCounts = await Promise.all(
-          classData.map(async (c) => {
-            const { count } = await supabase
-              .from('student_classes')
-              .select('*', { count: 'exact', head: true })
-              .eq('class_id', c.id)
-            return { id: c.id, name: c.name, student_count: count || 0 }
-          })
-        )
-        setClasses(classesWithCounts)
+        // Single query to get all student counts, then group client-side
+        const classIds = classData.map(c => c.id)
+        const { data: enrollments } = await supabase
+          .from('student_classes')
+          .select('class_id')
+          .in('class_id', classIds)
+
+        const countsByClass: Record<string, number> = {}
+        for (const e of enrollments || []) {
+          countsByClass[e.class_id] = (countsByClass[e.class_id] || 0) + 1
+        }
+
+        setClasses(classData.map(c => ({
+          id: c.id,
+          name: c.name,
+          student_count: countsByClass[c.id] || 0,
+        })))
       }
 
       // Total students

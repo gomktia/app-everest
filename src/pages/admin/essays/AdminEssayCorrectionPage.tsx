@@ -53,6 +53,7 @@ import {
   type EssayForCorrection,
 } from '@/services/essayService'
 import { useAuth } from '@/hooks/use-auth'
+import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
 import { createNotification } from '@/services/notificationService'
@@ -82,6 +83,7 @@ export default function AdminEssayCorrectionPage() {
   usePageTitle('Correção de Redação')
   const { user } = useAuth()
   const { toast } = useToast()
+  const { classIds: teacherClassIds, isTeacher, loading: teacherLoading } = useTeacherClasses()
 
   const [essay, setEssay] = useState<EssayForCorrection | null>(null)
   const [allTemplates, setAllTemplates] = useState<CorrectionTemplate[]>([])
@@ -112,6 +114,16 @@ export default function AdminEssayCorrectionPage() {
   const [annotatedTextHtml, setAnnotatedTextHtml] = useState<string | null>(null)
   const [annotationImageUrl, setAnnotationImageUrl] = useState<string | null>(null)
   const [feedbackAudioUrl, setFeedbackAudioUrl] = useState<string | null>(null)
+
+  // Authorization check: teacher can only access essays from their own classes
+  useEffect(() => {
+    if (teacherLoading || !essay || !isTeacher) return
+    const essayClassId = essay.users?.student_classes?.[0]?.class_id
+    if (essayClassId && !teacherClassIds.includes(essayClassId)) {
+      toast({ title: 'Acesso negado', description: 'Você não tem permissão para corrigir esta redação.', variant: 'destructive' })
+      navigate('/admin/essays')
+    }
+  }, [essay, teacherClassIds, teacherLoading, isTeacher])
 
   useEffect(() => {
     if (!submissionId) return

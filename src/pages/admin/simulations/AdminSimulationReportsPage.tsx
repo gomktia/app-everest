@@ -320,7 +320,7 @@ export default function AdminSimulationReportsPage() {
                   const url = URL.createObjectURL(blob)
                   const link = document.createElement('a')
                   link.href = url
-                  link.download = `relatorio-${simulation?.title || 'simulado'}.csv`
+                  link.download = `relatorio-${simulation?.name || 'simulado'}.csv`
                   link.click()
                   URL.revokeObjectURL(url)
                 }}>

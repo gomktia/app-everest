@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -54,6 +54,7 @@ export default function AdminUserFormPage() {
   usePageTitle('Editar Usuário')
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
@@ -73,6 +74,9 @@ export default function AdminUserFormPage() {
           form.reset(user)
         }
         setIsLoading(false)
+      }).catch((error) => {
+        setIsLoading(false)
+        toast({ title: 'Erro ao carregar usuário', description: String(error?.message || error), variant: 'destructive' })
       })
     } else {
       setIsLoading(false)
@@ -80,13 +84,20 @@ export default function AdminUserFormPage() {
   }, [userId, form])
 
   const onSubmit = async (data: UserFormValues) => {
-    if (!userId) return
-    const updatedUser = await updateUser(userId, data)
-    if (updatedUser) {
-      toast({ title: 'Usuário atualizado com sucesso!' })
-      navigate('/admin/management')
-    } else {
+    if (!userId || isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      const updatedUser = await updateUser(userId, data)
+      if (updatedUser) {
+        toast({ title: 'Usuário atualizado com sucesso!' })
+        navigate('/admin/management')
+      } else {
+        toast({ title: 'Erro ao atualizar usuário', variant: 'destructive' })
+      }
+    } catch {
       toast({ title: 'Erro ao atualizar usuário', variant: 'destructive' })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -302,10 +313,11 @@ export default function AdminUserFormPage() {
                   </Button>
                   <Button
                     type="submit"
+                    disabled={isSubmitting}
                     className="px-8 py-3 rounded-xl font-semibold"
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    Salvar Alterações
+                    {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                   </Button>
                 </div>
               </form>

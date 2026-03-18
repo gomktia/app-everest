@@ -67,6 +67,7 @@ export default function AdminQuizQuestionsPage() {
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSavingText, setIsSavingText] = useState(false)
   const [readingTexts, setReadingTexts] = useState<ReadingText[]>([])
 
   // State for Reading Text Dialog
@@ -132,7 +133,7 @@ export default function AdminQuizQuestionsPage() {
     }
 
     try {
-      setIsLoading(true)
+      setIsSavingText(true)
       if (editingText) {
         await updateReadingText(editingText.id, { title: textFormTitle, content: textFormContent })
         toast({ title: "Texto atualizado com sucesso" })
@@ -150,7 +151,7 @@ export default function AdminQuizQuestionsPage() {
       logger.error(error)
       toast({ title: "Erro ao salvar texto", variant: "destructive" })
     } finally {
-      setIsLoading(false)
+      setIsSavingText(false)
     }
   }
 
@@ -304,8 +305,8 @@ export default function AdminQuizQuestionsPage() {
                 />
               </div>
               <div className="flex justify-end">
-                <Button onClick={handleSaveText} disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button onClick={handleSaveText} disabled={isSavingText}>
+                  {isSavingText && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Salvar Texto
                 </Button>
               </div>

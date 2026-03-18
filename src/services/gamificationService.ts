@@ -261,10 +261,12 @@ export async function getRanking(limit: number = 50): Promise<RankingEntry[]> {
       }))
     }
 
-    // Fallback: client-side aggregation with limited data
+    // Fallback: client-side aggregation with limited data (top scores only)
     const { data: scoresData, error: scoresError } = await supabase
       .from('scores')
       .select('user_id, score_value')
+      .order('score_value', { ascending: false })
+      .limit(100)
 
     if (scoresError || !scoresData || scoresData.length === 0) return []
 
