@@ -31,6 +31,7 @@ import { supabase } from '@/lib/supabase/client'
 import { ArrowLeft, GraduationCap, Save, ChevronDown, ChevronRight, PlayCircle, BookOpen, Shield } from 'lucide-react'
 import { getModuleRulesForClass, saveAllModuleRules, checkCircularDependency, getLessonRulesForClass, upsertLessonRule, deleteLessonRule, type LessonRule } from '@/services/moduleRulesService'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { getAllContentAccessForClass, saveContentAccess } from '@/services/contentAccessService'
 import { PageTabs } from '@/components/PageTabs'
 
@@ -786,9 +787,9 @@ export default function AdminClassFormPage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center gap-2">Flashcards</h4>
                       <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={contentToggles.flashcard_topic} onChange={e => {
-                          setContentToggles(p => ({...p, flashcard_topic: e.target.checked}))
-                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.flashcard_topic; return n })
+                        <Switch checked={contentToggles.flashcard_topic} onCheckedChange={checked => {
+                          setContentToggles(p => ({...p, flashcard_topic: checked}))
+                          if (checked) setContentAccess(p => { const n = {...p}; delete n.flashcard_topic; return n })
                         }} />
                         Todos os tópicos
                       </label>
@@ -827,9 +828,9 @@ export default function AdminClassFormPage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center gap-2">Quizzes</h4>
                       <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={contentToggles.quiz_topic} onChange={e => {
-                          setContentToggles(p => ({...p, quiz_topic: e.target.checked}))
-                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.quiz_topic; return n })
+                        <Switch checked={contentToggles.quiz_topic} onCheckedChange={checked => {
+                          setContentToggles(p => ({...p, quiz_topic: checked}))
+                          if (checked) setContentAccess(p => { const n = {...p}; delete n.quiz_topic; return n })
                         }} />
                         Todos os tópicos
                       </label>
@@ -868,9 +869,9 @@ export default function AdminClassFormPage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center gap-2">Acervo Digital</h4>
                       <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={contentToggles.acervo} onChange={e => {
-                          setContentToggles(p => ({...p, acervo: e.target.checked}))
-                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.acervo_category; delete n.acervo_concurso; return n })
+                        <Switch checked={contentToggles.acervo} onCheckedChange={checked => {
+                          setContentToggles(p => ({...p, acervo: checked}))
+                          if (checked) setContentAccess(p => { const n = {...p}; delete n.acervo_category; delete n.acervo_concurso; return n })
                         }} />
                         Todo o acervo
                       </label>
@@ -926,9 +927,9 @@ export default function AdminClassFormPage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center gap-2">Simulados</h4>
                       <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={contentToggles.simulation} onChange={e => {
-                          setContentToggles(p => ({...p, simulation: e.target.checked}))
-                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.simulation; return n })
+                        <Switch checked={contentToggles.simulation} onCheckedChange={checked => {
+                          setContentToggles(p => ({...p, simulation: checked}))
+                          if (checked) setContentAccess(p => { const n = {...p}; delete n.simulation; return n })
                         }} />
                         Todos os simulados
                       </label>
@@ -960,9 +961,9 @@ export default function AdminClassFormPage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center gap-2">Redação</h4>
                       <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={contentToggles.essay_limit} onChange={e => {
-                          setContentToggles(p => ({...p, essay_limit: e.target.checked}))
-                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.essay_limit; return n })
+                        <Switch checked={contentToggles.essay_limit} onCheckedChange={checked => {
+                          setContentToggles(p => ({...p, essay_limit: checked}))
+                          if (checked) setContentAccess(p => { const n = {...p}; delete n.essay_limit; return n })
                         }} />
                         Ilimitado
                       </label>
@@ -982,9 +983,9 @@ export default function AdminClassFormPage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center gap-2">Comunidade — Permissão</h4>
                       <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={contentToggles.community_readonly} onChange={e => {
-                          setContentToggles(p => ({...p, community_readonly: e.target.checked}))
-                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.community_readonly; return n })
+                        <Switch checked={contentToggles.community_readonly} onCheckedChange={checked => {
+                          setContentToggles(p => ({...p, community_readonly: checked}))
+                          if (checked) setContentAccess(p => { const n = {...p}; delete n.community_readonly; return n })
                         }} />
                         Acesso completo
                       </label>
@@ -1001,9 +1002,9 @@ export default function AdminClassFormPage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium flex items-center gap-2">Comunidade — Espaços Visíveis</h4>
                       <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={contentToggles.community_space} onChange={e => {
-                          setContentToggles(p => ({...p, community_space: e.target.checked}))
-                          if (e.target.checked) setContentAccess(p => { const n = {...p}; delete n.community_space; return n })
+                        <Switch checked={contentToggles.community_space} onCheckedChange={checked => {
+                          setContentToggles(p => ({...p, community_space: checked}))
+                          if (checked) setContentAccess(p => { const n = {...p}; delete n.community_space; return n })
                         }} />
                         Todos os espaços
                       </label>
