@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Trophy,
   ChevronRight,
+  AlertTriangle,
 } from 'lucide-react'
 import { SectionLoader } from '@/components/SectionLoader'
 import { Link } from 'react-router-dom'
@@ -30,6 +31,7 @@ import {
   type UserRanking,
 } from '@/services/rankingService'
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 import {
   ChartContainer,
@@ -81,6 +83,11 @@ export default function DashboardPage() {
   const [userPosition, setUserPosition] = useState<UserPosition | null>(null)
   const [topRanking, setTopRanking] = useState<UserRanking[]>([])
   const [fromCache, setFromCache] = useState(false)
+  const [expiringClasses, setExpiringClasses] = useState<{
+    className: string
+    daysLeft: number
+    slug: string | null
+  }[]>([])
 
   // Streak
   useEffect(() => {
@@ -114,6 +121,66 @@ export default function DashboardPage() {
     setStreak(currentStreak)
     localStorage.setItem('everest_streak', JSON.stringify({ count: currentStreak, lastDate: todayStr }))
   }, [])
+
+  // Expiration banners
+  useEffect(() => {
+    const fetchExpiringClasses = async () => {
+      const userId = effectiveUserId
+      if (!userId) return
+
+      try {
+        const thirtyDaysFromNow = new Date()
+        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+
+        const { data: studentClasses } = await supabase
+          .from('student_classes')
+          .select('class_id, subscription_expires_at, classes(name)')
+          .eq('user_id', userId)
+          .not('subscription_expires_at', 'is', null)
+          .lte('subscription_expires_at', thirtyDaysFromNow.toISOString())
+          .gte('subscription_expires_at', new Date().toISOString())
+
+        if (!studentClasses || studentClasses.length === 0) {
+          setExpiringClasses([])
+          return
+        }
+
+        // Fetch product slugs for renewal links
+        const classIds = studentClasses.map(sc => sc.class_id)
+        const { data: productClasses } = await supabase
+          .from('stripe_product_classes')
+          .select('class_id, stripe_products(landing_page_slug)')
+          .in('class_id', classIds)
+
+        const classToSlug: Record<string, string> = {}
+        if (productClasses) {
+          for (const pc of productClasses) {
+            const prod = (pc as any).stripe_products
+            if (prod?.landing_page_slug) {
+              classToSlug[pc.class_id] = prod.landing_page_slug
+            }
+          }
+        }
+
+        const expiring = studentClasses.map(sc => {
+          const daysLeft = Math.ceil(
+            (new Date(sc.subscription_expires_at!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+          )
+          return {
+            className: (sc as any).classes?.name || 'Curso',
+            daysLeft,
+            slug: classToSlug[sc.class_id] || null,
+          }
+        }).sort((a, b) => a.daysLeft - b.daysLeft)
+
+        setExpiringClasses(expiring)
+      } catch (err) {
+        logger.error('Error fetching expiring classes:', err)
+      }
+    }
+
+    fetchExpiringClasses()
+  }, [effectiveUserId])
 
   // Load all data
   useEffect(() => {
@@ -233,6 +300,40 @@ export default function DashboardPage() {
       </div>
 
       <OfflineBanner fromCache={fromCache} />
+
+      {/* Expiration Banners */}
+      {expiringClasses.map((ec, idx) => {
+        const isUrgent = ec.daysLeft <= 7
+        return (
+          <div
+            key={idx}
+            className={cn(
+              'flex items-center gap-3 p-4 rounded-lg border',
+              isUrgent
+                ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/30 dark:border-red-800 dark:text-red-300'
+                : 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950/30 dark:border-yellow-800 dark:text-yellow-300'
+            )}
+          >
+            <AlertTriangle className={cn('h-5 w-5 shrink-0', isUrgent ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400')} />
+            <p className="flex-1 text-sm">
+              {isUrgent
+                ? `Seu acesso ao curso ${ec.className} expira em ${ec.daysLeft} dia${ec.daysLeft !== 1 ? 's' : ''}!`
+                : `Seu acesso ao curso ${ec.className} expira em ${ec.daysLeft} dias.`}
+            </p>
+            {ec.slug && (
+              <Button
+                size="sm"
+                variant={isUrgent ? 'destructive' : 'outline'}
+                asChild
+              >
+                <Link to={`/checkout/${ec.slug}`}>
+                  {isUrgent ? 'Renovar agora' : 'Renovar'}
+                </Link>
+              </Button>
+            )}
+          </div>
+        )
+      })}
 
       {/* Live Banner */}
       <LiveBanner />
