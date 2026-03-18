@@ -40,5 +40,8 @@ Sentry.init({
     'NetworkError when attempting to fetch resource',
     'net::ERR_INTERNET_DISCONNECTED',
     'net::ERR_NETWORK_CHANGED',
+    // Auth session missing on public pages (invite, login) — expected
+    'AuthSessionMissingError',
+    'Auth session missing',
   ],
 })

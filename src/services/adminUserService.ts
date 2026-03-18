@@ -133,7 +133,9 @@ export const getUsersWithClasses = async (): Promise<UserWithClasses[]> => {
   }
 
   // Buscar turmas de todos os usuários
-  const { data: studentClasses, error: classesError } = await supabase
+  // Note: class_type may not exist yet in production — fall back to query without it
+  let studentClasses: any[] | null = null
+  const { data: scData, error: classesError } = await supabase
     .from('student_classes')
     .select(`
       user_id,
@@ -145,8 +147,18 @@ export const getUsersWithClasses = async (): Promise<UserWithClasses[]> => {
     `)
 
   if (classesError) {
-    logger.error('❌ Error fetching student classes:', classesError)
-    // Continuar mesmo com erro, retornando usuários sem informação de turmas
+    // If error is about class_type column, retry without it
+    if (classesError.message?.includes('class_type') || classesError.code === '42703') {
+      logger.warn('class_type column not found, retrying without it')
+      const { data: fallback } = await supabase
+        .from('student_classes')
+        .select(`user_id, classes!inner(id, name)`)
+      studentClasses = fallback
+    } else {
+      logger.warn('Error fetching student classes (non-fatal):', classesError.message)
+    }
+  } else {
+    studentClasses = scData
   }
 
   // Mapear turmas por user_id

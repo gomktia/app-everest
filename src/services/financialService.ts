@@ -1,6 +1,12 @@
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
+/** Returns true if the error is about a missing table/relation (not deployed yet) */
+const isTableMissing = (error: any) =>
+  error?.message?.includes('does not exist') ||
+  error?.message?.includes('relation') ||
+  error?.code === '42P01'
+
 // Types
 export interface Order {
   id: string
@@ -61,7 +67,10 @@ export const getOrders = async (filters?: {
   query = query.range((page - 1) * limit, page * limit - 1)
 
   const { data, error, count } = await query
-  if (error) { logger.error('getOrders error:', error); throw error }
+  if (error) {
+    if (isTableMissing(error)) return { orders: [], total: 0 }
+    logger.error('getOrders error:', error); throw error
+  }
   return { orders: data || [], total: count || 0 }
 }
 
@@ -81,40 +90,59 @@ export const getOrderById = async (orderId: string) => {
     .eq('id', orderId)
     .single()
 
-  if (error) { logger.error('getOrderById error:', error); throw error }
+  if (error) {
+    if (isTableMissing(error)) return null
+    logger.error('getOrderById error:', error); throw error
+  }
   return data
 }
 
 // Get financial stats for dashboard
 export const getFinancialStats = async (month?: string): Promise<FinancialStats> => {
-  const startOfMonth = month ? `${month}-01` : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-  const endOfMonth = month
-    ? new Date(new Date(startOfMonth).getFullYear(), new Date(startOfMonth).getMonth() + 1, 0).toISOString()
-    : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString()
+  const emptyStats: FinancialStats = {
+    totalRevenue: 0, salesCount: 0, avgTicket: 0,
+    refundsCount: 0, refundsTotal: 0, conversionRate: 0,
+    abandonedCarts: 0, pendingCommissions: 0,
+  }
 
-  const [ordersRes, refundsRes, cartsRes, commissionsRes] = await Promise.all([
-    supabase.from('orders').select('total_cents, status').gte('created_at', startOfMonth).lte('created_at', endOfMonth),
-    supabase.from('refunds').select('amount_cents').eq('status', 'succeeded').gte('created_at', startOfMonth).lte('created_at', endOfMonth),
-    supabase.from('abandoned_carts').select('id', { count: 'exact', head: true }).gte('created_at', startOfMonth).lte('created_at', endOfMonth),
-    supabase.from('affiliate_commissions').select('commission_cents').eq('status', 'pending'),
-  ])
+  try {
+    const startOfMonth = month ? `${month}-01` : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+    const endOfMonth = month
+      ? new Date(new Date(startOfMonth).getFullYear(), new Date(startOfMonth).getMonth() + 1, 0).toISOString()
+      : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString()
 
-  const orders = ordersRes.data || []
-  const paidOrders = orders.filter(o => o.status === 'paid')
-  const totalRevenue = paidOrders.reduce((sum, o) => sum + o.total_cents, 0)
-  const refunds = refundsRes.data || []
-  const refundsTotal = refunds.reduce((sum, r) => sum + r.amount_cents, 0)
-  const pendingCommissions = (commissionsRes.data || []).reduce((sum, c) => sum + c.commission_cents, 0)
+    const [ordersRes, refundsRes, cartsRes, commissionsRes] = await Promise.all([
+      supabase.from('orders').select('total_cents, status').gte('created_at', startOfMonth).lte('created_at', endOfMonth),
+      supabase.from('refunds').select('amount_cents').eq('status', 'succeeded').gte('created_at', startOfMonth).lte('created_at', endOfMonth),
+      supabase.from('abandoned_carts').select('id', { count: 'exact', head: true }).gte('created_at', startOfMonth).lte('created_at', endOfMonth),
+      supabase.from('affiliate_commissions').select('commission_cents').eq('status', 'pending'),
+    ])
 
-  return {
-    totalRevenue,
-    salesCount: paidOrders.length,
-    avgTicket: paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0,
-    refundsCount: refunds.length,
-    refundsTotal,
-    conversionRate: orders.length > 0 ? Math.round((paidOrders.length / orders.length) * 100) : 0,
-    abandonedCarts: cartsRes.count || 0,
-    pendingCommissions,
+    // If any table doesn't exist, return empty stats silently
+    if ([ordersRes, refundsRes, cartsRes, commissionsRes].some(r => r.error && isTableMissing(r.error))) {
+      return emptyStats
+    }
+
+    const orders = ordersRes.data || []
+    const paidOrders = orders.filter(o => o.status === 'paid')
+    const totalRevenue = paidOrders.reduce((sum, o) => sum + o.total_cents, 0)
+    const refunds = refundsRes.data || []
+    const refundsTotal = refunds.reduce((sum, r) => sum + r.amount_cents, 0)
+    const pendingCommissions = (commissionsRes.data || []).reduce((sum, c) => sum + c.commission_cents, 0)
+
+    return {
+      totalRevenue,
+      salesCount: paidOrders.length,
+      avgTicket: paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0,
+      refundsCount: refunds.length,
+      refundsTotal,
+      conversionRate: orders.length > 0 ? Math.round((paidOrders.length / orders.length) * 100) : 0,
+      abandonedCarts: cartsRes.count || 0,
+      pendingCommissions,
+    }
+  } catch (error: any) {
+    if (isTableMissing(error)) return emptyStats
+    throw error
   }
 }
 
@@ -129,7 +157,10 @@ export const getRevenueByMonth = async () => {
     .eq('status', 'paid')
     .gte('created_at', twelveMonthsAgo.toISOString())
 
-  if (error) { logger.error('getRevenueByMonth error:', error); throw error }
+  if (error) {
+    if (isTableMissing(error)) return []
+    logger.error('getRevenueByMonth error:', error); throw error
+  }
 
   // Group by month
   const months: Record<string, number> = {}
@@ -150,7 +181,10 @@ export const getAbandonedCarts = async () => {
     .select('*')
     .order('abandoned_at', { ascending: false })
 
-  if (error) { logger.error('getAbandonedCarts error:', error); throw error }
+  if (error) {
+    if (isTableMissing(error)) return []
+    logger.error('getAbandonedCarts error:', error); throw error
+  }
   return data || []
 }
 
@@ -165,7 +199,10 @@ export const getRefunds = async () => {
     `)
     .order('created_at', { ascending: false })
 
-  if (error) { logger.error('getRefunds error:', error); throw error }
+  if (error) {
+    if (isTableMissing(error)) return []
+    logger.error('getRefunds error:', error); throw error
+  }
   return data || []
 }
 

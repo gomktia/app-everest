@@ -1,6 +1,11 @@
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
+const isTableMissing = (error: any) =>
+  error?.message?.includes('does not exist') ||
+  error?.message?.includes('relation') ||
+  error?.code === '42P01'
+
 export interface Coupon {
   id: string
   code: string
@@ -20,7 +25,10 @@ export const getCoupons = async () => {
     .from('coupons')
     .select('*')
     .order('created_at', { ascending: false })
-  if (error) { logger.error('getCoupons error:', error); throw error }
+  if (error) {
+    if (isTableMissing(error)) return []
+    logger.error('getCoupons error:', error); throw error
+  }
   return data || []
 }
 
@@ -32,7 +40,11 @@ export const validateCoupon = async (code: string, productId?: string) => {
     .eq('is_active', true)
     .single()
 
-  if (error || !data) return { valid: false, message: 'Cupom não encontrado' }
+  if (error) {
+    if (isTableMissing(error)) return { valid: false, message: 'Cupons indisponíveis no momento' }
+    return { valid: false, message: 'Cupom não encontrado' }
+  }
+  if (!data) return { valid: false, message: 'Cupom não encontrado' }
   if (data.valid_until && new Date(data.valid_until) < new Date()) return { valid: false, message: 'Cupom expirado' }
   if (data.max_uses && data.current_uses >= data.max_uses) return { valid: false, message: 'Cupom esgotado' }
   if (productId && data.applicable_products?.length && !data.applicable_products.includes(productId)) {

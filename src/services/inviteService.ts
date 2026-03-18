@@ -156,13 +156,13 @@ export async function registerForInvite(inviteId: string, userData: {
   // 5. Atomic slot check + enrollment via SECURITY DEFINER RPC
   // The RPC handles: invite_registrations, student_classes, and class_courses
   // This bypasses RLS restrictions that prevent students from self-enrolling
-  logger.error(`[INVITE] Calling register_invite_slot: invite=${inviteId}, user=${userId}`)
+  logger.info(`[INVITE] Calling register_invite_slot: invite=${inviteId}, user=${userId}`)
   const { data: slotOk, error: slotError } = await supabase.rpc('register_invite_slot', {
     p_invite_id: inviteId,
     p_user_id: userId
   })
 
-  logger.error(`[INVITE] RPC result: slotOk=${slotOk}, error=${slotError?.message || 'none'}`)
+  logger.info(`[INVITE] RPC result: slotOk=${slotOk}, error=${slotError?.message || 'none'}`)
 
   if (slotError) {
     logger.error('[INVITE] register_invite_slot RPC failed:', slotError)

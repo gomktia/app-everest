@@ -287,7 +287,13 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
     setIsDeleting(true)
     try {
       const { error } = await supabase.rpc('admin_delete_user', { p_user_id: deletingUser.id })
-      if (error) throw error
+      if (error) {
+        // RPC may not exist yet in production (migration not deployed)
+        if (error.message?.includes('Could not find') || error.code === '404' || error.message?.includes('does not exist')) {
+          throw new Error('Função de exclusão ainda não está disponível. Aguarde a atualização do sistema.')
+        }
+        throw error
+      }
       toast({
         title: 'Usuário removido',
         description: `${name} foi removido permanentemente da plataforma.`,
