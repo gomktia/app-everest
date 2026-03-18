@@ -163,9 +163,20 @@ export default function InvitePage() {
               <p className="text-sm text-muted-foreground">Curso: {invite.video_courses.name}</p>
             )}
             {invite.max_slots && (
-              <Badge variant={isFull ? 'destructive' : 'outline'}>
-                {isFull ? 'Vagas esgotadas' : `${slotsAvailable} vagas restantes`}
-              </Badge>
+              isFull ? (
+                <Badge variant="destructive" className="text-sm px-4 py-1.5">
+                  Vagas esgotadas
+                </Badge>
+              ) : (
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 animate-pulse">
+                  <span className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums">
+                    {slotsAvailable}
+                  </span>
+                  <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                    {slotsAvailable === 1 ? 'vaga restante' : 'vagas restantes'}
+                  </span>
+                </div>
+              )
             )}
           </div>
 
@@ -425,8 +436,16 @@ function InviteHeroPanel({ title, description, courseName, motivationalMessage, 
           </div>
 
           {slotsAvailable !== null && !isFull && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-sm font-semibold">
-              {slotsAvailable} {slotsAvailable === 1 ? 'vaga restante' : 'vagas restantes'}
+            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg">
+              <span className="text-4xl font-black text-white tabular-nums leading-none">
+                {slotsAvailable}
+              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white/95 uppercase tracking-wide">
+                  {slotsAvailable === 1 ? 'vaga restante' : 'vagas restantes'}
+                </span>
+                <span className="text-xs text-white/70">Garanta a sua agora</span>
+              </div>
             </div>
           )}
         </div>
