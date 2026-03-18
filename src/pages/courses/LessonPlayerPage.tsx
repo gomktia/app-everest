@@ -1154,14 +1154,15 @@ export default function LessonPlayerPage() {
                               {attachments.find(p => p.file_url === pdfViewerUrl)?.file_name || (splitViewerType === 'office' ? 'Documento' : 'PDF')}
                             </span>
                           </div>
-                          <div className="flex items-center gap-0.5 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <a href={pdfViewerUrl!} download target="_blank" rel="noopener noreferrer"
-                              className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
-                              <Download className="h-3.5 w-3.5" />
+                              className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors">
+                              <Download className="h-4 w-4" />
                             </a>
                             <button onClick={() => setPdfViewerUrl(null)}
-                              className="p-1 rounded text-muted-foreground hover:text-foreground transition-colors">
+                              className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
                               <X className="h-3.5 w-3.5" />
+                              Fechar
                             </button>
                           </div>
                         </div>
@@ -1186,8 +1187,10 @@ export default function LessonPlayerPage() {
                               {attachments.find(p => p.file_url === pdfViewerUrl)?.file_name || (splitViewerType === 'office' ? 'Documento' : 'PDF')}
                             </span>
                           </div>
-                          <button onClick={() => setPdfViewerUrl(null)} className="p-1.5 rounded text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] flex items-center justify-center">
+                          <button onClick={() => setPdfViewerUrl(null)}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors min-h-[44px]">
                             <X className="h-3.5 w-3.5" />
+                            Fechar
                           </button>
                         </div>
                         <div style={{ height: '50vh' }}>
