@@ -228,6 +228,10 @@ export default function AdminClassFormPage() {
 
       // Load existing content access
       const access = await getAllContentAccessForClass(classId!)
+      // Filter out __none__ markers (used to represent "no access" vs "all access")
+      if (access.simulation?.includes('__none__')) {
+        access.simulation = []
+      }
       setContentAccess(access)
 
       // Set toggles based on existing data
@@ -302,7 +306,7 @@ export default function AdminClassFormPage() {
           saveContentAccess(classId!, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
           saveContentAccess(classId!, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
           saveContentAccess(classId!, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
-          saveContentAccess(classId!, 'simulation', contentToggles.simulation ? [] : contentAccess.simulation || []),
+          saveContentAccess(classId!, 'simulation', contentToggles.simulation ? [] : (contentAccess.simulation?.length ? contentAccess.simulation : ['__none__'])),
           saveContentAccess(classId!, 'essay_limit', contentToggles.essay_limit ? [] : [essayLimit]),
           saveContentAccess(classId!, 'community_readonly', contentToggles.community_readonly ? [] : ['true']),
           saveContentAccess(classId!, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
@@ -348,7 +352,7 @@ export default function AdminClassFormPage() {
               saveContentAccess(newClassId, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
               saveContentAccess(newClassId, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
               saveContentAccess(newClassId, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
-              saveContentAccess(newClassId, 'simulation', contentToggles.simulation ? [] : contentAccess.simulation || []),
+              saveContentAccess(newClassId, 'simulation', contentToggles.simulation ? [] : (contentAccess.simulation?.length ? contentAccess.simulation : ['__none__'])),
               saveContentAccess(newClassId, 'essay_limit', contentToggles.essay_limit ? [] : [essayLimit]),
               saveContentAccess(newClassId, 'community_readonly', contentToggles.community_readonly ? [] : ['true']),
               saveContentAccess(newClassId, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
