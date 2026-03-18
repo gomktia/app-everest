@@ -56,6 +56,10 @@ import {
   StickyNote,
   Mail,
   ShieldAlert,
+  DollarSign,
+  ShoppingCart,
+  Package,
+  Tag,
 } from 'lucide-react'
 
 // ─── Menu structure types ─────────────────────────────────────────────────────
@@ -210,6 +214,19 @@ const adminMenuGroups: MenuGroup[] = [
       { label: 'Relatórios', href: '/admin/reports', icon: BarChart3 },
       { label: 'Analytics de Vídeos', href: '/admin/reports/videos', icon: TrendingUp },
       { label: 'Gamificação', href: '/admin/gamification', icon: Trophy },
+    ],
+  },
+  {
+    group: 'Financeiro',
+    icon: DollarSign,
+    collapsible: true,
+    items: [
+      { label: 'Dashboard', href: '/admin/financeiro', icon: BarChart3, adminOnly: true },
+      { label: 'Vendas', href: '/admin/financeiro/vendas', icon: ShoppingCart, adminOnly: true },
+      { label: 'Produtos', href: '/admin/financeiro/produtos', icon: Package, adminOnly: true },
+      { label: 'Cupons', href: '/admin/financeiro/cupons', icon: Tag, adminOnly: true },
+      { label: 'Afiliados', href: '/admin/financeiro/afiliados', icon: Users, adminOnly: true },
+      { label: 'Relatórios', href: '/admin/financeiro/relatorios', icon: FileText, adminOnly: true },
     ],
   },
   {

@@ -515,6 +515,12 @@ const App = () => (
                     <Route path="classes/:classId/edit" element={<AdminClassFormPage />} />
                     <Route path="users/:userId/edit" element={<AdminUserFormPage />} />
                     <Route path="acervo" element={<AdminAcervoPage />} />
+                    <Route path="financeiro" element={<FinancialDashboardPage />} />
+                    <Route path="financeiro/vendas" element={<SalesListPage />} />
+                    <Route path="financeiro/cupons" element={<CouponsPage />} />
+                    <Route path="financeiro/afiliados" element={<AffiliatesPage />} />
+                    <Route path="financeiro/relatorios" element={<FinancialReportsPage />} />
+                    <Route path="financeiro/produtos" element={<StripeProductsPage />} />
                   </Route>
                   {/* Rotas compartilhadas (administrator + teacher) */}
                   <Route path="management" element={<AdminManagementPage />} />
