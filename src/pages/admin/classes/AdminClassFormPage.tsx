@@ -68,6 +68,7 @@ export default function AdminClassFormPage() {
   const [moduleRules, setModuleRules] = useState<Record<string, { rule_type: string; rule_value: string }>>({})
   const [modules, setModules] = useState<any[]>([])
   const [contentAccess, setContentAccess] = useState<Record<string, string[]>>({})
+  const [accessTab, setAccessTab] = useState('flashcards')
   const [allTopics, setAllTopics] = useState<any[]>([])
   const [allSubjects, setAllSubjects] = useState<any[]>([])
   const [allSimulations, setAllSimulations] = useState<any[]>([])
@@ -396,8 +397,6 @@ export default function AdminClassFormPage() {
   return (
     <div className="space-y-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <Card className="border-border shadow-sm">
-          <CardContent className="p-5">
           <div className="flex items-center gap-3 mb-6">
             <Button
               variant="ghost"
@@ -772,268 +771,248 @@ export default function AdminClassFormPage() {
                     content: (
                       <div className="space-y-6">
               <Card>
-                <CardHeader>
+                <CardHeader className="pb-3">
                   <CardTitle>Acesso ao Conteúdo</CardTitle>
                   <CardDescription>Defina quais conteúdos os alunos desta turma podem acessar. Por padrão, tudo é liberado.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-
-                  {/* Flashcards */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Flashcards</h4>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Switch checked={contentToggles.flashcard_topic} onCheckedChange={checked => {
-                          setContentToggles(p => ({...p, flashcard_topic: checked}))
-                          if (checked) setContentAccess(p => { const n = {...p}; delete n.flashcard_topic; return n })
-                        }} />
-                        Todos os tópicos
-                      </label>
-                    </div>
-                    {!contentToggles.flashcard_topic && (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pl-4">
-                        {allSubjects.map(subject => (
-                          <div key={subject.id}>
-                            <p className="text-xs font-semibold text-muted-foreground mb-1">{subject.name}</p>
-                            {allTopics.filter(t => t.subject_id === subject.id).map(topic => (
-                              <label key={topic.id} className="flex items-center gap-2 text-sm py-0.5">
-                                <Switch
-                                  checked={contentAccess.flashcard_topic?.includes(topic.id) || false}
-                                  onCheckedChange={checked => {
-                                    setContentAccess(prev => {
-                                      const current = prev.flashcard_topic || []
-                                      return { ...prev, flashcard_topic: checked
-                                        ? [...current, topic.id]
-                                        : current.filter(id => id !== topic.id) }
-                                    })
-                                  }}
-                                />
-                                {topic.name}
+                <CardContent>
+                  <PageTabs
+                    tabs={[
+                      {
+                        value: 'flashcards', label: 'Flashcards',
+                        content: (
+                          <div className="space-y-3 pt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 text-sm">
+                                <Switch checked={contentToggles.flashcard_topic} onCheckedChange={checked => {
+                                  setContentToggles(p => ({...p, flashcard_topic: checked}))
+                                  if (checked) setContentAccess(p => { const n = {...p}; delete n.flashcard_topic; return n })
+                                }} />
+                                Todos os tópicos
                               </label>
-                            ))}
+                            </div>
+                            {!contentToggles.flashcard_topic && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {allSubjects.map(subject => (
+                                  <div key={subject.id}>
+                                    <p className="text-xs font-semibold text-muted-foreground mb-1">{subject.name}</p>
+                                    {allTopics.filter(t => t.subject_id === subject.id).map(topic => (
+                                      <label key={topic.id} className="flex items-center gap-2 text-sm py-0.5">
+                                        <Switch checked={contentAccess.flashcard_topic?.includes(topic.id) || false} onCheckedChange={checked => {
+                                          setContentAccess(prev => {
+                                            const current = prev.flashcard_topic || []
+                                            return { ...prev, flashcard_topic: checked ? [...current, topic.id] : current.filter(id => id !== topic.id) }
+                                          })
+                                        }} />
+                                        {topic.name}
+                                      </label>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="border-t border-border" />
-
-                  {/* Quizzes */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Quizzes</h4>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Switch checked={contentToggles.quiz_topic} onCheckedChange={checked => {
-                          setContentToggles(p => ({...p, quiz_topic: checked}))
-                          if (checked) setContentAccess(p => { const n = {...p}; delete n.quiz_topic; return n })
-                        }} />
-                        Todos os tópicos
-                      </label>
-                    </div>
-                    {!contentToggles.quiz_topic && (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pl-4">
-                        {allSubjects.map(subject => (
-                          <div key={subject.id}>
-                            <p className="text-xs font-semibold text-muted-foreground mb-1">{subject.name}</p>
-                            {allTopics.filter(t => t.subject_id === subject.id).map(topic => (
-                              <label key={topic.id} className="flex items-center gap-2 text-sm py-0.5">
-                                <Switch
-                                  checked={contentAccess.quiz_topic?.includes(topic.id) || false}
-                                  onCheckedChange={checked => {
-                                    setContentAccess(prev => {
-                                      const current = prev.quiz_topic || []
-                                      return { ...prev, quiz_topic: checked
-                                        ? [...current, topic.id]
-                                        : current.filter(id => id !== topic.id) }
-                                    })
-                                  }}
-                                />
-                                {topic.name}
+                        ),
+                      },
+                      {
+                        value: 'quizzes', label: 'Quizzes',
+                        content: (
+                          <div className="space-y-3 pt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 text-sm">
+                                <Switch checked={contentToggles.quiz_topic} onCheckedChange={checked => {
+                                  setContentToggles(p => ({...p, quiz_topic: checked}))
+                                  if (checked) setContentAccess(p => { const n = {...p}; delete n.quiz_topic; return n })
+                                }} />
+                                Todos os tópicos
                               </label>
-                            ))}
+                            </div>
+                            {!contentToggles.quiz_topic && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {allSubjects.map(subject => (
+                                  <div key={subject.id}>
+                                    <p className="text-xs font-semibold text-muted-foreground mb-1">{subject.name}</p>
+                                    {allTopics.filter(t => t.subject_id === subject.id).map(topic => (
+                                      <label key={topic.id} className="flex items-center gap-2 text-sm py-0.5">
+                                        <Switch checked={contentAccess.quiz_topic?.includes(topic.id) || false} onCheckedChange={checked => {
+                                          setContentAccess(prev => {
+                                            const current = prev.quiz_topic || []
+                                            return { ...prev, quiz_topic: checked ? [...current, topic.id] : current.filter(id => id !== topic.id) }
+                                          })
+                                        }} />
+                                        {topic.name}
+                                      </label>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="border-t border-border" />
-
-                  {/* Acervo Digital */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Acervo Digital</h4>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Switch checked={contentToggles.acervo} onCheckedChange={checked => {
-                          setContentToggles(p => ({...p, acervo: checked}))
-                          if (checked) setContentAccess(p => { const n = {...p}; delete n.acervo_category; delete n.acervo_concurso; return n })
-                        }} />
-                        Todo o acervo
-                      </label>
-                    </div>
-                    {!contentToggles.acervo && (
-                      <div className="pl-4 space-y-3">
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground mb-1">Categorias</p>
-                          <div className="flex flex-wrap gap-3">
-                            {['prova', 'livro', 'apostila', 'exercicio', 'regulamento', 'mapa_mental'].map(cat => (
-                              <label key={cat} className="flex items-center gap-2 text-sm">
-                                <Switch
-                                  checked={contentAccess.acervo_category?.includes(cat) || false}
-                                  onCheckedChange={checked => {
-                                    setContentAccess(prev => {
-                                      const current = prev.acervo_category || []
-                                      return { ...prev, acervo_category: checked ? [...current, cat] : current.filter(id => id !== cat) }
-                                    })
-                                  }}
-                                />
-                                {cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' ')}
+                        ),
+                      },
+                      {
+                        value: 'acervo', label: 'Acervo',
+                        content: (
+                          <div className="space-y-3 pt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 text-sm">
+                                <Switch checked={contentToggles.acervo} onCheckedChange={checked => {
+                                  setContentToggles(p => ({...p, acervo: checked}))
+                                  if (checked) setContentAccess(p => { const n = {...p}; delete n.acervo_category; delete n.acervo_concurso; return n })
+                                }} />
+                                Todo o acervo
                               </label>
-                            ))}
+                            </div>
+                            {!contentToggles.acervo && (
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-xs font-semibold text-muted-foreground mb-1">Categorias</p>
+                                  <div className="flex flex-wrap gap-3">
+                                    {['prova', 'livro', 'apostila', 'exercicio', 'regulamento', 'mapa_mental'].map(cat => (
+                                      <label key={cat} className="flex items-center gap-2 text-sm">
+                                        <Switch checked={contentAccess.acervo_category?.includes(cat) || false} onCheckedChange={checked => {
+                                          setContentAccess(prev => {
+                                            const current = prev.acervo_category || []
+                                            return { ...prev, acervo_category: checked ? [...current, cat] : current.filter(id => id !== cat) }
+                                          })
+                                        }} />
+                                        {cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' ')}
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-semibold text-muted-foreground mb-1">Concursos</p>
+                                  <div className="flex flex-wrap gap-3">
+                                    {['EAOF', 'EAOP', 'CAMAR', 'CADAR', 'CAFAR', 'CFOE'].map(conc => (
+                                      <label key={conc} className="flex items-center gap-2 text-sm">
+                                        <Switch checked={contentAccess.acervo_concurso?.includes(conc) || false} onCheckedChange={checked => {
+                                          setContentAccess(prev => {
+                                            const current = prev.acervo_concurso || []
+                                            return { ...prev, acervo_concurso: checked ? [...current, conc] : current.filter(id => id !== conc) }
+                                          })
+                                        }} />
+                                        {conc}
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground mb-1">Concursos</p>
-                          <div className="flex flex-wrap gap-3">
-                            {['EAOF', 'EAOP', 'CAMAR', 'CADAR', 'CAFAR', 'CFOE'].map(conc => (
-                              <label key={conc} className="flex items-center gap-2 text-sm">
-                                <Switch
-                                  checked={contentAccess.acervo_concurso?.includes(conc) || false}
-                                  onCheckedChange={checked => {
-                                    setContentAccess(prev => {
-                                      const current = prev.acervo_concurso || []
-                                      return { ...prev, acervo_concurso: checked ? [...current, conc] : current.filter(id => id !== conc) }
-                                    })
-                                  }}
-                                />
-                                {conc}
+                        ),
+                      },
+                      {
+                        value: 'simulados', label: 'Simulados',
+                        content: (
+                          <div className="space-y-3 pt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 text-sm">
+                                <Switch checked={contentToggles.simulation} onCheckedChange={checked => {
+                                  setContentToggles(p => ({...p, simulation: checked}))
+                                  if (checked) setContentAccess(p => { const n = {...p}; delete n.simulation; return n })
+                                }} />
+                                Todos os simulados
                               </label>
-                            ))}
+                            </div>
+                            {!contentToggles.simulation && allSimulations.length > 0 && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {allSimulations.map(sim => (
+                                  <label key={sim.id} className="flex items-center gap-2 text-sm">
+                                    <Switch checked={contentAccess.simulation?.includes(sim.id) || false} onCheckedChange={checked => {
+                                      setContentAccess(prev => {
+                                        const current = prev.simulation || []
+                                        return { ...prev, simulation: checked ? [...current, sim.id] : current.filter(id => id !== sim.id) }
+                                      })
+                                    }} />
+                                    {sim.title}
+                                  </label>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="border-t border-border" />
-
-                  {/* Simulados */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Simulados</h4>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Switch checked={contentToggles.simulation} onCheckedChange={checked => {
-                          setContentToggles(p => ({...p, simulation: checked}))
-                          if (checked) setContentAccess(p => { const n = {...p}; delete n.simulation; return n })
-                        }} />
-                        Todos os simulados
-                      </label>
-                    </div>
-                    {!contentToggles.simulation && allSimulations.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4">
-                        {allSimulations.map(sim => (
-                          <label key={sim.id} className="flex items-center gap-2 text-sm">
-                            <Switch
-                              checked={contentAccess.simulation?.includes(sim.id) || false}
-                              onCheckedChange={checked => {
-                                setContentAccess(prev => {
-                                  const current = prev.simulation || []
-                                  return { ...prev, simulation: checked ? [...current, sim.id] : current.filter(id => id !== sim.id) }
-                                })
-                              }}
-                            />
-                            {sim.title}
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="border-t border-border" />
-
-                  {/* Redação */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Redação</h4>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Switch checked={contentToggles.essay_limit} onCheckedChange={checked => {
-                          setContentToggles(p => ({...p, essay_limit: checked}))
-                          if (checked) setContentAccess(p => { const n = {...p}; delete n.essay_limit; return n })
-                        }} />
-                        Ilimitado
-                      </label>
-                    </div>
-                    {!contentToggles.essay_limit && (
-                      <div className="flex items-center gap-2 pl-4">
-                        <span className="text-sm">Máximo de envios:</span>
-                        <Input type="number" min="1" value={essayLimit} onChange={e => setEssayLimit(e.target.value)} className="w-20" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="border-t border-border" />
-
-                  {/* Comunidade - Permissão de escrita */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Comunidade — Permissão</h4>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Switch checked={contentToggles.community_readonly} onCheckedChange={checked => {
-                          setContentToggles(p => ({...p, community_readonly: checked}))
-                          if (checked) setContentAccess(p => { const n = {...p}; delete n.community_readonly; return n })
-                        }} />
-                        Acesso completo
-                      </label>
-                    </div>
-                    {!contentToggles.community_readonly && (
-                      <p className="text-sm text-muted-foreground pl-4">Somente leitura — aluno pode ver posts mas não pode criar ou comentar</p>
-                    )}
-                  </div>
-
-                  <div className="border-t border-border" />
-
-                  {/* Comunidade - Espaços visíveis */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium flex items-center gap-2">Comunidade — Espaços Visíveis</h4>
-                      <label className="flex items-center gap-2 text-sm">
-                        <Switch checked={contentToggles.community_space} onCheckedChange={checked => {
-                          setContentToggles(p => ({...p, community_space: checked}))
-                          if (checked) setContentAccess(p => { const n = {...p}; delete n.community_space; return n })
-                        }} />
-                        Todos os espaços
-                      </label>
-                    </div>
-                    <p className="text-xs text-muted-foreground pl-4">
-                      "Geral" e o espaço da turma estão sempre visíveis. Aqui você controla os espaços temáticos (EAOF, CADAR, etc).
-                    </p>
-                    {!contentToggles.community_space && allCommunitySpaces.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4">
-                        {allCommunitySpaces.map(space => (
-                          <label key={space.id} className="flex items-center gap-2 text-sm py-0.5">
-                            <Switch
-                              checked={contentAccess.community_space?.includes(space.id) || false}
-                              onCheckedChange={checked => {
-                                setContentAccess(prev => {
-                                  const current = prev.community_space || []
-                                  return { ...prev, community_space: checked
-                                    ? [...current, space.id]
-                                    : current.filter(id => id !== space.id) }
-                                })
-                              }}
-                            />
-                            <span
-                              className="h-2.5 w-2.5 rounded-full shrink-0"
-                              style={{ backgroundColor: space.color }}
-                            />
-                            {space.name}
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
+                        ),
+                      },
+                      {
+                        value: 'redacao', label: 'Redação',
+                        content: (
+                          <div className="space-y-3 pt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 text-sm">
+                                <Switch checked={contentToggles.essay_limit} onCheckedChange={checked => {
+                                  setContentToggles(p => ({...p, essay_limit: checked}))
+                                  if (checked) setContentAccess(p => { const n = {...p}; delete n.essay_limit; return n })
+                                }} />
+                                Ilimitado
+                              </label>
+                            </div>
+                            {!contentToggles.essay_limit && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">Máximo de envios:</span>
+                                <Input type="number" min="1" value={essayLimit} onChange={e => setEssayLimit(e.target.value)} className="w-20" />
+                              </div>
+                            )}
+                          </div>
+                        ),
+                      },
+                      {
+                        value: 'comunidade', label: 'Comunidade',
+                        content: (
+                          <div className="space-y-6 pt-4">
+                            <div className="space-y-3">
+                              <h4 className="text-sm font-medium">Permissão</h4>
+                              <div className="flex items-center justify-between">
+                                <label className="flex items-center gap-2 text-sm">
+                                  <Switch checked={contentToggles.community_readonly} onCheckedChange={checked => {
+                                    setContentToggles(p => ({...p, community_readonly: checked}))
+                                    if (checked) setContentAccess(p => { const n = {...p}; delete n.community_readonly; return n })
+                                  }} />
+                                  Acesso completo
+                                </label>
+                              </div>
+                              {!contentToggles.community_readonly && (
+                                <p className="text-sm text-muted-foreground">Somente leitura — aluno pode ver posts mas não pode criar ou comentar</p>
+                              )}
+                            </div>
+                            <div className="border-t border-border" />
+                            <div className="space-y-3">
+                              <h4 className="text-sm font-medium">Espaços Visíveis</h4>
+                              <div className="flex items-center justify-between">
+                                <label className="flex items-center gap-2 text-sm">
+                                  <Switch checked={contentToggles.community_space} onCheckedChange={checked => {
+                                    setContentToggles(p => ({...p, community_space: checked}))
+                                    if (checked) setContentAccess(p => { const n = {...p}; delete n.community_space; return n })
+                                  }} />
+                                  Todos os espaços
+                                </label>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                "Geral" e o espaço da turma estão sempre visíveis. Aqui você controla os espaços temáticos.
+                              </p>
+                              {!contentToggles.community_space && allCommunitySpaces.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  {allCommunitySpaces.map(space => (
+                                    <label key={space.id} className="flex items-center gap-2 text-sm py-0.5">
+                                      <Switch checked={contentAccess.community_space?.includes(space.id) || false} onCheckedChange={checked => {
+                                        setContentAccess(prev => {
+                                          const current = prev.community_space || []
+                                          return { ...prev, community_space: checked ? [...current, space.id] : current.filter(id => id !== space.id) }
+                                        })
+                                      }} />
+                                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: space.color }} />
+                                      {space.name}
+                                    </label>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    value={accessTab}
+                    onChange={setAccessTab}
+                  />
                 </CardContent>
               </Card>
                       </div>
@@ -1062,8 +1041,6 @@ export default function AdminClassFormPage() {
               </div>
             </form>
           </Form>
-        </CardContent>
-        </Card>
       </div>
     </div>
   )
