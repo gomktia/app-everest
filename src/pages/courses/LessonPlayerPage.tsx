@@ -1176,15 +1176,8 @@ export default function LessonPlayerPage() {
                         </div>
                       </div>
                     </div>
-                    {/* Mobile stacked */}
+                    {/* Mobile stacked — no duplicate video iframe to prevent double audio */}
                     <div className="md:hidden p-3 pb-0">
-                      <div className="relative w-full bg-black rounded-lg overflow-hidden border border-border shadow-sm" style={{ paddingBottom: '56.25%' }}>
-                        {videoEmbedUrl ? (
-                          <iframe src={videoEmbedUrl} title={lessonData.title}
-                            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-                            allowFullScreen className="absolute inset-0 w-full h-full border-0" />
-                        ) : <VideoPlaceholder />}
-                      </div>
                       <div className="border-t border-border">
                         <div className="flex items-center justify-between px-3 py-2 bg-card border-b border-border">
                           <div className="flex items-center gap-2 min-w-0">
