@@ -54,6 +54,7 @@ export default function AdminClassFormPage() {
   usePageTitle('Configurar Turma')
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [accessDuration, setAccessDuration] = useState<number | ''>('')
   const [isDefault, setIsDefault] = useState(false)
@@ -158,8 +159,6 @@ export default function AdminClassFormPage() {
         description: 'Não foi possível carregar os dados da turma',
         variant: 'destructive',
       })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -242,6 +241,8 @@ export default function AdminClassFormPage() {
   }
 
   const onSubmit = async (values: ClassFormValues) => {
+    if (isSaving) return
+    setIsSaving(true)
     try {
       const classPayload = {
         name: values.name,
@@ -274,17 +275,15 @@ export default function AdminClassFormPage() {
           }))
         await saveAllModuleRules(classId!, rulesToSave)
 
-        // Save lesson rules
-        // First delete all existing lesson rules, then insert non-free ones
+        // Save lesson rules (parallel for speed)
         const allLessonIds = Object.values(moduleLessons).flat().map(l => l.id)
-        for (const lessonId of allLessonIds) {
+        await Promise.all(allLessonIds.map(lessonId => {
           const lr = lessonRules[lessonId]
           if (lr && lr.rule_type !== 'inherit') {
-            await upsertLessonRule({ class_id: classId!, lesson_id: lessonId, rule_type: lr.rule_type as any, rule_value: lr.rule_value || null })
-          } else {
-            await deleteLessonRule(classId!, lessonId)
+            return upsertLessonRule({ class_id: classId!, lesson_id: lessonId, rule_type: lr.rule_type as any, rule_value: lr.rule_value || null })
           }
-        }
+          return deleteLessonRule(classId!, lessonId)
+        }))
 
         // Save content access (parallel for speed)
         await Promise.all([
@@ -330,33 +329,18 @@ export default function AdminClassFormPage() {
             }
           }
 
-          // Save content access
+          // Save content access (parallel for speed)
           const newClassId = insertedData.id
-          if (!contentToggles.flashcard_topic) await saveContentAccess(newClassId, 'flashcard_topic', contentAccess.flashcard_topic || [])
-          else await saveContentAccess(newClassId, 'flashcard_topic', [])
-
-          if (!contentToggles.quiz_topic) await saveContentAccess(newClassId, 'quiz_topic', contentAccess.quiz_topic || [])
-          else await saveContentAccess(newClassId, 'quiz_topic', [])
-
-          if (!contentToggles.acervo) {
-            await saveContentAccess(newClassId, 'acervo_category', contentAccess.acervo_category || [])
-            await saveContentAccess(newClassId, 'acervo_concurso', contentAccess.acervo_concurso || [])
-          } else {
-            await saveContentAccess(newClassId, 'acervo_category', [])
-            await saveContentAccess(newClassId, 'acervo_concurso', [])
-          }
-
-          if (!contentToggles.simulation) await saveContentAccess(newClassId, 'simulation', contentAccess.simulation || [])
-          else await saveContentAccess(newClassId, 'simulation', [])
-
-          if (!contentToggles.essay_limit) await saveContentAccess(newClassId, 'essay_limit', [essayLimit])
-          else await saveContentAccess(newClassId, 'essay_limit', [])
-
-          if (!contentToggles.community_readonly) await saveContentAccess(newClassId, 'community_readonly', ['true'])
-          else await saveContentAccess(newClassId, 'community_readonly', [])
-
-          if (!contentToggles.community_space) await saveContentAccess(newClassId, 'community_space', contentAccess.community_space || [])
-          else await saveContentAccess(newClassId, 'community_space', [])
+          await Promise.all([
+            saveContentAccess(newClassId, 'flashcard_topic', contentToggles.flashcard_topic ? [] : contentAccess.flashcard_topic || []),
+            saveContentAccess(newClassId, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
+            saveContentAccess(newClassId, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
+            saveContentAccess(newClassId, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
+            saveContentAccess(newClassId, 'simulation', contentToggles.simulation ? [] : contentAccess.simulation || []),
+            saveContentAccess(newClassId, 'essay_limit', contentToggles.essay_limit ? [] : [essayLimit]),
+            saveContentAccess(newClassId, 'community_readonly', contentToggles.community_readonly ? [] : ['true']),
+            saveContentAccess(newClassId, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
+          ])
         }
 
         toast({
@@ -373,6 +357,8 @@ export default function AdminClassFormPage() {
         description: 'Não foi possível salvar a turma',
         variant: 'destructive',
       })
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -587,8 +573,9 @@ export default function AdminClassFormPage() {
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
+                      min="0"
                       value={accessDuration}
-                      onChange={e => setAccessDuration(e.target.value ? parseInt(e.target.value) : '')}
+                      onChange={e => setAccessDuration(e.target.value ? Math.max(0, parseInt(e.target.value)) : '')}
                       placeholder="Ilimitado"
                       className="w-32"
                     />
@@ -1044,9 +1031,10 @@ export default function AdminClassFormPage() {
                 <Button
                   type="submit"
                   className="flex-1"
+                  disabled={isSaving}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {isEditing ? 'Salvar Alterações' : 'Criar Turma'}
+                  {isSaving ? 'Salvando...' : isEditing ? 'Salvar Alterações' : 'Criar Turma'}
                 </Button>
               </div>
             </form>

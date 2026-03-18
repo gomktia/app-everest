@@ -52,9 +52,3 @@ export async function saveContentAccess(classId: string, contentType: string, co
   if (error) throw error
 }
 
-export async function clearAllContentAccess(classId: string): Promise<void> {
-  await supabase
-    .from('class_content_access')
-    .delete()
-    .eq('class_id', classId)
-}

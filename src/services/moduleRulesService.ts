@@ -28,7 +28,8 @@ export async function getModuleRulesForClass(classId: string): Promise<ModuleRul
 
 export async function saveAllModuleRules(classId: string, rules: ModuleRule[]): Promise<void> {
   // Delete existing rules for this class
-  await supabase.from('class_module_rules').delete().eq('class_id', classId)
+  const { error: deleteError } = await supabase.from('class_module_rules').delete().eq('class_id', classId)
+  if (deleteError) throw deleteError
 
   // Insert only non-free rules (free is the default, no need to store)
   const nonFreeRules = rules.filter(r => r.rule_type !== 'free')
