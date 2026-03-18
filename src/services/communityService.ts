@@ -328,22 +328,21 @@ export const communityService = {
   async getPostById(id: string, userId?: string): Promise<CommunityPost | null> {
     try {
       // Increment views
-      await supabase.rpc('increment', { row_id: id, table_name: 'community_posts', column_name: 'views' }).catch(() => {
+      const { error: rpcError } = await supabase.rpc('increment', { row_id: id, table_name: 'community_posts', column_name: 'views' })
+      if (rpcError) {
         // Fallback: manual increment if RPC not available
-        return supabase
+        const { data } = await supabase
           .from('community_posts')
           .select('views')
           .eq('id', id)
           .single()
-          .then(({ data }) => {
-            if (data) {
-              return supabase
-                .from('community_posts')
-                .update({ views: (data.views || 0) + 1 })
-                .eq('id', id)
-            }
-          })
-      })
+        if (data) {
+          await supabase
+            .from('community_posts')
+            .update({ views: (data.views || 0) + 1 })
+            .eq('id', id)
+        }
+      }
 
       const { data, error } = await supabase
         .from('community_posts')

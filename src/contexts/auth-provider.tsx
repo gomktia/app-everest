@@ -267,7 +267,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (userProfile) {
           Sentry.setUser({ id: userProfile.id, email: userProfile.email, username: `${userProfile.first_name} ${userProfile.last_name}`.trim() })
           // Track last seen (5-min debounce in DB)
-          supabase.rpc('update_last_seen', { p_user_id: userProfile.id }).catch(() => {})
+          supabase.rpc('update_last_seen', { p_user_id: userProfile.id }).then(() => {}, () => {})
         }
       } catch (error) {
         logger.error('Failed to fetch profile in handleSessionChange:', error)
@@ -499,7 +499,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else if (profileRef.current) {
           // Update last_seen on tab focus (5-min debounce in DB)
-          supabase.rpc('update_last_seen', { p_user_id: profileRef.current.id }).catch(() => {})
+          supabase.rpc('update_last_seen', { p_user_id: profileRef.current.id }).then(() => {}, () => {})
         }
       } catch {
         // Ignore network errors on visibility check
