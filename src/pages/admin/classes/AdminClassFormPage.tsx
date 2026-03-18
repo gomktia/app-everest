@@ -395,7 +395,7 @@ export default function AdminClassFormPage() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <Card className="border-border shadow-sm">
           <CardContent className="p-5">
           <div className="flex items-center gap-3 mb-6">
