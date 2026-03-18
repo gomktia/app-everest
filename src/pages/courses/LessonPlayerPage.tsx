@@ -684,7 +684,7 @@ export default function LessonPlayerPage() {
     if (pdfViewerUrl?.startsWith('blob:')) URL.revokeObjectURL(pdfViewerUrl)
     if (pdfViewerUrl === url) { setPdfViewerUrl(null); return }
 
-    // Office files use Microsoft's viewer (always works via embed)
+    // Office files use Google Docs Viewer (Microsoft's viewer can't access Supabase Storage URLs)
     if (type === 'office') {
       setPdfViewerUrl(url); setSplitViewerType('office'); setSplitRatio(55)
       return
@@ -1168,7 +1168,7 @@ export default function LessonPlayerPage() {
                         <div className="flex-1 relative">
                           <iframe
                             src={splitViewerType === 'office'
-                              ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(pdfViewerUrl!)}`
+                              ? `https://docs.google.com/gview?url=${encodeURIComponent(pdfViewerUrl!)}&embedded=true`
                               : pdfViewerUrl!}
                             title={splitViewerType === 'office' ? 'Documento' : 'PDF'}
                             className="absolute inset-0 w-full h-full border-0"
@@ -1200,7 +1200,7 @@ export default function LessonPlayerPage() {
                         <div style={{ height: '50vh' }}>
                           <iframe
                             src={splitViewerType === 'office'
-                              ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(pdfViewerUrl!)}`
+                              ? `https://docs.google.com/gview?url=${encodeURIComponent(pdfViewerUrl!)}&embedded=true`
                               : pdfViewerUrl!}
                             title={splitViewerType === 'office' ? 'Documento' : 'PDF'}
                             className="w-full h-full border-0"
