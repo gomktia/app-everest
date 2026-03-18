@@ -259,14 +259,18 @@ CREATE INDEX idx_abandoned_carts_token ON abandoned_carts(recovery_token);
 #### student_classes
 
 ```sql
--- New source value
--- existing CHECK already allows extensible values
-ALTER TABLE student_classes ADD COLUMN IF NOT EXISTS access_expires_at TIMESTAMPTZ;
+-- student_classes already has subscription_expires_at — reuse it for Stripe access expiration.
+-- No new column needed for expiration.
 ALTER TABLE student_classes ADD COLUMN IF NOT EXISTS order_id UUID REFERENCES orders(id);
--- source: 'manual', 'memberkit', 'kiwify', 'invite', 'tasting', 'stripe'
+
+-- Add 'stripe' to the source CHECK constraint
+ALTER TABLE student_classes DROP CONSTRAINT IF EXISTS student_classes_source_check;
+ALTER TABLE student_classes
+  ADD CONSTRAINT student_classes_source_check
+  CHECK (source IN ('manual', 'memberkit', 'kiwify', 'invite', 'tasting', 'stripe'));
 ```
 
-**`access_expires_at` source of truth:** `student_classes.access_expires_at` is the canonical field checked by RLS and pg_cron. `orders` does NOT store expiration — it is derived from `stripe_products.access_days` at enrollment time. Admin `extend-access` action updates only `student_classes.access_expires_at`.
+**`subscription_expires_at` source of truth:** `student_classes.subscription_expires_at` is the canonical field checked by RLS, hooks, and pg_cron. This column already exists and is used by invites/tasting. Stripe enrollment sets `subscription_expires_at = now() + access_days`. Admin `extend-access` action updates only `student_classes.subscription_expires_at`.
 
 ### RLS Policies
 
