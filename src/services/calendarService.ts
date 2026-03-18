@@ -27,7 +27,8 @@ export const getCalendarEvents = async (
     .eq('id', user.id)
     .single()
 
-  // Buscar turmas do aluno (se for aluno)
+  // Buscar turmas do aluno + turmas irmãs (mesmo curso) para mostrar cronograma completo
+  // Ex: aluno da Degustação vê o calendário do Extensivo EAOF porque compartilham o mesmo curso
   let visibleClassIds: string[] = []
   if (userProfile?.role === 'student') {
     const { data: studentClasses } = await supabase
@@ -38,8 +39,7 @@ export const getCalendarEvents = async (
     const enrolledClassIds = studentClasses?.map(sc => sc.class_id) || []
     visibleClassIds = [...enrolledClassIds]
 
-    // For trial students: also show events from other classes that share the same courses
-    // This lets degustacao students see the Extensivo EAOF schedule
+    // Incluir turmas que compartilham os mesmos cursos (turmas irmãs)
     if (enrolledClassIds.length > 0) {
       const { data: enrolledCourses } = await supabase
         .from('class_courses')

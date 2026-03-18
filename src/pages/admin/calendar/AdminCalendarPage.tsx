@@ -138,8 +138,8 @@ export default function AdminCalendarPage() {
   }
 
   useEffect(() => {
-    loadData()
-  }, [currentMonth])
+    if (!teacherLoading) loadData()
+  }, [currentMonth, teacherLoading, isTeacher, teacherClassIds.length])
 
   const filteredEvents = useMemo(() => {
     let result = events
