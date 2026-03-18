@@ -231,6 +231,24 @@ const AdminIntegrationsPage = lazy(
 const AdminKiwifyProductsPage = lazy(
   () => import('@/pages/admin/integrations/AdminKiwifyProductsPage'),
 )
+const FinancialDashboardPage = lazy(
+  () => import('@/pages/admin/financeiro/FinancialDashboardPage'),
+)
+const SalesListPage = lazy(
+  () => import('@/pages/admin/financeiro/SalesListPage'),
+)
+const CouponsPage = lazy(
+  () => import('@/pages/admin/financeiro/CouponsPage'),
+)
+const AffiliatesPage = lazy(
+  () => import('@/pages/admin/financeiro/AffiliatesPage'),
+)
+const FinancialReportsPage = lazy(
+  () => import('@/pages/admin/financeiro/ReportsPage'),
+)
+const StripeProductsPage = lazy(
+  () => import('@/pages/admin/financeiro/StripeProductsPage'),
+)
 const AudioLessonPlayerPage = lazy(
   () => import('@/pages/AudioLessonPlayerPage'),
 )
@@ -245,6 +263,12 @@ const LessonPlayerPage = lazy(
 )
 const MyNotesPage = lazy(
   () => import('@/pages/MyNotesPage'),
+)
+const CheckoutPage = lazy(
+  () => import('@/pages/checkout/CheckoutPage'),
+)
+const CheckoutSuccessPage = lazy(
+  () => import('@/pages/checkout/CheckoutSuccessPage'),
 )
 
 // Remove initial loader once React has rendered
@@ -284,6 +308,10 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/invite/:slug" element={<InvitePage />} />
               </Route>
+
+              {/* Checkout routes — accessible without login (for recovery links) */}
+              <Route path="/checkout/sucesso" element={<CheckoutSuccessPage />} />
+              <Route path="/checkout/:slug" element={<CheckoutPage />} />
 
               <Route
                 element={
