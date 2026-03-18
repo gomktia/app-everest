@@ -230,22 +230,23 @@ export default function AdminClassFormPage() {
 
       // Load existing content access
       const access = await getAllContentAccessForClass(classId!)
-      // Filter out __none__ markers (used to represent "no access" vs "all access")
-      if (access.simulation?.includes('__none__')) {
-        access.simulation = []
-      }
-      setContentAccess(access)
 
-      // Set toggles based on existing data
+      // Set toggles based on existing data (before filtering markers)
+      const hasSimulationRestriction = !!access.simulation?.length
       setContentToggles({
         flashcard_topic: !access.flashcard_topic?.length,
         quiz_topic: !access.quiz_topic?.length,
         acervo: !access.acervo_category?.length && !access.acervo_concurso?.length,
-        simulation: !access.simulation?.length,
+        simulation: !hasSimulationRestriction,
         essay_limit: !access.essay_limit?.length,
         community_readonly: !access.community_readonly?.length,
         community_space: !access.community_space?.length,
       })
+      // Filter out __none__ markers after toggle calculation
+      if (access.simulation?.includes('__none__')) {
+        access.simulation = []
+      }
+      setContentAccess(access)
       if (access.essay_limit?.length) setEssayLimit(access.essay_limit[0])
     } catch (error) {
       logger.error('Erro ao carregar módulos e regras:', error)
