@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -30,6 +30,7 @@ import { logger } from '@/lib/logger'
 
 export default function SimulationResultsPage() {
   const { simulationId } = useParams()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -46,14 +47,21 @@ export default function SimulationResultsPage() {
   const loadResults = async () => {
     try {
       setLoading(true)
-      const lastAttempt = await getLastAttempt(simulationId!, user!.id)
+      const attemptIdParam = searchParams.get('attemptId')
+      let attemptId: string
 
-      if (!lastAttempt || lastAttempt.status !== 'submitted') {
-        navigate(`/simulados/${simulationId}`)
-        return
+      if (attemptIdParam) {
+        attemptId = attemptIdParam
+      } else {
+        const lastAttempt = await getLastAttempt(simulationId!, user!.id)
+        if (!lastAttempt || lastAttempt.status !== 'submitted') {
+          navigate(`/simulados/${simulationId}`)
+          return
+        }
+        attemptId = lastAttempt.id
       }
 
-      const fullResult = await getSimulationResult(lastAttempt.id)
+      const fullResult = await getSimulationResult(attemptId)
       setResult(fullResult)
 
       if (fullResult.answers) {

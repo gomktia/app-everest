@@ -25,7 +25,7 @@ const TOUR_STEPS: DriveStep[] = [
 ]
 
 export default function CoursesPage() {
-  const { user, isStudent } = useAuth()
+  const { user, isStudent, effectiveUserId } = useAuth()
   const { hasFeature, loading: permissionsLoading } = useFeaturePermissions()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('Todos')
@@ -35,9 +35,10 @@ export default function CoursesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        if (!user?.id) { setIsLoading(false); return }
+        const userId = effectiveUserId || user?.id
+        if (!userId) { setIsLoading(false); return }
 
-        const trails = await courseService.getUserCoursesByTrail(user.id)
+        const trails = await courseService.getUserCoursesByTrail(userId)
         setCourseTrails(trails)
       } catch (error) {
         logger.error('Error fetching courses:', error)
@@ -47,7 +48,7 @@ export default function CoursesPage() {
     }
 
     fetchCourses()
-  }, [user?.id])
+  }, [effectiveUserId, user?.id])
 
   // Filter trails by search term and category
   const filteredTrails = courseTrails.map(trail => ({

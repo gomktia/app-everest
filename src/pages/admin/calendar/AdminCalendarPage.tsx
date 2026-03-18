@@ -130,7 +130,8 @@ export default function AdminCalendarPage() {
         setClasses(classesData)
       }
     } catch {
-      toast({ title: 'Erro ao carregar', variant: 'destructive' })
+      setEvents([])
+      toast({ title: 'Erro ao carregar eventos', description: 'Os eventos do mês não puderam ser carregados.', variant: 'destructive' })
     } finally {
       setLoading(false)
     }

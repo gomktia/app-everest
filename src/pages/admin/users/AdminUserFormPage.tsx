@@ -26,6 +26,7 @@ import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/components/ui/use-toast'
 import { getUserById, updateUser } from '@/services/adminUserService'
 import { SectionLoader } from '@/components/SectionLoader'
+import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 import {
   User,
   Mail,
@@ -53,6 +54,7 @@ export default function AdminUserFormPage() {
   const navigate = useNavigate()
   usePageTitle('Editar Usuário')
   const { toast } = useToast()
+  const { isTeacher, studentIds, loading: teacherLoading } = useTeacherClasses()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -68,6 +70,15 @@ export default function AdminUserFormPage() {
   })
 
   useEffect(() => {
+    if (teacherLoading) return
+
+    // Teacher scope check: teachers can only edit students in their classes
+    if (isTeacher && userId && !studentIds.includes(userId)) {
+      toast({ title: 'Acesso negado', description: 'Você só pode editar alunos das suas turmas.', variant: 'destructive' })
+      navigate('/admin/management')
+      return
+    }
+
     if (userId) {
       getUserById(userId).then((user) => {
         if (user) {
@@ -81,7 +92,7 @@ export default function AdminUserFormPage() {
     } else {
       setIsLoading(false)
     }
-  }, [userId, form])
+  }, [userId, form, teacherLoading])
 
   const onSubmit = async (data: UserFormValues) => {
     if (!userId || isSubmitting) return

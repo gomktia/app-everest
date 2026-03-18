@@ -183,6 +183,7 @@ export default function FlashcardStudyPage() {
   const [showInstructions, setShowInstructions] = useState(true)
 
   const sessionResultsRef = useRef<SessionResult[]>([])
+  const isFinishingRef = useRef(false)
 
   useEffect(() => {
     sessionResultsRef.current = sessionResults
@@ -239,6 +240,8 @@ export default function FlashcardStudyPage() {
   // ── Finish session ──
   const finishSession = useCallback(async () => {
     if (!topicData || !user?.id) return
+    if (isFinishingRef.current) return
+    isFinishingRef.current = true
 
     const results = sessionResultsRef.current
     const correct = results.filter((r) => r.result === 'correct').length

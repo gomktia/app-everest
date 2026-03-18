@@ -322,10 +322,14 @@ export default function AdminEssayCorrectionPage() {
       setTranscribedText(text)
 
       if (submissionId) {
-        await supabase
+        const { error } = await supabase
           .from('essays')
           .update({ transcribed_text: text })
           .eq('id', submissionId)
+        if (error) {
+          logger.error(`Erro ao salvar transcrição da redação ${submissionId}:`, error)
+          toast({ title: 'Erro ao salvar transcrição no banco', variant: 'destructive' })
+        }
       }
 
       toast({ title: 'Transcrição concluída!' })
@@ -550,7 +554,8 @@ export default function AdminEssayCorrectionPage() {
         .eq('id', submissionId)
 
       toast({ title: 'Rascunho salvo!' })
-    } catch {
+    } catch (err) {
+      logger.error(`Erro ao salvar rascunho da redação ${submissionId}:`, err)
       toast({ title: 'Erro ao salvar rascunho', variant: 'destructive' })
     } finally {
       setIsSaving(false)

@@ -502,9 +502,8 @@ export default function LessonPlayerPage() {
     try {
       const newComment = await lessonInteractionService.addComment(lessonId, user.id, text.trim(), parentId)
       if (newComment) {
-        // Award XP for commenting and check achievements
+        // Award XP for commenting (achievements checked on Achievements/Ranking pages)
         await rankingService.addUserScore(user.id, 'lesson_comment', 5, lessonId)
-        rankingService.checkAndGrantAchievements(user.id).catch(() => {})
         // Refresh comments
         const updated = await lessonInteractionService.getComments(lessonId)
         setComments(updated)

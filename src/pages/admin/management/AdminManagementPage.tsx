@@ -23,6 +23,7 @@ export default function AdminManagementPage() {
   const { isTeacher, isAdmin, studentIds, loading: teacherLoading } = useTeacherClasses()
   const [activeTab, setActiveTab] = useState('users')
 
+  const [statsKey, setStatsKey] = useState(0)
   const [stats, setStats] = useState({
     totalUsers: 0,
     students: 0,
@@ -36,7 +37,7 @@ export default function AdminManagementPage() {
     if (!teacherLoading) {
       loadStats()
     }
-  }, [teacherLoading])
+  }, [teacherLoading, statsKey])
 
   const loadStats = async () => {
     try {
@@ -178,7 +179,7 @@ export default function AdminManagementPage() {
                     Alunos matriculados nas suas turmas
                   </p>
                 </div>
-                <UserManagement isTeacher={true} teacherStudentIds={studentIds} />
+                <UserManagement isTeacher={true} teacherStudentIds={studentIds} onDataChange={() => setStatsKey(k => k + 1)} />
               </div>
             ) : (
               <div className="w-full">
@@ -198,13 +199,13 @@ export default function AdminManagementPage() {
                       value: 'users',
                       label: 'Usuarios',
                       icon: <Users className="h-4 w-4" />,
-                      content: <UserManagement />,
+                      content: <UserManagement onDataChange={() => setStatsKey(k => k + 1)} />,
                     },
                     {
                       value: 'classes',
                       label: 'Turmas',
                       icon: <GraduationCap className="h-4 w-4" />,
-                      content: <ClassManagement />,
+                      content: <ClassManagement onDataChange={() => setStatsKey(k => k + 1)} />,
                     },
                   ]}
                 />

@@ -46,6 +46,7 @@ export default function AdminInviteFormPage() {
 
   const [loading, setLoading] = useState(isEditing)
   const [saving, setSaving] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
   const [title, setTitle] = useState('')
@@ -158,24 +159,29 @@ export default function AdminInviteFormPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const ext = file.name.split('.').pop()
-    const path = `invite-covers/${Date.now()}.${ext}`
+    setIsUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `invite-covers/${Date.now()}.${ext}`
 
-    const { error } = await supabase.storage
-      .from('uploads')
-      .upload(path, file, { upsert: true })
+      const { error } = await supabase.storage
+        .from('uploads')
+        .upload(path, file, { upsert: true })
 
-    if (error) {
-      toast({
-        title: 'Erro no upload',
-        description: 'Nao foi possivel enviar a imagem.',
-        variant: 'destructive',
-      })
-      return
+      if (error) {
+        toast({
+          title: 'Erro no upload',
+          description: 'Nao foi possivel enviar a imagem.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(path)
+      setCoverImageUrl(urlData.publicUrl)
+    } finally {
+      setIsUploading(false)
     }
-
-    const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(path)
-    setCoverImageUrl(urlData.publicUrl)
   }
 
   const handleSave = async () => {
@@ -387,7 +393,14 @@ export default function AdminInviteFormPage() {
                 type="file"
                 accept="image/*"
                 onChange={handleCoverImageChange}
+                disabled={isUploading}
               />
+              {isUploading && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Enviando imagem...
+                </div>
+              )}
               {coverImageUrl && (
                 <img
                   src={coverImageUrl}
@@ -414,7 +427,7 @@ export default function AdminInviteFormPage() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <Button onClick={handleSave} disabled={saving} className="px-8">
+          <Button onClick={handleSave} disabled={saving || isUploading} className="px-8">
             {saving ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

@@ -90,6 +90,7 @@ export default function ProgressPage() {
             course: c.title,
             progress: c.progress,
             completed: c.progress >= 100,
+            date: (c as any).updated_at || (c as any).created_at || new Date().toISOString(),
           }))
 
         // Build achievements list from real data

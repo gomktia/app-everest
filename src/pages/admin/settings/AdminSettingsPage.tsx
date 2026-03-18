@@ -77,13 +77,15 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<SettingsKey>('general')
   const [settings, setSettings] = useState<Record<string, Record<string, any>>>(DEFAULTS)
+  const [savedSettings, setSavedSettings] = useState<Record<string, Record<string, any>>>(DEFAULTS)
+  const isDirty = JSON.stringify(settings[activeTab]) !== JSON.stringify(savedSettings[activeTab])
 
   // Load settings from DB on mount
   useEffect(() => {
     async function load() {
       try {
         const data = await getAllSettings()
-        setSettings(prev => {
+        const mergeSettings = (prev: Record<string, Record<string, any>>) => {
           const merged = { ...prev }
           for (const key of Object.keys(DEFAULTS) as SettingsKey[]) {
             if (data[key]) {
@@ -91,7 +93,9 @@ export default function AdminSettingsPage() {
             }
           }
           return merged
-        })
+        }
+        setSettings(prev => mergeSettings(prev))
+        setSavedSettings(prev => mergeSettings(prev))
       } catch (err) {
         logger.error('Failed to load settings:', err)
         toast({
@@ -118,6 +122,7 @@ export default function AdminSettingsPage() {
     setSaving(true)
     try {
       await updateSettings(activeTab, settings[activeTab])
+      setSavedSettings(prev => ({ ...prev, [activeTab]: { ...settings[activeTab] } }))
       toast({
         title: 'Configurações salvas',
         description: `As configurações de "${getTabLabel(activeTab)}" foram atualizadas com sucesso.`,
@@ -178,7 +183,15 @@ export default function AdminSettingsPage() {
         {/* Settings Tabs */}
         <PageTabs
           value={activeTab}
-          onChange={(v) => setActiveTab(v as SettingsKey)}
+          onChange={(v) => {
+            if (isDirty) {
+              const confirmed = window.confirm('Você tem alterações não salvas. Deseja descartar e trocar de aba?')
+              if (!confirmed) return
+              // Revert unsaved changes for current tab
+              setSettings(prev => ({ ...prev, [activeTab]: { ...savedSettings[activeTab] } }))
+            }
+            setActiveTab(v as SettingsKey)
+          }}
           layout={5}
           tabs={[
             {

@@ -194,27 +194,13 @@ export const lessonInteractionService = {
 
   async saveNote(lessonId: string, userId: string, content: string): Promise<boolean> {
     try {
-      // Try update first to avoid overwriting drawing_data
-      const { data: existing } = await supabase
+      const { error } = await supabase
         .from('lesson_notes')
-        .select('id')
-        .eq('lesson_id', lessonId)
-        .eq('user_id', userId)
-        .maybeSingle()
-
-      if (existing) {
-        const { error } = await supabase
-          .from('lesson_notes')
-          .update({ content })
-          .eq('lesson_id', lessonId)
-          .eq('user_id', userId)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('lesson_notes')
-          .insert({ lesson_id: lessonId, user_id: userId, content })
-        if (error) throw error
-      }
+        .upsert(
+          { lesson_id: lessonId, user_id: userId, content },
+          { onConflict: 'lesson_id,user_id', ignoreDuplicates: false }
+        )
+      if (error) throw error
       return true
     } catch (error) {
       logger.error('Error saving note:', error)
@@ -224,27 +210,13 @@ export const lessonInteractionService = {
 
   async saveDrawing(lessonId: string, userId: string, drawingData: string): Promise<boolean> {
     try {
-      // Try update first to avoid overwriting content
-      const { data: existing } = await supabase
+      const { error } = await supabase
         .from('lesson_notes')
-        .select('id')
-        .eq('lesson_id', lessonId)
-        .eq('user_id', userId)
-        .maybeSingle()
-
-      if (existing) {
-        const { error } = await supabase
-          .from('lesson_notes')
-          .update({ drawing_data: drawingData } as any)
-          .eq('lesson_id', lessonId)
-          .eq('user_id', userId)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('lesson_notes')
-          .insert({ lesson_id: lessonId, user_id: userId, drawing_data: drawingData } as any)
-        if (error) throw error
-      }
+        .upsert(
+          { lesson_id: lessonId, user_id: userId, drawing_data: drawingData } as any,
+          { onConflict: 'lesson_id,user_id', ignoreDuplicates: false }
+        )
+      if (error) throw error
       return true
     } catch (error) {
       logger.error('Error saving drawing:', error)

@@ -73,6 +73,7 @@ export default function AdminClassStudentsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState('')
+  const [isAdding, setIsAdding] = useState(false)
 
   useEffect(() => {
     if (teacherLoading) return
@@ -171,6 +172,8 @@ export default function AdminClassStudentsPage() {
       })
       return
     }
+    if (isAdding) return
+    setIsAdding(true)
 
     try {
       const { error } = await supabase
@@ -198,6 +201,8 @@ export default function AdminClassStudentsPage() {
         description: 'Não foi possível adicionar o aluno',
         variant: 'destructive'
       })
+    } finally {
+      setIsAdding(false)
     }
   }
 
@@ -390,7 +395,7 @@ export default function AdminClassStudentsPage() {
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleAddStudent} disabled={!selectedUserId}>
+              <Button onClick={handleAddStudent} disabled={!selectedUserId || isAdding}>
                 Adicionar
               </Button>
             </DialogFooter>

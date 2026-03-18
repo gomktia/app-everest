@@ -90,6 +90,10 @@ export default function AdminEvercastFormPage() {
               duration: lesson.duration_minutes?.toString() || '',
               audio_source_url: lesson.audio_url || ''
             })
+          } else {
+            toast({ title: 'Áudio-aula não encontrada', description: 'O registro solicitado não existe.', variant: 'destructive' })
+            navigate('/admin/evercast')
+            return
           }
         }
       } catch (error) {

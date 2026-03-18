@@ -247,6 +247,11 @@ export default function StudyPlannerPage() {
           logger.debug('✅ Pomodoro session saved successfully')
         } catch (error) {
           logger.error('Error saving pomodoro session:', error)
+          toast({
+            title: 'Erro ao salvar sessão',
+            description: 'Não foi possível registrar a sessão do Pomodoro. Tente novamente.',
+            variant: 'destructive',
+          })
         }
       }
 

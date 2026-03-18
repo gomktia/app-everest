@@ -281,9 +281,10 @@ export default function DashboardPage() {
                       className="group flex gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
                     >
                       <img
-                        src={course.image}
+                        src={course.image || '/placeholder.svg'}
                         alt={course.title}
                         className="w-16 h-16 rounded-lg object-cover shrink-0"
+                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg' }}
                       />
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">

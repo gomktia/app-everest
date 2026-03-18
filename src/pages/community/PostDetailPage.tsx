@@ -34,9 +34,10 @@ export default function PostDetailPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
-  const fetchPost = useCallback(async () => {
+  const fetchPost = useCallback(async (isRefresh = false) => {
     if (!postId) return
     try {
+      if (!isRefresh) setLoading(true)
       const data = await communityService.getPostById(postId, user?.id)
       if (!data) {
         setNotFound(true)
@@ -45,7 +46,7 @@ export default function PostDetailPage() {
       setPost(data)
     } catch (error) {
       logger.error('Failed to load post', error)
-      setNotFound(true)
+      if (!isRefresh) setNotFound(true)
     } finally {
       setLoading(false)
     }
@@ -56,15 +57,15 @@ export default function PostDetailPage() {
   }, [fetchPost])
 
   const handleReactionChange = () => {
-    fetchPost()
+    fetchPost(true)
   }
 
   const handleCommentUpdate = () => {
-    fetchPost()
+    fetchPost(true)
   }
 
   const handlePostAction = () => {
-    fetchPost()
+    fetchPost(true)
   }
 
   if (loading) return <SectionLoader />

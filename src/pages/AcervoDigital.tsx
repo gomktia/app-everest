@@ -89,8 +89,8 @@ const ACERVO_TOUR_STEPS: DriveStep[] = [
 
 export default function AcervoDigitalPage() {
   const { isStudent } = useAuth()
-  const { isRestricted: catRestricted, isAllowed: isCatAllowed } = useContentAccess('acervo_category')
-  const { isRestricted: concRestricted, isAllowed: isConcAllowed } = useContentAccess('acervo_concurso')
+  const { isRestricted: catRestricted, isAllowed: isCatAllowed, loading: catLoading } = useContentAccess('acervo_category')
+  const { isRestricted: concRestricted, isAllowed: isConcAllowed, loading: concLoading } = useContentAccess('acervo_concurso')
   const [livros, setLivros] = useState<AcervoItem[]>([])
   const [provas, setProvas] = useState<AcervoItem[]>([])
   const [apostilas, setApostilas] = useState<AcervoItem[]>([])
@@ -225,7 +225,7 @@ export default function AcervoDigitalPage() {
     return group.subcategories.flatMap(sub => sub.years.flatMap(y => y.items))
   }
 
-  if (isLoading) {
+  if (isLoading || catLoading || concLoading) {
     return <SectionLoader />
   }
 

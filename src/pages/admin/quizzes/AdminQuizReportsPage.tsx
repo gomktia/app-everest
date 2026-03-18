@@ -30,12 +30,15 @@ import {
   type StudentAttempt,
 } from '@/services/adminQuizService'
 import { SectionLoader } from '@/components/SectionLoader'
+import { useToast } from '@/components/ui/use-toast'
+import { logger } from '@/lib/logger'
 import { AttemptDetailsDialog } from '@/components/admin/quizzes/AttemptDetailsDialog'
 
 export default function AdminQuizReportsPage() {
   const { quizId } = useParams<{ quizId: string }>()
   const navigate = useNavigate()
   usePageTitle('Relatório do Quiz')
+  const { toast } = useToast()
   const [report, setReport] = useState<QuizReport | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAttempt, setSelectedAttempt] = useState<StudentAttempt | null>(
@@ -48,6 +51,10 @@ export default function AdminQuizReportsPage() {
       setIsLoading(true)
       getQuizReport(quizId)
         .then(setReport)
+        .catch((err) => {
+          logger.error('Erro ao carregar relatório do quiz:', err)
+          toast({ title: 'Erro ao carregar relatório', variant: 'destructive' })
+        })
         .finally(() => setIsLoading(false))
     }
   }, [quizId])

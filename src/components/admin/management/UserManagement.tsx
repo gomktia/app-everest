@@ -55,9 +55,11 @@ interface UserManagementProps {
   isTeacher?: boolean
   /** Student IDs belonging to this teacher's classes (only used when isTeacher) */
   teacherStudentIds?: string[]
+  /** Callback when user data changes (add/remove) so parent can refresh stats */
+  onDataChange?: () => void
 }
 
-export const UserManagement = ({ isTeacher = false, teacherStudentIds = [] }: UserManagementProps) => {
+export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDataChange }: UserManagementProps) => {
   const [users, setUsers] = useState<UserWithClasses[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserWithClasses[]>([])
   const [isLoading, setIsLoading] = useState(true)

@@ -42,7 +42,13 @@ const classSchema = z.object({
   status: z.enum(['active', 'inactive', 'archived']),
   class_type: z.enum(['standard', 'trial']).default('standard'),
   teacher_id: z.string().min(1, 'O professor é obrigatório'),
-})
+}).refine(
+  (data) => !data.start_date || !data.end_date || data.end_date >= data.start_date,
+  {
+    message: 'A data de término deve ser igual ou posterior à data de início',
+    path: ['end_date'],
+  }
+)
 
 type ClassFormValues = z.infer<typeof classSchema>
 
@@ -237,6 +243,11 @@ export default function AdminClassFormPage() {
       if (access.essay_limit?.length) setEssayLimit(access.essay_limit[0])
     } catch (error) {
       logger.error('Erro ao carregar módulos e regras:', error)
+      toast({
+        title: 'Erro ao carregar módulos',
+        description: 'Não foi possível carregar os módulos e regras de acesso. Tente recarregar a página.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -331,16 +342,27 @@ export default function AdminClassFormPage() {
 
           // Save content access (parallel for speed)
           const newClassId = insertedData.id
-          await Promise.all([
-            saveContentAccess(newClassId, 'flashcard_topic', contentToggles.flashcard_topic ? [] : contentAccess.flashcard_topic || []),
-            saveContentAccess(newClassId, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
-            saveContentAccess(newClassId, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
-            saveContentAccess(newClassId, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
-            saveContentAccess(newClassId, 'simulation', contentToggles.simulation ? [] : contentAccess.simulation || []),
-            saveContentAccess(newClassId, 'essay_limit', contentToggles.essay_limit ? [] : [essayLimit]),
-            saveContentAccess(newClassId, 'community_readonly', contentToggles.community_readonly ? [] : ['true']),
-            saveContentAccess(newClassId, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
-          ])
+          try {
+            await Promise.all([
+              saveContentAccess(newClassId, 'flashcard_topic', contentToggles.flashcard_topic ? [] : contentAccess.flashcard_topic || []),
+              saveContentAccess(newClassId, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
+              saveContentAccess(newClassId, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
+              saveContentAccess(newClassId, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
+              saveContentAccess(newClassId, 'simulation', contentToggles.simulation ? [] : contentAccess.simulation || []),
+              saveContentAccess(newClassId, 'essay_limit', contentToggles.essay_limit ? [] : [essayLimit]),
+              saveContentAccess(newClassId, 'community_readonly', contentToggles.community_readonly ? [] : ['true']),
+              saveContentAccess(newClassId, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
+            ])
+          } catch (contentError) {
+            logger.error('Erro ao salvar acesso de conteúdo da nova turma:', contentError)
+            toast({
+              title: 'Turma criada, mas houve erro ao salvar acesso de conteúdo',
+              description: 'Edite a turma para configurar o acesso ao conteúdo.',
+              variant: 'destructive',
+            })
+            setIsSaving(false)
+            return // Stay on page so admin can retry content access
+          }
         }
 
         toast({
