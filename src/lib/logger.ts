@@ -5,6 +5,8 @@
  * Use this instead of console.log/error/warn throughout the application.
  */
 
+import * as Sentry from '@sentry/react'
+
 const isDev = import.meta.env.DEV
 
 export const logger = {
@@ -36,6 +38,10 @@ export const logger = {
     if (isDev) {
       console.warn(`⚠️  ${message}`, ...args)
     }
+    // Add as breadcrumb in Sentry for debugging context
+    if (!isDev) {
+      Sentry.addBreadcrumb({ category: 'warning', message, level: 'warning' })
+    }
   },
 
   /**
@@ -45,10 +51,13 @@ export const logger = {
    */
   error: (message: string, ...args: any[]) => {
     console.error(`❌ ${message}`, ...args)
-    // TODO: Integrate with error tracking service
-    // if (import.meta.env.PROD) {
-    //   Sentry.captureException(new Error(message), { extra: args })
-    // }
+    // Send to Sentry in production
+    if (!isDev) {
+      const error = args[0] instanceof Error ? args[0] : new Error(message)
+      Sentry.captureException(error, {
+        extra: { message, context: args.length > 1 ? args.slice(1) : undefined },
+      })
+    }
   },
 
   /**

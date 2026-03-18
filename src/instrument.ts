@@ -36,9 +36,9 @@ Sentry.init({
     // Benign: fetch aborted by component unmount or navigation
     'AbortError',
     'The operation was aborted',
-    // Network errors (user offline or unstable connection)
-    'NetworkError',
-    'Failed to fetch',
-    'Load failed',
+    // Network errors — only ignore generic browser network failures
+    'NetworkError when attempting to fetch resource',
+    'net::ERR_INTERNET_DISCONNECTED',
+    'net::ERR_NETWORK_CHANGED',
   ],
 })
