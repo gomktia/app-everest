@@ -334,7 +334,32 @@ export default function QuizPlayerPage() {
 
                 {/* Answer Options */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Selecione sua resposta:</h3>
+                  <h3 className="text-lg font-semibold">
+                    {currentQuestion.question_type === 'true_false' ? 'Julgue a assertiva:' : 'Selecione sua resposta:'}
+                  </h3>
+                  {currentQuestion.question_type === 'true_false' ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      {['Certo', 'Errado'].map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => handleAnswerSelect(option)}
+                          disabled={!!selectedAnswers[currentQuestion.id]}
+                          className={cn(
+                            "flex items-center justify-center gap-3 p-5 rounded-xl border-2 text-lg font-bold transition-all duration-300",
+                            !selectedAnswers[currentQuestion.id] && option === 'Certo' && "border-green-500/30 hover:bg-green-500/10 hover:border-green-500 text-green-600",
+                            !selectedAnswers[currentQuestion.id] && option === 'Errado' && "border-red-500/30 hover:bg-red-500/10 hover:border-red-500 text-red-600",
+                            selectedAnswers[currentQuestion.id] === option && "ring-2 ring-offset-2",
+                            selectedAnswers[currentQuestion.id] === option && option === 'Certo' && "bg-green-500/15 border-green-500 ring-green-500",
+                            selectedAnswers[currentQuestion.id] === option && option === 'Errado' && "bg-red-500/15 border-red-500 ring-red-500",
+                            selectedAnswers[currentQuestion.id] && selectedAnswers[currentQuestion.id] !== option && "opacity-40",
+                          )}
+                        >
+                          {option === 'Certo' ? <CheckCircle className="h-6 w-6" /> : <HelpCircle className="h-6 w-6" />}
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
                   <RadioGroup
                     value={selectedAnswers[currentQuestion.id] || ''}
                     onValueChange={handleAnswerSelect}
@@ -368,6 +393,7 @@ export default function QuizPlayerPage() {
                       </div>
                     ))}
                   </RadioGroup>
+                  )}
                 </div>
 
                 {/* Navigation */}

@@ -629,6 +629,34 @@ export default function QuestionBankPage() {
             )}
 
             {/* Options */}
+            {currentQuestion.question_type === 'true_false' ? (
+              <div className="grid grid-cols-2 gap-3">
+                {['Certo', 'Errado'].map((option) => {
+                  const isSelected = isAnswered && answers[currentQuestion.id] === option
+                  const isCorrectOption = option === currentQuestion.correct_answer
+                  return (
+                    <div
+                      key={option}
+                      onClick={() => handleOptionSelect(option)}
+                      className={cn(
+                        'flex items-center justify-center gap-2 p-4 rounded-lg border-2 text-base font-bold transition-all cursor-pointer',
+                        !isAnswered && option === 'Certo' && 'border-green-500/30 hover:bg-green-500/10 hover:border-green-500 text-green-600',
+                        !isAnswered && option === 'Errado' && 'border-red-500/30 hover:bg-red-500/10 hover:border-red-500 text-red-600',
+                        isAnswered && isCorrectOption && 'bg-green-500/15 border-green-500 text-green-700',
+                        isAnswered && isSelected && !isCorrectOption && 'bg-red-500/15 border-red-500 text-red-700',
+                        isAnswered && !isSelected && !isCorrectOption && 'opacity-40 border-transparent',
+                        isAnswered && !isSelected && isCorrectOption && 'bg-green-500/15 border-green-500 text-green-700',
+                        isAnswered && 'cursor-default',
+                      )}
+                    >
+                      {isAnswered && isCorrectOption && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+                      {isAnswered && isSelected && !isCorrectOption && <XCircle className="h-5 w-5 text-red-500" />}
+                      {option}
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
             <div className="grid gap-2">
               {parseOptions(currentQuestion.options).map((option: string, optIndex: number) => {
                 let optionStyle = 'border-border/50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm'
@@ -673,6 +701,7 @@ export default function QuestionBankPage() {
                 )
               })}
             </div>
+            )}
 
             {/* Feedback after answering */}
             {isAnswered && (
