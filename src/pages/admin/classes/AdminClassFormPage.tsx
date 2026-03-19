@@ -497,6 +497,7 @@ export default function AdminClassFormPage() {
           saveContentAccess(classId!, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
         ])
 
+        setModuleOrderDirty(false)
         toast({
           title: 'Sucesso',
           description: 'Turma atualizada com sucesso',
@@ -560,7 +561,9 @@ export default function AdminClassFormPage() {
         })
       }
 
-      navigate('/admin/classes')
+      if (!isEditing) {
+        navigate('/admin/classes')
+      }
     } catch (error) {
       logger.error('Erro ao salvar turma:', error)
       toast({
