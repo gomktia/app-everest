@@ -219,9 +219,16 @@ export default function QuizPlayerPage() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-2xl bg-primary/10">
-                    <Brain className="h-8 w-8 text-primary" />
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (answeredCount > 0 && !confirm('Tem certeza que deseja sair? Seu progresso será perdido.')) return
+                      navigate(returnTo || '/quizzes')
+                    }}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
                   <div>
                     <h1 className="text-2xl font-bold">{quiz.title}</h1>
                     <p className="text-muted-foreground">
