@@ -73,6 +73,7 @@ interface LessonData {
   progress?: number
   last_position?: number
   topic_id?: string | null
+  quiz_id?: string | null
   quiz_required?: boolean
   quiz_min_percentage?: number
 }
@@ -186,9 +187,8 @@ export default function LessonPlayerPage() {
   const [notebookOpen, setNotebookOpen] = useState(false)
   const [notebookExpanded, setNotebookExpanded] = useState(false)
 
-  // Topic-linked quizzes & flashcards
-  const [topicQuizCount, setTopicQuizCount] = useState(0)
-  const [topicQuizIds, setTopicQuizIds] = useState<string[]>([])
+  // Quiz & flashcards linked to this lesson
+  const [hasQuiz, setHasQuiz] = useState(false)
   const [topicFlashcardCount, setTopicFlashcardCount] = useState(0)
   const [topicSubjectId, setTopicSubjectId] = useState<string | null>(null)
   const [quizPassed, setQuizPassed] = useState(false)
@@ -394,27 +394,25 @@ export default function LessonPlayerPage() {
 
         setLessonData(foundLesson)
 
-        // Fetch topic-linked quiz & flashcard counts
+        // Fetch quiz & flashcard data for this lesson
+        const hasLinkedQuiz = !!foundLesson.quiz_id
+        setHasQuiz(hasLinkedQuiz)
+
         if (foundLesson.topic_id) {
-          const [{ count: qCount }, { count: fCount }, { data: topicData }, { data: topicQuizzes }] = await Promise.all([
-            supabase.from('quizzes').select('*', { count: 'exact', head: true }).eq('topic_id', foundLesson.topic_id).or('type.eq.quiz,type.is.null'),
+          const [{ count: fCount }, { data: topicData }] = await Promise.all([
             supabase.from('flashcards').select('*', { count: 'exact', head: true }).eq('topic_id', foundLesson.topic_id),
             supabase.from('topics').select('subject_id').eq('id', foundLesson.topic_id).single(),
-            supabase.from('quizzes').select('id').eq('topic_id', foundLesson.topic_id).or('type.eq.quiz,type.is.null'),
           ])
-          setTopicQuizCount(qCount || 0)
-          setTopicQuizIds((topicQuizzes || []).map(q => q.id))
           setTopicFlashcardCount(fCount || 0)
           setTopicSubjectId(topicData?.subject_id || null)
 
-          // Check if student passed any quiz for this topic
-          if (foundLesson.quiz_required && topicQuizzes && topicQuizzes.length > 0 && user?.id) {
-            const quizIds = topicQuizzes.map(q => q.id)
+          // Check if student passed the linked quiz
+          if (foundLesson.quiz_required && foundLesson.quiz_id && user?.id) {
             const { data: attempts } = await supabase
               .from('quiz_attempts')
               .select('percentage')
               .eq('user_id', user.id)
-              .in('quiz_id', quizIds)
+              .eq('quiz_id', foundLesson.quiz_id)
             const minPct = foundLesson.quiz_min_percentage || 70
             const passed = (attempts || []).some(a => (a.percentage || 0) >= minPct)
             setQuizPassed(passed)
@@ -422,11 +420,9 @@ export default function LessonPlayerPage() {
             setQuizPassed(true)
           }
         } else {
-          setTopicQuizCount(0)
-          setTopicQuizIds([])
           setTopicFlashcardCount(0)
           setTopicSubjectId(null)
-          setQuizPassed(true)
+          setQuizPassed(!foundLesson.quiz_required)
         }
 
         const { data: attData } = await supabase
@@ -1365,13 +1361,8 @@ export default function LessonPlayerPage() {
                     {lessonData.quiz_required && !quizPassed && !lessonData.completed ? (
                       <button
                         onClick={() => {
-                          if (topicQuizCount > 0) {
-                            const returnPath = encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)
-                            if (topicQuizIds.length === 1) {
-                              navigate(`/quiz/${topicQuizIds[0]}?returnTo=${returnPath}`)
-                            } else {
-                              navigate(`/quizzes/${topicSubjectId}?returnTo=${returnPath}`)
-                            }
+                          if (lessonData.quiz_id) {
+                            navigate(`/quiz/${lessonData.quiz_id}?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)
                           } else {
                             toast({ title: 'Quiz obrigatório', description: 'Esta aula exige aprovação no quiz para ser concluída, mas nenhum quiz foi vinculado ainda.', variant: 'destructive' })
                           }
@@ -1478,21 +1469,13 @@ export default function LessonPlayerPage() {
                     <BookOpen className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                     Caderno
                   </button>
-                  {lessonData?.topic_id && topicQuizCount > 0 && (
+                  {lessonData?.quiz_id && hasQuiz && (
                     <button
-                      onClick={() => {
-                        const returnPath = encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)
-                        if (topicQuizIds.length === 1) {
-                          navigate(`/quiz/${topicQuizIds[0]}?returnTo=${returnPath}`)
-                        } else {
-                          navigate(`/quizzes/${topicSubjectId}?returnTo=${returnPath}`)
-                        }
-                      }}
+                      onClick={() => navigate(`/quiz/${lessonData.quiz_id}?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)}
                       className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"
                     >
                       <HelpCircle className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
-                      {topicQuizCount === 1 ? 'Quiz' : 'Quizzes'}
-                      {topicQuizCount > 1 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted min-w-[18px] text-center">{topicQuizCount}</span>}
+                      Quiz
                     </button>
                   )}
                   {lessonData?.topic_id && topicFlashcardCount > 0 && (

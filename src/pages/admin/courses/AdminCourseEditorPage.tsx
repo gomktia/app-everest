@@ -77,6 +77,7 @@ interface LessonData {
   attachments: AttachmentData[]
   accompanying_pdf_attachment_id: string | null
   topic_id: string | null
+  quiz_id: string | null
   quiz_required: boolean
   quiz_min_percentage: number
   isNew?: boolean
@@ -157,6 +158,7 @@ function SortableModuleItem({
   onOpenVideoPicker: (lessonIndex: number) => void
   allSubjects: { id: string; name: string }[]
   allTopics: { id: string; name: string; subject_id: string }[]
+  allQuizzes: { id: string; title: string; topic_id: string }[]
 }) {
   const {
     attributes,
@@ -269,6 +271,7 @@ function SortableModuleItem({
                   onOpenVideoPicker={() => onOpenVideoPicker(lessonIndex)}
                   allSubjects={allSubjects}
                   allTopics={allTopics}
+                  allQuizzes={allQuizzes}
                 />
               ))}
             </SortableContext>
@@ -321,6 +324,7 @@ function SortableLessonItem({
   onOpenVideoPicker: () => void
   allSubjects: { id: string; name: string }[]
   allTopics: { id: string; name: string; subject_id: string }[]
+  allQuizzes: { id: string; title: string; topic_id: string }[]
 }) {
   const [expanded, setExpanded] = useState(lesson.isNew || false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -473,30 +477,80 @@ function SortableLessonItem({
             </div>
           </div>
 
-          {/* Topic association (Quizzes & Flashcards) */}
-          <div>
-            <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Tópico (Quizzes & Flashcards)</label>
-            <select
-              className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-              value={lesson.topic_id || ''}
-              onChange={(e) => onUpdate('topic_id', e.target.value || null)}
-            >
-              <option value="">Nenhum tópico vinculado</option>
-              {allSubjects.map(subject => {
-                const subjectTopics = allTopics.filter(t => t.subject_id === subject.id)
-                if (subjectTopics.length === 0) return null
-                return (
-                  <optgroup key={subject.id} label={subject.name}>
-                    {subjectTopics.map(topic => (
-                      <option key={topic.id} value={topic.id}>{topic.name}</option>
+          {/* Quiz & Flashcard association: Matéria → Conteúdo → Quiz */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Quiz da Aula</label>
+            {(() => {
+              const selectedQuiz = allQuizzes.find(q => q.id === lesson.quiz_id)
+              const selectedTopic = selectedQuiz ? allTopics.find(t => t.id === selectedQuiz.topic_id) : lesson.topic_id ? allTopics.find(t => t.id === lesson.topic_id) : null
+              const selectedSubject = selectedTopic ? allSubjects.find(s => s.id === selectedTopic.subject_id) : null
+              const currentSubjectId = selectedSubject?.id || ''
+              const currentTopicId = selectedTopic?.id || ''
+
+              const filteredTopics = currentSubjectId ? allTopics.filter(t => t.subject_id === currentSubjectId) : []
+              const filteredQuizzes = currentTopicId ? allQuizzes.filter(q => q.topic_id === currentTopicId) : []
+
+              return (
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Matéria */}
+                  <select
+                    className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs"
+                    value={currentSubjectId}
+                    onChange={(e) => {
+                      // Reset topic and quiz when subject changes
+                      onUpdate('topic_id', null)
+                      onUpdate('quiz_id', null)
+                      // Force re-render by setting topic to trigger cascade
+                    }}
+                  >
+                    <option value="">Matéria...</option>
+                    {allSubjects.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
-                  </optgroup>
-                )
-              })}
-            </select>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Os quizzes e flashcards deste tópico aparecem na aula do aluno</p>
-            {lesson.topic_id && (
-              <div className="flex items-center gap-4 mt-2">
+                  </select>
+
+                  {/* Conteúdo (Topic) */}
+                  <select
+                    className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs"
+                    value={currentTopicId}
+                    onChange={(e) => {
+                      onUpdate('topic_id', e.target.value || null)
+                      onUpdate('quiz_id', null)
+                    }}
+                    disabled={!currentSubjectId}
+                  >
+                    <option value="">Conteúdo...</option>
+                    {filteredTopics.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+
+                  {/* Quiz */}
+                  <select
+                    className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs"
+                    value={lesson.quiz_id || ''}
+                    onChange={(e) => {
+                      const qId = e.target.value || null
+                      onUpdate('quiz_id', qId)
+                      // Auto-set topic_id from the selected quiz
+                      if (qId) {
+                        const q = allQuizzes.find(quiz => quiz.id === qId)
+                        if (q) onUpdate('topic_id', q.topic_id)
+                      }
+                    }}
+                    disabled={!currentTopicId}
+                  >
+                    <option value="">Quiz...</option>
+                    {filteredQuizzes.map(q => (
+                      <option key={q.id} value={q.id}>{q.title}</option>
+                    ))}
+                  </select>
+                </div>
+              )
+            })()}
+            <p className="text-[10px] text-muted-foreground">Selecione matéria → conteúdo → quiz. Flashcards são gerados automaticamente.</p>
+            {lesson.quiz_id && (
+              <div className="flex items-center gap-4">
                 <label className="flex items-center gap-1.5 text-[11px] cursor-pointer">
                   <Switch
                     checked={lesson.quiz_required}
@@ -624,9 +678,10 @@ export default function AdminCourseEditorPage() {
   const [videoPickerOpen, setVideoPickerOpen] = useState(false)
   const [videoPickerTarget, setVideoPickerTarget] = useState<{ moduleIndex: number; lessonIndex: number } | null>(null)
 
-  // Topics for lesson association (quizzes/flashcards)
+  // Topics & quizzes for lesson association
   const [allSubjects, setAllSubjects] = useState<{ id: string; name: string }[]>([])
   const [allTopics, setAllTopics] = useState<{ id: string; name: string; subject_id: string }[]>([])
+  const [allQuizzes, setAllQuizzes] = useState<{ id: string; title: string; topic_id: string }[]>([])
 
   // DnD sensors
   const sensors = useSensors(
@@ -634,14 +689,16 @@ export default function AdminCourseEditorPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  /* ---- Load subjects & topics (needed for all courses, new or existing) ---- */
+  /* ---- Load subjects, topics & quizzes (needed for all courses, new or existing) ---- */
   useEffect(() => {
     Promise.all([
       supabase.from('subjects').select('id, name').order('name'),
       supabase.from('topics').select('id, name, subject_id').order('name'),
-    ]).then(([{ data: s }, { data: t }]) => {
+      supabase.from('quizzes').select('id, title, topic_id').or('type.eq.quiz,type.is.null').order('title'),
+    ]).then(([{ data: s }, { data: t }, { data: q }]) => {
       setAllSubjects(s || [])
       setAllTopics(t || [])
+      setAllQuizzes(q || [])
     })
   }, [])
 
@@ -715,7 +772,7 @@ export default function AdminCourseEditorPage() {
           (modulesData || []).map(async (mod) => {
             const { data: lessonsData } = await supabase
               .from('video_lessons')
-              .select('id, title, description, video_source_type, video_source_id, duration_seconds, is_active, is_preview, order_index, accompanying_pdf_attachment_id, topic_id, quiz_required, quiz_min_percentage')
+              .select('id, title, description, video_source_type, video_source_id, duration_seconds, is_active, is_preview, order_index, accompanying_pdf_attachment_id, topic_id, quiz_id, quiz_required, quiz_min_percentage')
               .eq('module_id', mod.id)
               .order('order_index')
 
@@ -848,6 +905,7 @@ export default function AdminCourseEditorPage() {
         attachments: [],
         accompanying_pdf_attachment_id: null,
         topic_id: null,
+        quiz_id: null,
         quiz_required: false,
         quiz_min_percentage: 70,
         isNew: true,
@@ -1116,6 +1174,7 @@ export default function AdminCourseEditorPage() {
                 order_index: li,
                 accompanying_pdf_attachment_id: pdfId || null,
                 topic_id: lesson.topic_id || null,
+                quiz_id: lesson.quiz_id || null,
                 quiz_required: lesson.quiz_required,
                 quiz_min_percentage: lesson.quiz_min_percentage,
               })
@@ -1137,6 +1196,7 @@ export default function AdminCourseEditorPage() {
                 order_index: li,
                 accompanying_pdf_attachment_id: lesson.accompanying_pdf_attachment_id || null,
                 topic_id: lesson.topic_id || null,
+                quiz_id: lesson.quiz_id || null,
                 quiz_required: lesson.quiz_required,
                 quiz_min_percentage: lesson.quiz_min_percentage,
               })
@@ -1442,6 +1502,7 @@ export default function AdminCourseEditorPage() {
                     onOpenVideoPicker={(li) => openVideoPicker(moduleIndex, li)}
                     allSubjects={allSubjects}
                     allTopics={allTopics}
+                    allQuizzes={allQuizzes}
                   />
                 ))}
               </SortableContext>
