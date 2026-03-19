@@ -181,9 +181,7 @@ export default function FlashcardStudyPage() {
   const [isFlipped, setIsFlipped] = useState(false)
   const [cardTransition, setCardTransition] = useState(false)
   const [lastAnswer, setLastAnswer] = useState<'correct' | 'incorrect' | null>(null)
-  const [showInstructions, setShowInstructions] = useState(() => {
-    return !localStorage.getItem('flashcard-instructions-seen')
-  })
+  const [showInstructions, setShowInstructions] = useState(false)
 
   const sessionResultsRef = useRef<SessionResult[]>([])
   const isFinishingRef = useRef(false)
