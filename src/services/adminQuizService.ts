@@ -482,4 +482,70 @@ export const saveQuizQuestions = async (
       if (error) throw error
     }
   }
+
+  // 4. Auto-generate flashcards from quiz questions
+  await generateFlashcardsFromQuiz(quizId)
+}
+
+/**
+ * Auto-generate flashcards from quiz questions.
+ * For each question, creates a flashcard with:
+ *   - front (question) = question text
+ *   - back (answer) = correct answer option text + explanation
+ * Deletes old auto-generated flashcards for this quiz's topic first,
+ * then inserts fresh ones so they stay in sync.
+ */
+const generateFlashcardsFromQuiz = async (quizId: string): Promise<void> => {
+  try {
+    // Get quiz with topic
+    const { data: quiz } = await supabase
+      .from('quizzes')
+      .select('topic_id, created_by_user_id')
+      .eq('id', quizId)
+      .single()
+
+    if (!quiz?.topic_id) return // No topic linked, skip
+
+    // Get all questions for this quiz
+    const questions = await getQuizQuestions(quizId)
+    if (questions.length === 0) return
+
+    // Delete existing auto-generated flashcards for this topic from this quiz
+    // We use source_type='quiz_auto' to identify auto-generated ones
+    await supabase
+      .from('flashcards')
+      .delete()
+      .eq('topic_id', quiz.topic_id)
+      .eq('source_type', 'quiz_auto')
+
+    // Build flashcards from questions
+    const flashcards = questions.map((q) => {
+      const options = Array.isArray(q.options) ? q.options as string[] : []
+      const correctIndex = options.indexOf(q.correct_answer)
+      const correctLetter = correctIndex >= 0 ? String.fromCharCode(65 + correctIndex) : ''
+      const answerText = correctLetter
+        ? `${correctLetter}) ${q.correct_answer}`
+        : q.correct_answer
+
+      return {
+        question: q.question_text,
+        answer: answerText,
+        explanation: q.explanation || null,
+        topic_id: quiz.topic_id!,
+        created_by_user_id: quiz.created_by_user_id,
+        source_type: 'quiz_auto',
+        difficulty: 3,
+      }
+    })
+
+    if (flashcards.length > 0) {
+      const { error } = await supabase.from('flashcards').insert(flashcards)
+      if (error) {
+        logger.error('Error generating flashcards from quiz:', error)
+      }
+    }
+  } catch (error) {
+    // Non-blocking: don't fail the quiz save if flashcard generation fails
+    logger.error('Error in generateFlashcardsFromQuiz:', error)
+  }
 }
