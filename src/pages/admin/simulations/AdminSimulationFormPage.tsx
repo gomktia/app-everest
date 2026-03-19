@@ -71,7 +71,6 @@ import {
   type ReadingTextInsert,
 } from '@/services/adminSimulationService'
 import { getAllQuestions } from '@/services/adminQuizService'
-import { supabase } from '@/lib/supabase/client'
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
