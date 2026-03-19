@@ -57,6 +57,7 @@ export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> =
         classes!inner(
           name,
           class_type,
+          access_duration_days,
           trial_duration_days,
           trial_flashcard_limit_per_day,
           trial_quiz_limit_per_day,
@@ -83,7 +84,7 @@ export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> =
     return {
       isTrialUser: true,
       className: classData.name,
-      durationDays: classData.trial_duration_days,
+      durationDays: classData.trial_duration_days || classData.access_duration_days || 30,
       flashcardLimitPerDay: classData.trial_flashcard_limit_per_day,
       quizLimitPerDay: classData.trial_quiz_limit_per_day,
       essaySubmissionLimit: classData.trial_essay_submission_limit,
