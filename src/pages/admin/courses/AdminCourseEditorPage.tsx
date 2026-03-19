@@ -630,6 +630,17 @@ export default function AdminCourseEditorPage() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
+  /* ---- Load subjects & topics (needed for all courses, new or existing) ---- */
+  useEffect(() => {
+    Promise.all([
+      supabase.from('subjects').select('id, name').order('name'),
+      supabase.from('topics').select('id, name, subject_id').order('name'),
+    ]).then(([{ data: s }, { data: t }]) => {
+      setAllSubjects(s || [])
+      setAllTopics(t || [])
+    })
+  }, [])
+
   /* ---- Load course data ---- */
   useEffect(() => {
     if (isNewCourse) return
@@ -727,14 +738,6 @@ export default function AdminCourseEditorPage() {
         )
 
         setModules(modulesWithLessons)
-
-        // Load subjects + topics for lesson topic association
-        const [{ data: subjectsData }, { data: topicsData }] = await Promise.all([
-          supabase.from('subjects').select('id, name').order('name'),
-          supabase.from('topics').select('id, name, subject_id').order('name'),
-        ])
-        setAllSubjects(subjectsData || [])
-        setAllTopics(topicsData || [])
       } catch (err) {
         logger.error('Error loading course:', err)
         toast({ title: 'Erro ao carregar curso', variant: 'destructive' })
