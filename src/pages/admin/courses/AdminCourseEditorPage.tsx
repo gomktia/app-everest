@@ -141,6 +141,7 @@ function SortableModuleItem({
   onOpenVideoPicker,
   allSubjects,
   allTopics,
+  allQuizzes,
 }: {
   module: ModuleData
   moduleIndex: number
