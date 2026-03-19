@@ -3658,6 +3658,7 @@ export type Database = {
           order_index: number
           quiz_id: string | null
           title: string
+          topic_id: string | null
           updated_at: string
           video_source_id: string | null
           video_source_type:
@@ -3676,6 +3677,7 @@ export type Database = {
           order_index?: number
           quiz_id?: string | null
           title: string
+          topic_id?: string | null
           updated_at?: string
           video_source_id?: string | null
           video_source_type?:
@@ -3694,6 +3696,7 @@ export type Database = {
           order_index?: number
           quiz_id?: string | null
           title?: string
+          topic_id?: string | null
           updated_at?: string
           video_source_id?: string | null
           video_source_type?:
@@ -3720,6 +3723,13 @@ export type Database = {
             columns: ["quiz_id"]
             isOneToOne: false
             referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_lessons_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
             referencedColumns: ["id"]
           },
         ]

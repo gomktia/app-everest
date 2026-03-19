@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { QuizResult } from '@/components/quizzes/QuizResult'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
@@ -20,6 +20,8 @@ export default function QuizResultSummaryPage() {
   const { quizId } = useParams<{ quizId: string }>()
   const location = useLocation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const { toast } = useToast()
 
   const [quiz, setQuiz] = useState<Quiz | null>(null)
@@ -112,9 +114,9 @@ export default function QuizResultSummaryPage() {
     <QuizResult
       answers={answers}
       topic={topic}
-      retakeLink={`/quiz/${quizId}`}
-      backLink="/quizzes"
-      backLinkText="Voltar aos Quizzes"
+      retakeLink={`/quiz/${quizId}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
+      backLink={returnTo || "/quizzes"}
+      backLinkText={returnTo ? "Voltar para a Aula" : "Voltar aos Quizzes"}
       durationSeconds={state?.durationSeconds}
     />
   )

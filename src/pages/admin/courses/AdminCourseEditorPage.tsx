@@ -76,6 +76,7 @@ interface LessonData {
   order_index: number
   attachments: AttachmentData[]
   accompanying_pdf_attachment_id: string | null
+  topic_id: string | null
   isNew?: boolean
   isModified?: boolean
 }
@@ -260,6 +261,8 @@ function SortableModuleItem({
                   onDeleteAttachment={(attId) => onDeleteAttachment(lessonIndex, attId)}
                   onSetAccompanyingPdf={(attId) => onSetAccompanyingPdf(lessonIndex, attId)}
                   onOpenVideoPicker={() => onOpenVideoPicker(lessonIndex)}
+                  allSubjects={allSubjects}
+                  allTopics={allTopics}
                 />
               ))}
             </SortableContext>
@@ -299,6 +302,8 @@ function SortableLessonItem({
   onDeleteAttachment,
   onSetAccompanyingPdf,
   onOpenVideoPicker,
+  allSubjects,
+  allTopics,
 }: {
   lesson: LessonData
   lessonIndex: number
@@ -308,6 +313,8 @@ function SortableLessonItem({
   onDeleteAttachment: (attId: string) => void
   onSetAccompanyingPdf: (attId: string | null) => void
   onOpenVideoPicker: () => void
+  allSubjects: { id: string; name: string }[]
+  allTopics: { id: string; name: string; subject_id: string }[]
 }) {
   const [expanded, setExpanded] = useState(lesson.isNew || false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -460,6 +467,30 @@ function SortableLessonItem({
             </div>
           </div>
 
+          {/* Topic association (Quizzes & Flashcards) */}
+          <div>
+            <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Tópico (Quizzes & Flashcards)</label>
+            <select
+              className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+              value={lesson.topic_id || ''}
+              onChange={(e) => onUpdate('topic_id', e.target.value || null)}
+            >
+              <option value="">Nenhum tópico vinculado</option>
+              {allSubjects.map(subject => {
+                const subjectTopics = allTopics.filter(t => t.subject_id === subject.id)
+                if (subjectTopics.length === 0) return null
+                return (
+                  <optgroup key={subject.id} label={subject.name}>
+                    {subjectTopics.map(topic => (
+                      <option key={topic.id} value={topic.id}>{topic.name}</option>
+                    ))}
+                  </optgroup>
+                )
+              })}
+            </select>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Os quizzes e flashcards deste tópico aparecem na aula do aluno</p>
+          </div>
+
           {/* Attachments */}
           <div>
             <label className="text-[11px] font-medium text-muted-foreground mb-1.5 block">Materiais</label>
@@ -562,6 +593,10 @@ export default function AdminCourseEditorPage() {
   const [videoPickerOpen, setVideoPickerOpen] = useState(false)
   const [videoPickerTarget, setVideoPickerTarget] = useState<{ moduleIndex: number; lessonIndex: number } | null>(null)
 
+  // Topics for lesson association (quizzes/flashcards)
+  const [allSubjects, setAllSubjects] = useState<{ id: string; name: string }[]>([])
+  const [allTopics, setAllTopics] = useState<{ id: string; name: string; subject_id: string }[]>([])
+
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -638,7 +673,7 @@ export default function AdminCourseEditorPage() {
           (modulesData || []).map(async (mod) => {
             const { data: lessonsData } = await supabase
               .from('video_lessons')
-              .select('id, title, description, video_source_type, video_source_id, duration_seconds, is_active, is_preview, order_index, accompanying_pdf_attachment_id')
+              .select('id, title, description, video_source_type, video_source_id, duration_seconds, is_active, is_preview, order_index, accompanying_pdf_attachment_id, topic_id')
               .eq('module_id', mod.id)
               .order('order_index')
 
@@ -665,6 +700,14 @@ export default function AdminCourseEditorPage() {
         )
 
         setModules(modulesWithLessons)
+
+        // Load subjects + topics for lesson topic association
+        const [{ data: subjectsData }, { data: topicsData }] = await Promise.all([
+          supabase.from('subjects').select('id, name').order('name'),
+          supabase.from('topics').select('id, name, subject_id').order('name'),
+        ])
+        setAllSubjects(subjectsData || [])
+        setAllTopics(topicsData || [])
       } catch (err) {
         logger.error('Error loading course:', err)
         toast({ title: 'Erro ao carregar curso', variant: 'destructive' })
@@ -770,6 +813,7 @@ export default function AdminCourseEditorPage() {
         order_index: m.lessons.length,
         attachments: [],
         accompanying_pdf_attachment_id: null,
+        topic_id: null,
         isNew: true,
       }
       return { ...m, lessons: [...m.lessons, newLesson] }
@@ -1034,6 +1078,7 @@ export default function AdminCourseEditorPage() {
                 is_preview: lesson.is_preview,
                 order_index: li,
                 accompanying_pdf_attachment_id: lesson.accompanying_pdf_attachment_id || null,
+                topic_id: lesson.topic_id || null,
               })
               .select('id')
               .single()
@@ -1052,6 +1097,7 @@ export default function AdminCourseEditorPage() {
                 is_preview: lesson.is_preview,
                 order_index: li,
                 accompanying_pdf_attachment_id: lesson.accompanying_pdf_attachment_id || null,
+                topic_id: lesson.topic_id || null,
               })
               .eq('id', savedLessonId)
             if (error) throw error

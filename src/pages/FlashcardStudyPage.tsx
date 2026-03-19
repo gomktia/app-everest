@@ -170,6 +170,7 @@ export default function FlashcardStudyPage() {
 
   const studyMode = searchParams.get('mode') || 'full'
   const cardCountParam = searchParams.get('count')
+  const returnTo = searchParams.get('returnTo')
 
   const [topicData, setTopicData] = useState<TopicWithSubjectAndCards | null>(null)
   const [studyDeck, setStudyDeck] = useState<Flashcard[]>([])
@@ -265,7 +266,7 @@ export default function FlashcardStudyPage() {
     }
 
     await scoreFlashcardActivity(correct, studyDeck.length, sessionId)
-    navigate(`/flashcards/session/${sessionId}/result`)
+    navigate(returnTo || `/flashcards/session/${sessionId}/result`)
   }, [topicData, user, studyMode, studyDeck.length, navigate, scoreFlashcardActivity, toast, subjectId, timer.seconds])
 
   // ── Navigation ──
@@ -393,7 +394,7 @@ export default function FlashcardStudyPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Button variant="outline" size="icon" onClick={() => navigate(`/flashcards/${subjectId}`)}>
+            <Button variant="outline" size="icon" onClick={() => navigate(returnTo || `/flashcards/${subjectId}`)}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-0">

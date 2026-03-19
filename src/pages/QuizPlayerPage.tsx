@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -29,6 +29,8 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 export default function QuizPlayerPage() {
   const { quizId } = useParams<{ quizId: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const { user } = useAuth()
   const { toast } = useToast()
   const { scoreQuizActivity } = useActivityScoring()
@@ -138,7 +140,8 @@ export default function QuizPlayerPage() {
       )
 
       // Navegar para página de resultados
-      navigate(`/quiz/${quizId}/results`, {
+      const resultsUrl = `/quiz/${quizId}/results${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`
+      navigate(resultsUrl, {
         state: {
           attemptId,
           answers: selectedAnswers,

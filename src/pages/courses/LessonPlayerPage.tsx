@@ -54,6 +54,8 @@ import {
   SkipForward,
   ShoppingCart,
   Sparkles,
+  Brain,
+  HelpCircle,
 } from 'lucide-react'
 
 /* ------------------------------------------------------------------ */
@@ -70,6 +72,7 @@ interface LessonData {
   completed?: boolean
   progress?: number
   last_position?: number
+  topic_id?: string | null
 }
 
 interface ModuleData {
@@ -180,6 +183,11 @@ export default function LessonPlayerPage() {
   const [drawingData, setDrawingData] = useState<string | null>(null)
   const [notebookOpen, setNotebookOpen] = useState(false)
   const [notebookExpanded, setNotebookExpanded] = useState(false)
+
+  // Topic-linked quizzes & flashcards
+  const [topicQuizCount, setTopicQuizCount] = useState(0)
+  const [topicFlashcardCount, setTopicFlashcardCount] = useState(0)
+  const [topicSubjectId, setTopicSubjectId] = useState<string | null>(null)
   const drawingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Refs to track latest values for flush-on-lesson-change
@@ -381,6 +389,22 @@ export default function LessonPlayerPage() {
         }
 
         setLessonData(foundLesson)
+
+        // Fetch topic-linked quiz & flashcard counts
+        if (foundLesson.topic_id) {
+          const [{ count: qCount }, { count: fCount }, { data: topicData }] = await Promise.all([
+            supabase.from('quizzes').select('*', { count: 'exact', head: true }).eq('topic_id', foundLesson.topic_id).or('type.eq.quiz,type.is.null'),
+            supabase.from('flashcards').select('*', { count: 'exact', head: true }).eq('topic_id', foundLesson.topic_id),
+            supabase.from('topics').select('subject_id').eq('id', foundLesson.topic_id).single(),
+          ])
+          setTopicQuizCount(qCount || 0)
+          setTopicFlashcardCount(fCount || 0)
+          setTopicSubjectId(topicData?.subject_id || null)
+        } else {
+          setTopicQuizCount(0)
+          setTopicFlashcardCount(0)
+          setTopicSubjectId(null)
+        }
 
         const { data: attData } = await supabase
           .from('lesson_attachments')
@@ -1410,6 +1434,26 @@ export default function LessonPlayerPage() {
                     <BookOpen className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                     Caderno
                   </button>
+                  {lessonData?.topic_id && topicQuizCount > 0 && (
+                    <button
+                      onClick={() => navigate(`/quizzes/${topicSubjectId}?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)}
+                      className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"
+                    >
+                      <HelpCircle className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                      Quizzes
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted min-w-[18px] text-center">{topicQuizCount}</span>
+                    </button>
+                  )}
+                  {lessonData?.topic_id && topicFlashcardCount > 0 && (
+                    <button
+                      onClick={() => navigate(`/flashcards/${topicSubjectId}/${lessonData.topic_id}/study?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)}
+                      className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"
+                    >
+                      <Brain className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                      Flashcards
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted min-w-[18px] text-center">{topicFlashcardCount}</span>
+                    </button>
+                  )}
                 </div>
               </div>
 

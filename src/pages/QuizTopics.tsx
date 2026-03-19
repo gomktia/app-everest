@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Play, Target, BookOpen, Lock, Layers, ChevronRight } from 'lucide-react'
@@ -23,6 +23,8 @@ interface QuizTopic {
 export default function QuizTopicsPage() {
   const { subjectId } = useParams<{ subjectId: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const { toast } = useToast()
   const { isStudent } = useAuth()
   const { isAllowed, loading: contentAccessLoading } = useContentAccess('quiz_topic')
@@ -112,11 +114,9 @@ export default function QuizTopicsPage() {
             Selecione um tópico para iniciar
           </p>
         </div>
-        <Button variant="outline" size="sm" asChild className="w-fit">
-          <Link to="/quizzes">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Link>
+        <Button variant="outline" size="sm" className="w-fit" onClick={() => navigate(returnTo || '/quizzes')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          {returnTo ? 'Voltar para a Aula' : 'Voltar'}
         </Button>
       </div>
 
@@ -221,7 +221,7 @@ export default function QuizTopicsPage() {
                 </button>
               ) : topicQuizzes > 0 ? (
                 <Link
-                  to={`/quiz/${topic.quizzes[0].id}`}
+                  to={`/quiz/${topic.quizzes[0].id}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
                   className={cn(
                     'mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 text-white hover:shadow-md',
                     colors.btn
