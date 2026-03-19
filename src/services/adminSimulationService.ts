@@ -75,11 +75,15 @@ export const getSimulationById = async (
  * Criar novo simulado
  */
 export const createSimulation = async (
-  simulationData: SimulationInsert,
+  simulationData: Omit<SimulationInsert, 'created_by_user_id'>,
 ): Promise<Simulation> => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Usuário não autenticado')
+
   const dataWithType = {
     ...simulationData,
     type: 'simulation',
+    created_by_user_id: user.id,
   }
 
   const { data, error } = await supabase

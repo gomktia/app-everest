@@ -64,6 +64,7 @@ export const getAdminQuizzes = async (): Promise<AdminQuiz[]> => {
       quiz_questions ( count )
     `,
     )
+    .or('type.eq.quiz,type.is.null')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -114,11 +115,14 @@ export const getAllQuestions = async () => {
 }
 
 export const createQuiz = async (
-  quizData: QuizInsert,
+  quizData: Omit<QuizInsert, 'created_by_user_id'>,
 ): Promise<AdminQuiz | null> => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Usuário não autenticado')
+
   const { data, error } = await supabase
     .from('quizzes')
-    .insert(quizData)
+    .insert({ ...quizData, created_by_user_id: user.id, type: 'quiz' })
     .select(`*, topics(name), quiz_questions(count)`)
     .single()
 
