@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -28,29 +28,12 @@ import {
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
-import { ArrowLeft, GraduationCap, Save, ChevronDown, ChevronRight, PlayCircle, BookOpen, Shield, GripVertical } from 'lucide-react'
+import { ArrowLeft, GraduationCap, Save, ChevronDown, ChevronRight, PlayCircle, BookOpen, Shield } from 'lucide-react'
 import { getModuleRulesForClass, saveAllModuleRules, checkCircularDependency, getLessonRulesForClass, upsertLessonRule, deleteLessonRule, type LessonRule } from '@/services/moduleRulesService'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { getAllContentAccessForClass, saveContentAccess } from '@/services/contentAccessService'
 import { PageTabs } from '@/components/PageTabs'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 
 const classSchema = z.object({
   name: z.string().min(1, 'O nome da turma é obrigatório'),
@@ -71,144 +54,6 @@ const classSchema = z.object({
 type ClassFormValues = z.infer<typeof classSchema>
 
 import { getTeachers, Teacher } from '@/services/teacherService'
-
-function SortableModuleRow({
-  mod,
-  rule,
-  isExpanded,
-  lessons,
-  lessonRules,
-  modules,
-  classId,
-  onToggleExpand,
-  onRuleChange,
-  onLessonRuleChange,
-  onCircularCheck,
-}: {
-  mod: any
-  rule: { rule_type: string; rule_value: string }
-  isExpanded: boolean
-  lessons: { id: string; title: string; order_index: number }[]
-  lessonRules: Record<string, { rule_type: string; rule_value: string }>
-  modules: any[]
-  classId: string
-  onToggleExpand: () => void
-  onRuleChange: (ruleType: string, ruleValue: string) => void
-  onLessonRuleChange: (lessonId: string, ruleType: string, ruleValue: string) => void
-  onCircularCheck: (targetModuleId: string) => boolean
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: mod.id })
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 10 : undefined,
-  }
-
-  const lessonOverrideCount = lessons.filter(l => lessonRules[l.id] && lessonRules[l.id].rule_type !== 'inherit').length
-
-  return (
-    <div ref={setNodeRef} style={style}>
-      <div className="grid grid-cols-[auto_1fr_1fr] gap-4 items-center py-2 border-b border-border/50">
-        <button type="button" className="cursor-grab active:cursor-grabbing touch-none p-1 text-muted-foreground hover:text-foreground" {...attributes} {...listeners}>
-          <GripVertical className="h-4 w-4" />
-        </button>
-        <div
-          className="flex items-center gap-2 cursor-pointer select-none"
-          onClick={onToggleExpand}
-        >
-          {lessons.length > 0 ? (
-            isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          ) : <span className="w-4" />}
-          <div>
-            <p className="text-sm font-medium">{mod.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {mod.courseName}
-              {lessons.length > 0 && <span> &middot; {lessons.length} aulas</span>}
-              {lessonOverrideCount > 0 && (
-                <Badge variant="outline" className="ml-2 text-xs py-0 px-1.5 bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-700">
-                  {lessonOverrideCount} com regra propria
-                </Badge>
-              )}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <select
-            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-            value={rule.rule_type}
-            onChange={e => onRuleChange(e.target.value, '')}
-          >
-            <option value="free">Acesso Livre</option>
-            <option value="scheduled_date">Data programada</option>
-            <option value="days_after_enrollment">Dias apos compra</option>
-            <option value="hidden">Oculto</option>
-            <option value="blocked">Bloqueado</option>
-            <option value="module_completed">Modulo concluido</option>
-          </select>
-          {rule.rule_type === 'scheduled_date' && (
-            <Input type="date" value={rule.rule_value} onChange={e => onRuleChange(rule.rule_type, e.target.value)} className="w-40" />
-          )}
-          {rule.rule_type === 'days_after_enrollment' && (
-            <Input type="number" value={rule.rule_value} onChange={e => onRuleChange(rule.rule_type, e.target.value)} placeholder="dias" className="w-24" />
-          )}
-          {rule.rule_type === 'module_completed' && (
-            <select
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-              value={rule.rule_value}
-              onChange={e => {
-                if (onCircularCheck(e.target.value)) {
-                  onRuleChange(rule.rule_type, e.target.value)
-                }
-              }}
-            >
-              <option value="">Selecione...</option>
-              {modules.filter(m => m.id !== mod.id).map(m => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          )}
-        </div>
-      </div>
-      {/* Expanded lessons */}
-      {isExpanded && lessons.length > 0 && (
-        <div className="ml-10 border-l-2 border-border/50">
-          {lessons.map(lesson => {
-            const lr = lessonRules[lesson.id] || { rule_type: 'inherit', rule_value: '' }
-            return (
-              <div key={lesson.id} className="grid grid-cols-[1fr_1fr] gap-4 items-center py-1.5 pl-4 border-b border-border/30">
-                <div className="flex items-center gap-2">
-                  <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground">{lesson.title}</p>
-                </div>
-                <div className="flex gap-2">
-                  <select
-                    className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs"
-                    value={lr.rule_type}
-                    onChange={e => onLessonRuleChange(lesson.id, e.target.value, '')}
-                  >
-                    <option value="inherit">Herdar do modulo</option>
-                    <option value="free">Acesso Livre</option>
-                    <option value="scheduled_date">Data programada</option>
-                    <option value="days_after_enrollment">Dias apos compra</option>
-                    <option value="hidden">Oculto</option>
-                    <option value="blocked">Bloqueado</option>
-                  </select>
-                  {lr.rule_type === 'scheduled_date' && (
-                    <Input type="date" value={lr.rule_value} onChange={e => onLessonRuleChange(lesson.id, lr.rule_type, e.target.value)} className="w-40 h-8 text-xs" />
-                  )}
-                  {lr.rule_type === 'days_after_enrollment' && (
-                    <Input type="number" value={lr.rule_value} onChange={e => onLessonRuleChange(lesson.id, lr.rule_type, e.target.value)} placeholder="dias" className="w-24 h-8 text-xs" />
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
 
 export default function AdminClassFormPage() {
   const { classId } = useParams<{ classId: string }>()
@@ -244,24 +89,6 @@ export default function AdminClassFormPage() {
   const [activeTab, setActiveTab] = useState('info')
 
   const isEditing = !!classId
-  const [moduleOrderDirty, setModuleOrderDirty] = useState(false)
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  )
-
-  const handleModuleReorder = useCallback((event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-
-    setModules(prev => {
-      const oldIndex = prev.findIndex(m => m.id === active.id)
-      const newIndex = prev.findIndex(m => m.id === over.id)
-      return arrayMove(prev, oldIndex, newIndex).map((m, i) => ({ ...m, order_index: i }))
-    })
-    setModuleOrderDirty(true)
-  }, [])
 
   const form = useForm<ClassFormValues>({
     resolver: zodResolver(classSchema),
@@ -455,15 +282,6 @@ export default function AdminClassFormPage() {
 
         if (error) throw error
 
-        // Save module order if changed
-        if (moduleOrderDirty) {
-          await Promise.all(
-            modules.map((mod, i) =>
-              supabase.from('video_modules').update({ order_index: i }).eq('id', mod.id)
-            )
-          )
-        }
-
         // Save module rules
         const rulesToSave = Object.entries(moduleRules)
           .filter(([_, r]) => r.rule_type !== 'free')
@@ -497,7 +315,6 @@ export default function AdminClassFormPage() {
           saveContentAccess(classId!, 'community_space', contentToggles.community_space ? [] : contentAccess.community_space || []),
         ])
 
-        setModuleOrderDirty(false)
         toast({
           title: 'Sucesso',
           description: 'Turma atualizada com sucesso',
@@ -812,55 +629,134 @@ export default function AdminClassFormPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-1">
-                      <div className="grid grid-cols-[auto_1fr_1fr] gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
-                        <span className="w-6" />
+                      <div className="grid grid-cols-[1fr_1fr] gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
                         <span>NOME DO MODULO / AULA</span>
                         <span>REGRA DE ACESSO</span>
                       </div>
-                      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleModuleReorder}>
-                        <SortableContext items={modules.map(m => m.id)} strategy={verticalListSortingStrategy}>
-                          {modules.map(mod => (
-                            <SortableModuleRow
-                              key={mod.id}
-                              mod={mod}
-                              rule={moduleRules[mod.id] || { rule_type: 'free', rule_value: '' }}
-                              isExpanded={expandedModules.has(mod.id)}
-                              lessons={moduleLessons[mod.id] || []}
-                              lessonRules={lessonRules}
-                              modules={modules}
-                              classId={classId!}
-                              onToggleExpand={() => {
-                                setExpandedModules(prev => {
-                                  const next = new Set(prev)
-                                  if (next.has(mod.id)) next.delete(mod.id)
-                                  else next.add(mod.id)
-                                  return next
-                                })
-                              }}
-                              onRuleChange={(ruleType, ruleValue) => {
-                                setModuleRules(prev => ({
-                                  ...prev,
-                                  [mod.id]: { rule_type: ruleType, rule_value: ruleValue }
-                                }))
-                              }}
-                              onLessonRuleChange={(lessonId, ruleType, ruleValue) => {
-                                setLessonRules(prev => ({
-                                  ...prev,
-                                  [lessonId]: { rule_type: ruleType, rule_value: ruleValue }
-                                }))
-                              }}
-                              onCircularCheck={(targetModuleId) => {
-                                const allRules = Object.entries(moduleRules).map(([mid, r]) => ({ module_id: mid, class_id: classId!, rule_type: r.rule_type as any, rule_value: r.rule_value }))
-                                if (checkCircularDependency(allRules, mod.id, targetModuleId)) {
-                                  toast({ title: 'Dependencia circular detectada!', variant: 'destructive' })
-                                  return false
-                                }
-                                return true
-                              }}
-                            />
-                          ))}
-                        </SortableContext>
-                      </DndContext>
+                      {modules.map(mod => {
+                        const rule = moduleRules[mod.id] || { rule_type: 'free', rule_value: '' }
+                        const isExpanded = expandedModules.has(mod.id)
+                        const lessons = moduleLessons[mod.id] || []
+                        const lessonOverrideCount = lessons.filter(l => lessonRules[l.id] && lessonRules[l.id].rule_type !== 'inherit').length
+                        return (
+                          <div key={mod.id}>
+                            <div className="grid grid-cols-[1fr_1fr] gap-4 items-center py-2 border-b border-border/50">
+                              <div
+                                className="flex items-center gap-2 cursor-pointer select-none"
+                                onClick={() => {
+                                  setExpandedModules(prev => {
+                                    const next = new Set(prev)
+                                    if (next.has(mod.id)) next.delete(mod.id)
+                                    else next.add(mod.id)
+                                    return next
+                                  })
+                                }}
+                              >
+                                {lessons.length > 0 ? (
+                                  isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                ) : <span className="w-4" />}
+                                <div>
+                                  <p className="text-sm font-medium">{mod.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {mod.courseName}
+                                    {lessons.length > 0 && <span> &middot; {lessons.length} aulas</span>}
+                                    {lessonOverrideCount > 0 && (
+                                      <Badge variant="outline" className="ml-2 text-xs py-0 px-1.5 bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-700">
+                                        {lessonOverrideCount} com regra propria
+                                      </Badge>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <select
+                                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                                  value={rule.rule_type}
+                                  onChange={e => {
+                                    setModuleRules(prev => ({
+                                      ...prev,
+                                      [mod.id]: { ...prev[mod.id], rule_type: e.target.value, rule_value: '' }
+                                    }))
+                                  }}
+                                >
+                                  <option value="free">Acesso Livre</option>
+                                  <option value="scheduled_date">Data programada</option>
+                                  <option value="days_after_enrollment">Dias apos compra</option>
+                                  <option value="hidden">Oculto</option>
+                                  <option value="blocked">Bloqueado</option>
+                                  <option value="module_completed">Modulo concluido</option>
+                                </select>
+                                {rule.rule_type === 'scheduled_date' && (
+                                  <Input type="date" value={rule.rule_value} onChange={e => setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))} className="w-40" />
+                                )}
+                                {rule.rule_type === 'days_after_enrollment' && (
+                                  <Input type="number" value={rule.rule_value} onChange={e => setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))} placeholder="dias" className="w-24" />
+                                )}
+                                {rule.rule_type === 'module_completed' && (
+                                  <select
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                                    value={rule.rule_value}
+                                    onChange={e => {
+                                      const allRules = Object.entries(moduleRules).map(([mid, r]) => ({ module_id: mid, class_id: classId!, rule_type: r.rule_type as any, rule_value: r.rule_value }))
+                                      if (checkCircularDependency(allRules, mod.id, e.target.value)) {
+                                        toast({ title: 'Dependencia circular detectada!', variant: 'destructive' })
+                                        return
+                                      }
+                                      setModuleRules(prev => ({...prev, [mod.id]: {...prev[mod.id], rule_value: e.target.value}}))
+                                    }}
+                                  >
+                                    <option value="">Selecione...</option>
+                                    {modules.filter(m => m.id !== mod.id).map(m => (
+                                      <option key={m.id} value={m.id}>{m.name}</option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                            </div>
+                            {/* Expanded lessons */}
+                            {isExpanded && lessons.length > 0 && (
+                              <div className="ml-6 border-l-2 border-border/50">
+                                {lessons.map(lesson => {
+                                  const lr = lessonRules[lesson.id] || { rule_type: 'inherit', rule_value: '' }
+                                  return (
+                                    <div key={lesson.id} className="grid grid-cols-[1fr_1fr] gap-4 items-center py-1.5 pl-4 border-b border-border/30">
+                                      <div className="flex items-center gap-2">
+                                        <PlayCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                        <p className="text-sm text-muted-foreground">{lesson.title}</p>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <select
+                                          className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs"
+                                          value={lr.rule_type}
+                                          onChange={e => {
+                                            setLessonRules(prev => ({
+                                              ...prev,
+                                              [lesson.id]: { rule_type: e.target.value, rule_value: '' }
+                                            }))
+                                          }}
+                                        >
+                                          <option value="inherit">Herdar do modulo</option>
+                                          <option value="free">Acesso Livre</option>
+                                          <option value="scheduled_date">Data programada</option>
+                                          <option value="days_after_enrollment">Dias apos compra</option>
+                                          <option value="hidden">Oculto</option>
+                                          <option value="blocked">Bloqueado</option>
+                                        </select>
+                                        {lr.rule_type === 'scheduled_date' && (
+                                          <Input type="date" value={lr.rule_value} onChange={e => setLessonRules(prev => ({...prev, [lesson.id]: {...prev[lesson.id], rule_value: e.target.value}}))} className="w-40 h-8 text-xs" />
+                                        )}
+                                        {lr.rule_type === 'days_after_enrollment' && (
+                                          <Input type="number" value={lr.rule_value} onChange={e => setLessonRules(prev => ({...prev, [lesson.id]: {...prev[lesson.id], rule_value: e.target.value}}))} placeholder="dias" className="w-24 h-8 text-xs" />
+                                        )}
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   </CardContent>
                 </Card>
