@@ -363,12 +363,13 @@ export default function AdminClassFormPage() {
           } catch (contentError) {
             logger.error('Erro ao salvar acesso de conteúdo da nova turma:', contentError)
             toast({
-              title: 'Turma criada, mas houve erro ao salvar acesso de conteúdo',
-              description: 'Edite a turma para configurar o acesso ao conteúdo.',
+              title: 'Turma criada com sucesso',
+              description: 'Houve erro ao salvar acesso de conteúdo. Edite a turma para ajustar.',
               variant: 'destructive',
             })
+            navigate(`/admin/classes/${newClassId}/edit`)
             setIsSaving(false)
-            return // Stay on page so admin can retry content access
+            return
           }
         }
 
@@ -697,7 +698,8 @@ export default function AdminClassFormPage() {
                                     className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
                                     value={rule.rule_value}
                                     onChange={e => {
-                                      const allRules = Object.entries(moduleRules).map(([mid, r]) => ({ module_id: mid, class_id: classId!, rule_type: r.rule_type as any, rule_value: r.rule_value }))
+                                      const pendingRules = { ...moduleRules, [mod.id]: { rule_type: 'module_completed', rule_value: e.target.value } }
+                                      const allRules = Object.entries(pendingRules).map(([mid, r]) => ({ module_id: mid, class_id: classId!, rule_type: r.rule_type as any, rule_value: r.rule_value }))
                                       if (checkCircularDependency(allRules, mod.id, e.target.value)) {
                                         toast({ title: 'Dependencia circular detectada!', variant: 'destructive' })
                                         return

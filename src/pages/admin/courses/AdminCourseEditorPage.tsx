@@ -512,7 +512,7 @@ function SortableLessonItem({
                       min={0}
                       max={100}
                       value={lesson.quiz_min_percentage}
-                      onChange={(e) => onUpdate('quiz_min_percentage', parseInt(e.target.value) || 70)}
+                      onChange={(e) => { const v = parseInt(e.target.value, 10); onUpdate('quiz_min_percentage', isNaN(v) ? 70 : v) }}
                       className="h-7 w-16 text-xs"
                     />
                     <span className="text-[11px] text-muted-foreground">%</span>
@@ -1101,6 +1101,7 @@ export default function AdminCourseEditorPage() {
           let savedLessonId = lesson.id
 
           if (lesson.isNew) {
+            const pdfId = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
             const { data: newLesson, error } = await supabase
               .from('video_lessons')
               .insert({
@@ -1113,7 +1114,7 @@ export default function AdminCourseEditorPage() {
                 is_active: lesson.is_active,
                 is_preview: lesson.is_preview,
                 order_index: li,
-                accompanying_pdf_attachment_id: lesson.accompanying_pdf_attachment_id || null,
+                accompanying_pdf_attachment_id: pdfId || null,
                 topic_id: lesson.topic_id || null,
                 quiz_required: lesson.quiz_required,
                 quiz_min_percentage: lesson.quiz_min_percentage,
