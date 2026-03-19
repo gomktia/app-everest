@@ -181,7 +181,9 @@ export default function FlashcardStudyPage() {
   const [isFlipped, setIsFlipped] = useState(false)
   const [cardTransition, setCardTransition] = useState(false)
   const [lastAnswer, setLastAnswer] = useState<'correct' | 'incorrect' | null>(null)
-  const [showInstructions, setShowInstructions] = useState(true)
+  const [showInstructions, setShowInstructions] = useState(() => {
+    return !localStorage.getItem('flashcard-instructions-seen')
+  })
 
   const sessionResultsRef = useRef<SessionResult[]>([])
   const isFinishingRef = useRef(false)
@@ -388,7 +390,7 @@ export default function FlashcardStudyPage() {
 
   return (
     <>
-      <FlashcardInstructionsDialog isOpen={showInstructions} onClose={() => setShowInstructions(false)} />
+      <FlashcardInstructionsDialog isOpen={showInstructions} onClose={() => { setShowInstructions(false); localStorage.setItem('flashcard-instructions-seen', '1') }} />
 
       <div className={cn('space-y-5', isFullscreen && 'fixed inset-0 z-50 bg-background p-6 overflow-y-auto')}>
         {/* ── Header ── */}
