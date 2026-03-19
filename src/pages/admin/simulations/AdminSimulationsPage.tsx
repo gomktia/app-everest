@@ -88,7 +88,8 @@ export default function AdminSimulationsPage() {
   }
 
   const getStatusBadge = (simulation: AdminSimulation) => {
-    if (!simulation.scheduled_start) return { label: 'Rascunho', variant: 'outline' as const }
+    if (simulation.status === 'draft') return { label: 'Rascunho', variant: 'outline' as const }
+    if (!simulation.scheduled_start) return { label: 'Publicado', variant: 'default' as const }
 
     const now = new Date()
     const start = new Date(simulation.scheduled_start)

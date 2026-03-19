@@ -115,42 +115,51 @@ export default function AdminSimulationReportsPage() {
       setLoading(true)
       logger.debug('Loading simulation reports for ID:', simulationId)
 
-      // Buscar dados do simulado
+      // Buscar dados do simulado (quizzes table with type='simulation')
       const { data: simData, error: simError } = await supabase
-        .from('simulations')
-        .select('*')
+        .from('quizzes')
+        .select('id, title, description, duration_minutes, created_at, total_points')
         .eq('id', simulationId)
+        .eq('type', 'simulation')
         .single()
 
       if (simError) throw simError
 
-      // Buscar tentativas do simulado
+      // Contar questões
+      const { count: questionCount } = await supabase
+        .from('quiz_questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('quiz_id', simulationId)
+
+      // Buscar tentativas do simulado (quiz_attempts table)
       const { data: attempts, error: attemptsError } = await supabase
-        .from('simulation_attempts')
+        .from('quiz_attempts')
         .select(`
           id,
-          score,
-          duration_minutes,
+          percentage,
+          time_spent_seconds,
           created_at,
-          completed_at,
-          users!simulation_attempts_user_id_fkey (
+          submitted_at,
+          status,
+          users!quiz_attempts_user_id_fkey (
             id,
-            full_name
+            first_name,
+            last_name
           )
         `)
-        .eq('simulation_id', simulationId)
-        .order('score', { ascending: false })
+        .eq('quiz_id', simulationId)
+        .order('percentage', { ascending: false })
 
       if (attemptsError) throw attemptsError
 
       // Calcular estatísticas
       const totalAttempts = attempts?.length || 0
-      const completedAttempts = attempts?.filter(a => a.completed_at) || []
+      const completedAttempts = (attempts || []).filter((a: any) => a.status === 'submitted')
       const avgScore = completedAttempts.length > 0
-        ? completedAttempts.reduce((sum, a) => sum + (a.score || 0), 0) / completedAttempts.length
+        ? completedAttempts.reduce((sum: number, a: any) => sum + (a.percentage || 0), 0) / completedAttempts.length
         : 0
-      const avgDuration = completedAttempts.length > 0
-        ? completedAttempts.reduce((sum, a) => sum + (a.duration_minutes || 0), 0) / completedAttempts.length
+      const avgDurationMin = completedAttempts.length > 0
+        ? completedAttempts.reduce((sum: number, a: any) => sum + ((a.time_spent_seconds || 0) / 60), 0) / completedAttempts.length
         : 0
       const completionRate = totalAttempts > 0
         ? (completedAttempts.length / totalAttempts) * 100
@@ -161,10 +170,10 @@ export default function AdminSimulationReportsPage() {
         name: simData.title,
         date: simData.created_at,
         duration: simData.duration_minutes || 270,
-        totalQuestions: simData.total_questions || 0,
+        totalQuestions: questionCount || 0,
         totalAttempts,
         avgScore: Math.round(avgScore * 10) / 10,
-        avgDuration: Math.round(avgDuration),
+        avgDuration: Math.round(avgDurationMin),
         completionRate: Math.round(completionRate * 10) / 10
       })
 
@@ -177,8 +186,8 @@ export default function AdminSimulationReportsPage() {
         '81-100%': 0
       }
 
-      completedAttempts.forEach(attempt => {
-        const score = attempt.score || 0
+      completedAttempts.forEach((attempt: any) => {
+        const score = attempt.percentage || 0
         if (score <= 20) distribution['0-20%']++
         else if (score <= 40) distribution['21-40%']++
         else if (score <= 60) distribution['41-60%']++
@@ -198,8 +207,8 @@ export default function AdminSimulationReportsPage() {
         'Mais de 4h': 0
       }
 
-      completedAttempts.forEach(attempt => {
-        const minutes = attempt.duration_minutes || 0
+      completedAttempts.forEach((attempt: any) => {
+        const minutes = (attempt.time_spent_seconds || 0) / 60
         if (minutes < 120) timeDist['Menos de 2h']++
         else if (minutes < 180) timeDist['2h-3h']++
         else if (minutes < 240) timeDist['3h-4h']++
@@ -213,31 +222,41 @@ export default function AdminSimulationReportsPage() {
       // Top 10 estudantes
       const top = completedAttempts
         .slice(0, 10)
-        .map((attempt, index) => ({
-          rank: index + 1,
-          name: attempt.users?.full_name || `Aluno ${index + 1}`,
-          score: Math.round(attempt.score || 0),
-          duration: attempt.duration_minutes || 0,
-          medal: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : undefined
-        }))
+        .map((attempt: any, index: number) => {
+          const userName = attempt.users
+            ? `${attempt.users.first_name || ''} ${attempt.users.last_name || ''}`.trim()
+            : `Aluno ${index + 1}`
+          return {
+            rank: index + 1,
+            name: userName,
+            score: Math.round(attempt.percentage || 0),
+            duration: Math.round((attempt.time_spent_seconds || 0) / 60),
+            medal: index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : undefined
+          }
+        })
 
       setTopStudents(top)
 
       // All attempts for the Tentativas tab
       setAllAttempts(
-        (attempts || []).map((a, idx) => ({
-          id: a.id,
-          name: a.users?.full_name || `Aluno ${idx + 1}`,
-          score: Math.round(a.score || 0),
-          duration: a.duration_minutes || 0,
-          date: new Date(a.created_at).toLocaleString('pt-BR'),
-          completed: !!a.completed_at,
-        }))
+        (attempts || []).map((a: any, idx: number) => {
+          const userName = a.users
+            ? `${a.users.first_name || ''} ${a.users.last_name || ''}`.trim()
+            : `Aluno ${idx + 1}`
+          return {
+            id: a.id,
+            name: userName,
+            score: Math.round(a.percentage || 0),
+            duration: Math.round((a.time_spent_seconds || 0) / 60),
+            date: new Date(a.created_at).toLocaleString('pt-BR'),
+            completed: a.status === 'submitted',
+          }
+        })
       )
 
       // Tentativas por dia (últimos 7 dias)
       const dayGroups: Record<string, number> = {}
-      completedAttempts.forEach(attempt => {
+      completedAttempts.forEach((attempt: any) => {
         const date = new Date(attempt.created_at)
         const dayKey = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
         dayGroups[dayKey] = (dayGroups[dayKey] || 0) + 1

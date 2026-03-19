@@ -387,9 +387,7 @@ export default function AdminSimulationFormPage() {
           shuffle_options: form.shuffle_options,
           show_results_immediately: form.show_results_immediately,
           allow_review: form.allow_review,
-          type: 'simulation',
           status: 'draft',
-          created_by_user_id: user?.id || '',
         })
         quizId = created.id
       }

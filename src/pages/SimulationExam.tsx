@@ -52,7 +52,7 @@ export default function SimulationExamPage() {
   const [currentQ, setCurrentQ] = useState(0)
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [loading, setLoading] = useState(true)
-  const [timeLeft, setTimeLeft] = useState(0)
+  const [timeLeft, setTimeLeft] = useState(-1)
   const [showAnswerSheet, setShowAnswerSheet] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { user } = useAuth()
@@ -139,7 +139,7 @@ export default function SimulationExamPage() {
       await scoreSimulationActivity(answeredCount, totalQuestions, attemptId)
 
       toast({ title: 'Simulado enviado!', description: 'Suas respostas foram salvas com sucesso.' })
-      navigate(`/simulados/${simulationId}/resultado`)
+      navigate(`/simulados/${simulationId}/resultado?attemptId=${attemptId}`)
     } catch {
       toast({ title: 'Erro ao enviar', description: 'Tente novamente.', variant: 'destructive' })
       setIsSubmitting(false)
