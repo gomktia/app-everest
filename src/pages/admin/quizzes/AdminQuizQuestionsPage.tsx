@@ -288,7 +288,7 @@ export default function AdminQuizQuestionsPage() {
             </div>
             <div className="md:col-span-2 space-y-4">
               <div className="space-y-2">
-                <FormLabel>Título do Texto</FormLabel>
+                <label className="text-sm font-medium">Título do Texto</label>
                 <Input
                   placeholder="Ex: Texto I - A Importância da Leitura"
                   value={textFormTitle}
@@ -296,7 +296,7 @@ export default function AdminQuizQuestionsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <FormLabel>Conteúdo do Texto</FormLabel>
+                <label className="text-sm font-medium">Conteúdo do Texto</label>
                 <Textarea
                   className="min-h-[300px]"
                   placeholder="Cole o texto aqui..."
