@@ -444,47 +444,42 @@ export const saveQuizQuestions = async (
 ): Promise<void> => {
   // 1. Get existing questions to determine deletes
   const existingQuestions = await getQuizQuestions(quizId)
-  const existingIds = new Set(existingQuestions.map((q) => q.id))
   const newIds = new Set(questions.filter((q) => q.id).map((q) => q.id))
 
-  // 2. Determine questions to delete
-  const infoToDelete = existingQuestions
+  // 2. Delete removed questions (single batch)
+  const idsToDelete = existingQuestions
     .filter((q) => !newIds.has(q.id))
     .map((q) => q.id)
 
-  if (infoToDelete.length > 0) {
+  if (idsToDelete.length > 0) {
     const { error } = await supabase
       .from('quiz_questions')
       .delete()
-      .in('id', infoToDelete)
-
-    if (error) {
-      logger.error('Error deleting questions:', error)
-      throw error
-    }
+      .in('id', idsToDelete)
+    if (error) throw error
   }
 
-  // 3. Upsert (Insert or Update)
-  for (const question of questions) {
-    const { id, ...data } = question
-    if (id) {
-      // Update
-      const { error } = await supabase
-        .from('quiz_questions')
-        .update(data)
-        .eq('id', id)
-      if (error) throw error
-    } else {
-      // Insert
-      const { error } = await supabase
-        .from('quiz_questions')
-        .insert({ ...data, quiz_id: quizId })
-      if (error) throw error
-    }
+  // 3. Batch upsert: separate into updates and inserts
+  const toUpdate = questions.filter(q => q.id)
+  const toInsert = questions.filter(q => !q.id).map(q => ({ ...q, quiz_id: quizId }))
+
+  // Batch update via Promise.all (parallel, not sequential)
+  if (toUpdate.length > 0) {
+    await Promise.all(
+      toUpdate.map(({ id, ...data }) =>
+        supabase.from('quiz_questions').update(data).eq('id', id!).then(({ error }) => { if (error) throw error })
+      )
+    )
   }
 
-  // 4. Auto-generate flashcards from quiz questions
-  await generateFlashcardsFromQuiz(quizId)
+  // Batch insert (single request)
+  if (toInsert.length > 0) {
+    const { error } = await supabase.from('quiz_questions').insert(toInsert)
+    if (error) throw error
+  }
+
+  // 4. Auto-generate flashcards (non-blocking background)
+  generateFlashcardsFromQuiz(quizId).catch(err => logger.error('Flashcard gen error:', err))
 }
 
 /**
