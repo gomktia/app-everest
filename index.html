@@ -39,32 +39,36 @@
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
   </head>
 
-  <body style="margin:0;background:#0a0a0b;">
+  <body style="margin:0;">
     <script>
-      // Apply theme BEFORE React mounts to prevent flash
+      // Apply theme BEFORE anything renders to prevent flash
       (function() {
         var theme = localStorage.getItem('vite-ui-theme') || 'dark';
         if (theme === 'system') {
           theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         document.documentElement.classList.add(theme);
-        // Set body bg to match theme immediately
-        document.body.style.background = theme === 'dark' ? '#0a0a0b' : '#ffffff';
+        var bg = theme === 'dark' ? '#0a0a0b' : '#ffffff';
+        var textColor = theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+        document.body.style.background = bg;
+        // Also set loader bg immediately
+        document.addEventListener('DOMContentLoaded', function() {
+          var loader = document.getElementById('initial-loader');
+          if (loader) { loader.style.background = bg; }
+          var loaderText = loader && loader.querySelector('p');
+          if (loaderText) { loaderText.style.color = textColor; }
+        });
       })();
     </script>
     <div id="root"></div>
-    <!-- Fullscreen loader visible until React renders - prevents black screen -->
-    <div id="initial-loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:99999;">
+    <!-- Fullscreen loader visible until React renders -->
+    <div id="initial-loader" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:99999;background:#0a0a0b;">
       <div style="text-align:center;">
         <div style="width:32px;height:32px;border:3px solid rgba(255,107,53,0.2);border-top-color:#ff6b35;border-radius:50%;animation:ld-spin 0.8s linear infinite;margin:0 auto;"></div>
         <p style="margin-top:16px;color:rgba(255,255,255,0.5);font-family:system-ui;font-size:14px;">Carregando...</p>
       </div>
     </div>
-    <style>
-      @keyframes ld-spin{to{transform:rotate(360deg)}}
-      .light #initial-loader{background:#fff!important}
-      .light #initial-loader p{color:rgba(0,0,0,0.4)!important}
-    </style>
+    <style>@keyframes ld-spin{to{transform:rotate(360deg)}}</style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
