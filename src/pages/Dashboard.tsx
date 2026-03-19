@@ -39,6 +39,8 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { TourButton } from '@/components/TourButton'
+import { TrialCountdown } from '@/components/trial/TrialCountdown'
+import { useTrialLimits } from '@/hooks/use-trial-limits'
 import type { DriveStep } from 'driver.js'
 
 const TOUR_STEPS: DriveStep[] = [
@@ -70,6 +72,7 @@ const eventColors = {
 
 export default function DashboardPage() {
   const { user, profile, effectiveUserId, impersonatedStudent } = useAuth()
+  const { isTrialUser, trialStatus } = useTrialLimits()
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState({
     activeCourses: 0,
@@ -334,6 +337,14 @@ export default function DashboardPage() {
           </div>
         )
       })}
+
+      {/* Trial Countdown */}
+      {isTrialUser && trialStatus?.enrollmentDate && trialStatus?.durationDays && (
+        <TrialCountdown
+          enrollmentDate={trialStatus.enrollmentDate}
+          durationDays={trialStatus.durationDays}
+        />
+      )}
 
       {/* Live Banner */}
       <LiveBanner />

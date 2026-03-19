@@ -38,9 +38,19 @@ export interface ContentAccessResult {
  * Verifica se o usuário está em uma turma trial
  */
 export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> => {
+  const notTrial: TrialLimits = {
+    isTrialUser: false,
+    className: null,
+    durationDays: null,
+    flashcardLimitPerDay: null,
+    quizLimitPerDay: null,
+    essaySubmissionLimit: null,
+    enrollmentDate: null,
+  }
+
   try {
-    // Buscar turma trial do usuário
-    const { data: studentClasses, error } = await supabase
+    // Buscar TODAS as turmas do aluno
+    const { data: allClasses, error } = await supabase
       .from('student_classes')
       .select(`
         enrollment_date,
@@ -54,23 +64,21 @@ export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> =
         )
       `)
       .eq('user_id', userId)
-      .eq('classes.class_type', 'trial')
-      .limit(1)
 
-    const studentClass = studentClasses?.[0]
-    if (error || !studentClass) {
-      return {
-        isTrialUser: false,
-        className: null,
-        durationDays: null,
-        flashcardLimitPerDay: null,
-        quizLimitPerDay: null,
-        essaySubmissionLimit: null,
-        enrollmentDate: null,
-      }
+    if (error || !allClasses || allClasses.length === 0) {
+      return notTrial
     }
 
-    const classData = studentClass.classes as any
+    // Se tem QUALQUER turma paga (não-trial), não aplica limites globais de trial.
+    // Os limites por curso são tratados nas páginas de curso individualmente.
+    const hasNonTrialClass = allClasses.some((sc: any) => sc.classes?.class_type !== 'trial')
+    if (hasNonTrialClass) {
+      return notTrial
+    }
+
+    // Só tem turma(s) trial — aplicar limites globais
+    const trialClass = allClasses[0]
+    const classData = trialClass.classes as any
 
     return {
       isTrialUser: true,
@@ -79,19 +87,11 @@ export const getUserTrialStatus = async (userId: string): Promise<TrialLimits> =
       flashcardLimitPerDay: classData.trial_flashcard_limit_per_day,
       quizLimitPerDay: classData.trial_quiz_limit_per_day,
       essaySubmissionLimit: classData.trial_essay_submission_limit,
-      enrollmentDate: studentClass.enrollment_date,
+      enrollmentDate: trialClass.enrollment_date,
     }
   } catch (error) {
     logger.error('💥 Erro ao verificar status trial:', error)
-    return {
-      isTrialUser: false,
-      className: null,
-      durationDays: null,
-      flashcardLimitPerDay: null,
-      quizLimitPerDay: null,
-      essaySubmissionLimit: null,
-      enrollmentDate: null,
-    }
+    return notTrial
   }
 }
 

@@ -133,7 +133,9 @@ export default function LessonPlayerPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { user, loading: authLoading } = useAuth()
-  const { isTrialUser } = useTrialLimits()
+  const { isTrialUser: isTrialUserGlobal } = useTrialLimits()
+  const [isTrialForThisCourse, setIsTrialForThisCourse] = useState(false)
+  const isTrialUser = isTrialForThisCourse
 
   const [courseData, setCourseData] = useState<CourseData | null>(null)
   const [lessonData, setLessonData] = useState<LessonData | null>(null)
@@ -266,7 +268,7 @@ export default function LessonPlayerPage() {
         // Check enrollment before allowing lesson access
         const { data: enrollment } = await supabase
           .from('student_classes')
-          .select('id, class_id, enrollment_date, classes!inner(class_courses!inner(course_id))')
+          .select('id, class_id, enrollment_date, classes!inner(class_type, class_courses!inner(course_id))')
           .eq('user_id', user.id)
 
         const enrolledCourseIds = (enrollment || []).flatMap((sc: any) =>
@@ -279,12 +281,24 @@ export default function LessonPlayerPage() {
           return
         }
 
-        // Find student's class for this course to check access rules
-        const matchingEnrollment = (enrollment || []).find((sc: any) =>
+        // Find student's class for this course — prefer paid/standard over trial
+        const matchingEnrollments = (enrollment || []).filter((sc: any) =>
           sc.classes?.class_courses?.some((cc: any) => cc.course_id === courseId)
         )
+        const matchingEnrollment = matchingEnrollments.sort((a: any, b: any) => {
+          const aIsTrial = a.classes?.class_type === 'trial'
+          const bIsTrial = b.classes?.class_type === 'trial'
+          if (aIsTrial && !bIsTrial) return 1
+          if (!aIsTrial && bIsTrial) return -1
+          return 0
+        })[0] || null
         const studentClassId = matchingEnrollment?.class_id || null
         const enrollmentDate = matchingEnrollment?.enrollment_date || null
+
+        // Verificar se este curso é acessado via turma trial ou paga
+        setIsTrialForThisCourse(
+          matchingEnrollment ? matchingEnrollment.classes?.class_type === 'trial' : isTrialUserGlobal
+        )
 
         // Load module & lesson rules for this class
         const blocked = new Set<string>()

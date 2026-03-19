@@ -609,7 +609,15 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
                           </>
                         )}
                         {user.role !== 'student' && (
-                          <span className="text-xs text-muted-foreground">-</span>
+                          <>
+                            {user.classes && user.classes.length > 0 ? (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-700">
+                                {user.classes.length} turma(s)
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
+                          </>
                         )}
                       </div>
                     </TableCell>

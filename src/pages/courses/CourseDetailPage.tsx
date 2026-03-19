@@ -38,6 +38,7 @@ import { cn } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 import { getSupportWhatsAppUrl } from '@/lib/constants'
 import { cachedFetch } from '@/lib/offlineCache'
+import { TrialCountdown } from '@/components/trial/TrialCountdown'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,7 +104,7 @@ export default function CourseDetailPage() {
   const { user, effectiveUserId } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { isTrialUser } = useTrialLimits()
+  const { isTrialUser: isTrialUserGlobal } = useTrialLimits()
   const [course, setCourse] = useState<CourseData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>('card')
@@ -113,6 +114,10 @@ export default function CourseDetailPage() {
   const [lessonRules, setLessonRules] = useState<Record<string, { rule_type: string; rule_value: string | null }>>({})
   const [studentClassId, setStudentClassId] = useState<string | null>(null)
   const [enrollmentDate, setEnrollmentDate] = useState<string | null>(null)
+  const [isTrialForThisCourse, setIsTrialForThisCourse] = useState(false)
+  const [trialDurationDays, setTrialDurationDays] = useState<number | null>(null)
+  // isTrialUser para este curso: só é trial se a turma que dá acesso é trial
+  const isTrialUser = isTrialForThisCourse
 
   // ---- Enrollment check ----
   useEffect(() => {
@@ -123,7 +128,7 @@ export default function CourseDetailPage() {
       }
       const { data } = await supabase
         .from('student_classes')
-        .select('id, class_id, enrollment_date, classes!inner(class_courses!inner(course_id))')
+        .select('id, class_id, enrollment_date, classes!inner(class_type, trial_duration_days, class_courses!inner(course_id))')
         .eq('user_id', effectiveUserId)
 
       const enrolledCourseIds = (data || []).flatMap((sc: any) =>
@@ -131,13 +136,25 @@ export default function CourseDetailPage() {
       )
       setIsEnrolled(enrolledCourseIds.includes(courseId))
 
-      // Find the class_id that has this course
-      const matchingEntry = (data || []).find((sc: any) =>
+      // Find the class_id that has this course — prefer paid/standard over trial
+      const matchingEntries = (data || []).filter((sc: any) =>
         sc.classes?.class_courses?.some((cc: any) => cc.course_id === courseId)
       )
+      const matchingEntry = matchingEntries.sort((a: any, b: any) => {
+        const aIsTrial = a.classes?.class_type === 'trial'
+        const bIsTrial = b.classes?.class_type === 'trial'
+        if (aIsTrial && !bIsTrial) return 1
+        if (!aIsTrial && bIsTrial) return -1
+        return 0
+      })[0] || null
       if (matchingEntry) {
         setStudentClassId(matchingEntry.class_id)
         setEnrollmentDate(matchingEntry.enrollment_date)
+        const isTrial = matchingEntry.classes?.class_type === 'trial'
+        setIsTrialForThisCourse(isTrial)
+        if (isTrial) setTrialDurationDays(matchingEntry.classes?.trial_duration_days ?? null)
+      } else {
+        setIsTrialForThisCourse(isTrialUserGlobal)
       }
 
       setEnrollmentChecked(true)
@@ -384,37 +401,13 @@ export default function CourseDetailPage() {
           </div>
         )}
 
-        {/* ── Trial Upgrade Banner (enrolled but trial) ── */}
-        {isEnrolled && isTrialUser && course && (
-          <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-2 border-amber-500/30 rounded-xl p-5">
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shrink-0">
-                <Sparkles className="h-6 w-6 text-amber-500" />
-              </div>
-              <div className="flex-1 space-y-1 text-center sm:text-left">
-                <h2 className="text-base font-bold text-foreground">Você está na degustação!</h2>
-                <p className="text-muted-foreground text-sm">
-                  Gostou do conteúdo? Adquira o acesso completo para desbloquear todos os módulos e aulas.
-                </p>
-              </div>
-              <div className="shrink-0">
-                {course.sales_url ? (
-                  <Button asChild size="lg" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg gap-2">
-                    <a href={course.sales_url} target="_blank" rel="noopener noreferrer">
-                      <ShoppingCart className="h-4 w-4" />
-                      Adquirir acesso completo
-                    </a>
-                  </Button>
-                ) : (
-                  <Button size="lg" variant="outline" className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10 gap-2"
-                    onClick={() => window.open(getSupportWhatsAppUrl('Olá! Tenho interesse no curso ' + course.name), '_blank')}>
-                    <MessageSquare className="h-4 w-4" />
-                    Falar com o suporte
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* ── Trial Countdown Banner (enrolled but trial) ── */}
+        {isEnrolled && isTrialUser && enrollmentDate && trialDurationDays && (
+          <TrialCountdown
+            enrollmentDate={enrollmentDate}
+            durationDays={trialDurationDays}
+            upgradeUrl={course?.sales_url}
+          />
         )}
 
         {/* ── Hero / Course Header ── */}

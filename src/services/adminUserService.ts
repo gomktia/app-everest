@@ -161,7 +161,13 @@ export const getUsersWithClasses = async (): Promise<UserWithClasses[]> => {
     studentClasses = scData
   }
 
-  // Mapear turmas por user_id
+  // Buscar turmas de professores (via teacher_id na tabela classes)
+  const { data: teacherClasses } = await supabase
+    .from('classes')
+    .select('id, name, class_type, teacher_id')
+    .not('teacher_id', 'is', null)
+
+  // Mapear turmas por user_id (alunos)
   const classesMap = new Map<string, Array<{ id: string; name: string; class_type: string }>>()
 
   if (studentClasses) {
@@ -176,9 +182,24 @@ export const getUsersWithClasses = async (): Promise<UserWithClasses[]> => {
     })
   }
 
+  // Mapear turmas por teacher_id (professores)
+  const teacherClassesMap = new Map<string, Array<{ id: string; name: string; class_type: string }>>()
+
+  if (teacherClasses) {
+    teacherClasses.forEach((tc: any) => {
+      const teacherId = tc.teacher_id
+      if (!teacherClassesMap.has(teacherId)) {
+        teacherClassesMap.set(teacherId, [])
+      }
+      teacherClassesMap.get(teacherId)?.push({ id: tc.id, name: tc.name, class_type: tc.class_type })
+    })
+  }
+
   // Combinar dados
   const usersWithClasses: UserWithClasses[] = users.map(user => {
-    const userClasses = classesMap.get(user.id) || []
+    const userClasses = user.role === 'teacher' || user.role === 'administrator'
+      ? teacherClassesMap.get(user.id) || []
+      : classesMap.get(user.id) || []
     const isInTastingClass = userClasses.some(c =>
       c.name.toLowerCase().includes('degustação') ||
       c.name.toLowerCase().includes('degustacao')
