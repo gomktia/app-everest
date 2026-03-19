@@ -138,6 +138,8 @@ function SortableModuleItem({
   onDeleteAttachment,
   onSetAccompanyingPdf,
   onOpenVideoPicker,
+  allSubjects,
+  allTopics,
 }: {
   module: ModuleData
   moduleIndex: number
@@ -153,6 +155,8 @@ function SortableModuleItem({
   onDeleteAttachment: (lessonIndex: number, attId: string) => void
   onSetAccompanyingPdf: (lessonIndex: number, attId: string | null) => void
   onOpenVideoPicker: (lessonIndex: number) => void
+  allSubjects: { id: string; name: string }[]
+  allTopics: { id: string; name: string; subject_id: string }[]
 }) {
   const {
     attributes,
@@ -1435,6 +1439,8 @@ export default function AdminCourseEditorPage() {
                     onDeleteAttachment={(li, attId) => deleteAttachment(moduleIndex, li, attId)}
                     onSetAccompanyingPdf={(li, attId) => setAccompanyingPdf(moduleIndex, li, attId)}
                     onOpenVideoPicker={(li) => openVideoPicker(moduleIndex, li)}
+                    allSubjects={allSubjects}
+                    allTopics={allTopics}
                   />
                 ))}
               </SortableContext>
