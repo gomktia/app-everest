@@ -214,19 +214,29 @@ export default function AdminQuizQuestionsPage() {
   }
 
   const importFromBank = () => {
-    const toImport = bankQuestions
-      .filter(q => bankSelected.has(q.id))
-      .map(q => ({
-        question_text: q.question_text,
-        options: Array.isArray(q.options) ? q.options : [],
-        correct_answer: q.correct_answer || '',
-        explanation: q.explanation || '',
-        points: q.points || 1,
-        reading_text_id: null,
-      }))
-    if (toImport.length === 0) { setBankOpen(false); return }
+    const selected = bankQuestions.filter(q => bankSelected.has(q.id))
+    // Only import multiple_choice with 4+ options; skip true_false (incompatible with 4-option form)
+    const compatible = selected.filter(q => {
+      const opts = Array.isArray(q.options) ? q.options : []
+      return opts.length >= 4
+    })
+    const skipped = selected.length - compatible.length
+    const toImport = compatible.map(q => ({
+      question_text: q.question_text,
+      options: (Array.isArray(q.options) ? q.options : []).slice(0, 4) as [string, string, string, string],
+      correct_answer: q.correct_answer || '',
+      explanation: q.explanation || '',
+      points: q.points || 1,
+      reading_text_id: null,
+    }))
+    if (toImport.length === 0) {
+      toast({ title: skipped > 0 ? `${skipped} questões ignoradas (tipo Certo/Errado não compatível)` : 'Nenhuma questão selecionada', variant: 'destructive' })
+      setBankOpen(false)
+      return
+    }
     for (const q of toImport) { append(q) }
-    toast({ title: `${toImport.length} questões importadas do banco` })
+    const msg = skipped > 0 ? `${toImport.length} importadas, ${skipped} ignoradas (Certo/Errado)` : `${toImport.length} questões importadas do banco`
+    toast({ title: msg })
     setBankOpen(false)
   }
 
@@ -492,7 +502,7 @@ export default function AdminQuizQuestionsPage() {
                       <FormLabel>Opções (marque a correta)</FormLabel>
                       <RadioGroup
                         onValueChange={radioField.onChange}
-                        defaultValue={radioField.value}
+                        value={radioField.value}
                         className="space-y-2"
                       >
                         {[0, 1, 2, 3].map((optIndex) => (

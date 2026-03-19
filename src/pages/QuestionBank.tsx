@@ -208,6 +208,7 @@ export default function QuestionBankPage() {
       // Filter out questions with no valid options, apply content access
       const filtered = normalized.filter((q: Question) => {
         if (isStudent && isRestricted && q.topics?.id && !isAllowed(q.topics.id)) return false
+        if (q.question_type === 'true_false') return true  // true_false may have 0 or 2 options
         if (parseOptions(q.options).length === 0) return false
         return true
       })
@@ -261,7 +262,11 @@ export default function QuestionBankPage() {
   // Current question helpers
   const currentQuestion = studyQuestions[currentIndex]
   const isAnswered = currentQuestion ? !!answers[currentQuestion.id] : false
-  const isCorrect = currentQuestion ? answers[currentQuestion.id] === currentQuestion.correct_answer : false
+  const isCorrect = currentQuestion ? answers[currentQuestion.id] === (
+    currentQuestion.question_type === 'true_false'
+      ? (currentQuestion.correct_answer === 'true' ? 'Certo' : currentQuestion.correct_answer === 'false' ? 'Errado' : currentQuestion.correct_answer)
+      : currentQuestion.correct_answer
+  ) : false
 
   const handleOptionSelect = (option: string) => {
     if (!currentQuestion || isAnswered) return
@@ -297,7 +302,10 @@ export default function QuestionBankPage() {
   const getSummaryStats = useCallback(() => {
     const total = studyQuestions.length
     const answered = Object.keys(answers).length
-    const correct = studyQuestions.filter(q => answers[q.id] === q.correct_answer).length
+    const correct = studyQuestions.filter(q => {
+      const ca = q.question_type === 'true_false' ? (q.correct_answer === 'true' ? 'Certo' : q.correct_answer === 'false' ? 'Errado' : q.correct_answer) : q.correct_answer
+      return answers[q.id] === ca
+    }).length
     const wrong = answered - correct
     const percentage = answered > 0 ? Math.round((correct / answered) * 100) : 0
     return { total, answered, correct, wrong, percentage }
@@ -633,7 +641,8 @@ export default function QuestionBankPage() {
               <div className="grid grid-cols-2 gap-3">
                 {['Certo', 'Errado'].map((option) => {
                   const isSelected = isAnswered && answers[currentQuestion.id] === option
-                  const isCorrectOption = option === currentQuestion.correct_answer
+                  const normalizedCorrect = currentQuestion.correct_answer === 'true' ? 'Certo' : currentQuestion.correct_answer === 'false' ? 'Errado' : currentQuestion.correct_answer
+                  const isCorrectOption = option === normalizedCorrect
                   return (
                     <div
                       key={option}

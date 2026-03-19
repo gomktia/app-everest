@@ -15,9 +15,17 @@ import {
   Target,
   Brain,
   ArrowRight,
-  BookOpen
+  BookOpen,
+  XCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+/** Normalize true/false correct_answer to "Certo"/"Errado" */
+function normalizeTF(val: string): string {
+  if (val === 'true' || val === 'Certo') return 'Certo'
+  if (val === 'false' || val === 'Errado') return 'Errado'
+  return val
+}
 import { quizService, type Quiz } from '@/services/quizService'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
@@ -104,7 +112,9 @@ export default function QuizPlayerPage() {
       // Calcular pontuação
       let correctCount = 0
       quiz.questions.forEach((question) => {
-        if (selectedAnswers[question.id] === question.correct_answer) {
+        const userAns = selectedAnswers[question.id]
+        const correctAns = question.question_type === 'true_false' ? normalizeTF(question.correct_answer) : question.correct_answer
+        if (userAns === correctAns) {
           correctCount++
         }
       })
@@ -209,9 +219,6 @@ export default function QuizPlayerPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">{quiz.title}</h1>
-      <p className="text-muted-foreground">Questão {currentIndex + 1} de {questions.length}</p>
-
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Quiz Header */}
         <Card className="border-border shadow-sm">
@@ -354,7 +361,7 @@ export default function QuizPlayerPage() {
                             selectedAnswers[currentQuestion.id] && selectedAnswers[currentQuestion.id] !== option && "opacity-40",
                           )}
                         >
-                          {option === 'Certo' ? <CheckCircle className="h-6 w-6" /> : <HelpCircle className="h-6 w-6" />}
+                          {option === 'Certo' ? <CheckCircle className="h-6 w-6" /> : <XCircle className="h-6 w-6" />}
                           {option}
                         </button>
                       ))}
