@@ -3657,6 +3657,8 @@ export type Database = {
           module_id: string
           order_index: number
           quiz_id: string | null
+          quiz_min_percentage: number
+          quiz_required: boolean
           title: string
           topic_id: string | null
           updated_at: string
@@ -3676,6 +3678,8 @@ export type Database = {
           module_id: string
           order_index?: number
           quiz_id?: string | null
+          quiz_min_percentage?: number
+          quiz_required?: boolean
           title: string
           topic_id?: string | null
           updated_at?: string
@@ -3695,6 +3699,8 @@ export type Database = {
           module_id?: string
           order_index?: number
           quiz_id?: string | null
+          quiz_min_percentage?: number
+          quiz_required?: boolean
           title?: string
           topic_id?: string | null
           updated_at?: string

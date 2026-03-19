@@ -77,6 +77,8 @@ interface LessonData {
   attachments: AttachmentData[]
   accompanying_pdf_attachment_id: string | null
   topic_id: string | null
+  quiz_required: boolean
+  quiz_min_percentage: number
   isNew?: boolean
   isModified?: boolean
 }
@@ -489,6 +491,31 @@ function SortableLessonItem({
               })}
             </select>
             <p className="text-[10px] text-muted-foreground mt-0.5">Os quizzes e flashcards deste tópico aparecem na aula do aluno</p>
+            {lesson.topic_id && (
+              <div className="flex items-center gap-4 mt-2">
+                <label className="flex items-center gap-1.5 text-[11px] cursor-pointer">
+                  <Switch
+                    checked={lesson.quiz_required}
+                    onCheckedChange={(v) => onUpdate('quiz_required', v)}
+                  />
+                  Quiz obrigatório
+                </label>
+                {lesson.quiz_required && (
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-[11px] text-muted-foreground">Mínimo de acertos:</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={lesson.quiz_min_percentage}
+                      onChange={(e) => onUpdate('quiz_min_percentage', parseInt(e.target.value) || 70)}
+                      className="h-7 w-16 text-xs"
+                    />
+                    <span className="text-[11px] text-muted-foreground">%</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Attachments */}
@@ -673,7 +700,7 @@ export default function AdminCourseEditorPage() {
           (modulesData || []).map(async (mod) => {
             const { data: lessonsData } = await supabase
               .from('video_lessons')
-              .select('id, title, description, video_source_type, video_source_id, duration_seconds, is_active, is_preview, order_index, accompanying_pdf_attachment_id, topic_id')
+              .select('id, title, description, video_source_type, video_source_id, duration_seconds, is_active, is_preview, order_index, accompanying_pdf_attachment_id, topic_id, quiz_required, quiz_min_percentage')
               .eq('module_id', mod.id)
               .order('order_index')
 
@@ -814,6 +841,8 @@ export default function AdminCourseEditorPage() {
         attachments: [],
         accompanying_pdf_attachment_id: null,
         topic_id: null,
+        quiz_required: false,
+        quiz_min_percentage: 70,
         isNew: true,
       }
       return { ...m, lessons: [...m.lessons, newLesson] }
@@ -1079,6 +1108,8 @@ export default function AdminCourseEditorPage() {
                 order_index: li,
                 accompanying_pdf_attachment_id: lesson.accompanying_pdf_attachment_id || null,
                 topic_id: lesson.topic_id || null,
+                quiz_required: lesson.quiz_required,
+                quiz_min_percentage: lesson.quiz_min_percentage,
               })
               .select('id')
               .single()
@@ -1098,6 +1129,8 @@ export default function AdminCourseEditorPage() {
                 order_index: li,
                 accompanying_pdf_attachment_id: lesson.accompanying_pdf_attachment_id || null,
                 topic_id: lesson.topic_id || null,
+                quiz_required: lesson.quiz_required,
+                quiz_min_percentage: lesson.quiz_min_percentage,
               })
               .eq('id', savedLessonId)
             if (error) throw error

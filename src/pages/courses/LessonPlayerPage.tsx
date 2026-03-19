@@ -73,6 +73,8 @@ interface LessonData {
   progress?: number
   last_position?: number
   topic_id?: string | null
+  quiz_required?: boolean
+  quiz_min_percentage?: number
 }
 
 interface ModuleData {
@@ -188,6 +190,7 @@ export default function LessonPlayerPage() {
   const [topicQuizCount, setTopicQuizCount] = useState(0)
   const [topicFlashcardCount, setTopicFlashcardCount] = useState(0)
   const [topicSubjectId, setTopicSubjectId] = useState<string | null>(null)
+  const [quizPassed, setQuizPassed] = useState(false)
   const drawingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Refs to track latest values for flush-on-lesson-change
@@ -392,18 +395,35 @@ export default function LessonPlayerPage() {
 
         // Fetch topic-linked quiz & flashcard counts
         if (foundLesson.topic_id) {
-          const [{ count: qCount }, { count: fCount }, { data: topicData }] = await Promise.all([
+          const [{ count: qCount }, { count: fCount }, { data: topicData }, { data: topicQuizzes }] = await Promise.all([
             supabase.from('quizzes').select('*', { count: 'exact', head: true }).eq('topic_id', foundLesson.topic_id).or('type.eq.quiz,type.is.null'),
             supabase.from('flashcards').select('*', { count: 'exact', head: true }).eq('topic_id', foundLesson.topic_id),
             supabase.from('topics').select('subject_id').eq('id', foundLesson.topic_id).single(),
+            supabase.from('quizzes').select('id').eq('topic_id', foundLesson.topic_id).or('type.eq.quiz,type.is.null'),
           ])
           setTopicQuizCount(qCount || 0)
           setTopicFlashcardCount(fCount || 0)
           setTopicSubjectId(topicData?.subject_id || null)
+
+          // Check if student passed any quiz for this topic
+          if (foundLesson.quiz_required && topicQuizzes && topicQuizzes.length > 0 && user?.id) {
+            const quizIds = topicQuizzes.map(q => q.id)
+            const { data: attempts } = await supabase
+              .from('quiz_attempts')
+              .select('percentage')
+              .eq('user_id', user.id)
+              .in('quiz_id', quizIds)
+            const minPct = foundLesson.quiz_min_percentage || 70
+            const passed = (attempts || []).some(a => (a.percentage || 0) >= minPct)
+            setQuizPassed(passed)
+          } else {
+            setQuizPassed(true)
+          }
         } else {
           setTopicQuizCount(0)
           setTopicFlashcardCount(0)
           setTopicSubjectId(null)
+          setQuizPassed(true)
         }
 
         const { data: attData } = await supabase
@@ -1339,17 +1359,33 @@ export default function LessonPlayerPage() {
                     </button>
 
                     {/* Mark complete */}
-                    <button data-tour="complete-lesson" onClick={handleMarkComplete} disabled={lessonData.completed || isMarkingComplete}
-                      className={cn(
-                        "flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px]",
-                        lessonData.completed
-                          ? "bg-emerald-500/10 text-emerald-500 cursor-default"
-                          : "bg-primary hover:bg-emerald-500 text-primary-foreground hover:text-white shadow-sm hover:shadow-md active:scale-[0.97]"
-                      )}
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                      {lessonData.completed ? 'Concluída' : 'Concluir aula'}
-                    </button>
+                    {lessonData.quiz_required && !quizPassed && !lessonData.completed ? (
+                      <button
+                        onClick={() => {
+                          if (topicQuizCount > 0 && topicSubjectId) {
+                            navigate(`/quizzes/${topicSubjectId}?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)
+                          } else {
+                            toast({ title: 'Quiz obrigatório', description: 'Esta aula exige aprovação no quiz para ser concluída, mas nenhum quiz foi vinculado ainda.', variant: 'destructive' })
+                          }
+                        }}
+                        className="flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px] bg-amber-500/10 text-amber-600 border border-amber-500/30 hover:bg-amber-500/20"
+                      >
+                        <HelpCircle className="h-4 w-4" />
+                        Fazer Quiz ({lessonData.quiz_min_percentage || 70}% para concluir)
+                      </button>
+                    ) : (
+                      <button data-tour="complete-lesson" onClick={handleMarkComplete} disabled={lessonData.completed || isMarkingComplete}
+                        className={cn(
+                          "flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px]",
+                          lessonData.completed
+                            ? "bg-emerald-500/10 text-emerald-500 cursor-default"
+                            : "bg-primary hover:bg-emerald-500 text-primary-foreground hover:text-white shadow-sm hover:shadow-md active:scale-[0.97]"
+                        )}
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                        {lessonData.completed ? 'Concluída' : 'Concluir aula'}
+                      </button>
+                    )}
 
                     {/* XP animation */}
                     {showXpAnimation && (
