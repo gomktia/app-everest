@@ -456,55 +456,50 @@ export default function AdminSimulationFormPage() {
         quizId = created.id
       }
 
-      // 2. Save reading texts
-      const savedTexts: ReadingTextFormData[] = []
-      for (const text of readingTexts) {
-        if (text.id) {
-          await updateReadingText(text.id, {
-            title: text.title || null,
-            content: text.content,
-            author: text.author || null,
-            source: text.source || null,
-          })
-          savedTexts.push(text)
-        } else {
-          const created = await createReadingText({
-            quiz_id: quizId!,
-            title: text.title || null,
-            content: text.content,
-            author: text.author || null,
-            source: text.source || null,
-          })
-          savedTexts.push({ ...text, id: created.id })
-        }
-      }
+      // 2. Save reading texts (parallel)
+      const savedTexts = await Promise.all(
+        readingTexts.map(async (text) => {
+          if (text.id) {
+            await updateReadingText(text.id, {
+              title: text.title || null, content: text.content,
+              author: text.author || null, source: text.source || null,
+            })
+            return text
+          } else {
+            const created = await createReadingText({
+              quiz_id: quizId!, title: text.title || null, content: text.content,
+              author: text.author || null, source: text.source || null,
+            })
+            return { ...text, id: created.id }
+          }
+        })
+      )
 
-      // 3. Save questions — delete all existing first to avoid duplicates on retry
+      // 3. Save questions — delete existing, then batch insert
       if (isEditing) {
-        await supabase
-          .from('quiz_questions')
-          .delete()
-          .eq('quiz_id', quizId!)
+        await supabase.from('quiz_questions').delete().eq('quiz_id', quizId!)
       }
 
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i]
-        const qData: any = {
-          quiz_id: quizId!,
-          question_text: q.question_text,
-          question_type: q.question_format === 'essay' ? 'open' : 'closed',
-          question_format: q.question_format,
-          options: q.question_format === 'multiple_choice' ? q.options : null,
-          correct_answer: q.correct_answer,
-          explanation: q.explanation || null,
-          difficulty: q.difficulty || 'medium',
-          points: q.points || 1,
-          question_image_url: q.question_image_url || null,
-          reading_text_id: q.reading_text_id || null,
-          display_order: i + 1,
-        }
+      const questionsToInsert = questions.map((q, i) => ({
+        quiz_id: quizId!,
+        question_text: q.question_text,
+        question_type: q.question_format === 'essay' ? 'open' : 'closed',
+        question_format: q.question_format,
+        options: q.question_format === 'multiple_choice' ? q.options : null,
+        correct_answer: q.correct_answer,
+        explanation: q.explanation || null,
+        difficulty: q.difficulty || 'medium',
+        points: q.points || 1,
+        question_image_url: q.question_image_url || null,
+        reading_text_id: q.reading_text_id || null,
+        display_order: i + 1,
+      }))
 
-        await createQuestion(qData as QuizQuestionInsert)
+      // Batch insert in chunks of 50
+      for (let i = 0; i < questionsToInsert.length; i += 50) {
+        const batch = questionsToInsert.slice(i, i + 50)
+        const { error } = await supabase.from('quiz_questions').insert(batch)
+        if (error) throw error
       }
 
       toast({ title: `Simulado ${isEditing ? 'atualizado' : 'criado'} com sucesso!` })

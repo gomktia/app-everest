@@ -492,18 +492,13 @@ export const saveQuizQuestions = async (
  */
 const generateFlashcardsFromQuiz = async (quizId: string): Promise<void> => {
   try {
-    // Get quiz with topic
-    const { data: quiz } = await supabase
-      .from('quizzes')
-      .select('topic_id, created_by_user_id')
-      .eq('id', quizId)
-      .single()
+    // Get quiz + questions in parallel
+    const [{ data: quiz }, questions] = await Promise.all([
+      supabase.from('quizzes').select('topic_id, created_by_user_id').eq('id', quizId).single(),
+      getQuizQuestions(quizId),
+    ])
 
-    if (!quiz?.topic_id) return // No topic linked, skip
-
-    // Get all questions for this quiz
-    const questions = await getQuizQuestions(quizId)
-    if (questions.length === 0) return
+    if (!quiz?.topic_id || questions.length === 0) return
 
     // Delete existing auto-generated flashcards for THIS SPECIFIC quiz only
     // source_type='quiz_auto' + source_exam=quizId scopes the delete

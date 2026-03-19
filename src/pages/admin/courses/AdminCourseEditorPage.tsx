@@ -1114,16 +1114,12 @@ export default function AdminCourseEditorPage() {
         if (result.error) throw result.error
       }
 
-      // 2. Delete removed items
-      if (deletedAttachmentIds.length > 0) {
-        await supabase.from('lesson_attachments').delete().in('id', deletedAttachmentIds)
-      }
-      if (deletedLessonIds.length > 0) {
-        await supabase.from('video_lessons').delete().in('id', deletedLessonIds)
-      }
-      if (deletedModuleIds.length > 0) {
-        await supabase.from('video_modules').delete().in('id', deletedModuleIds)
-      }
+      // 2. Delete removed items (parallel)
+      await Promise.all([
+        deletedAttachmentIds.length > 0 ? supabase.from('lesson_attachments').delete().in('id', deletedAttachmentIds) : null,
+        deletedLessonIds.length > 0 ? supabase.from('video_lessons').delete().in('id', deletedLessonIds) : null,
+        deletedModuleIds.length > 0 ? supabase.from('video_modules').delete().in('id', deletedModuleIds) : null,
+      ].filter(Boolean))
 
       // 3. Save modules and lessons
       const savedModules: ModuleData[] = []
@@ -1158,11 +1154,8 @@ export default function AdminCourseEditorPage() {
           if (error) throw error
         }
 
-        // Save lessons
-        const savedLessons: LessonData[] = []
-
-        for (let li = 0; li < mod.lessons.length; li++) {
-          const lesson = mod.lessons[li]
+        // Save lessons — parallel updates for existing, sequential for new (needs ID)
+        const saveLesson = async (lesson: LessonData, li: number) => {
           let savedLessonId = lesson.id
 
           if (lesson.isNew) {
@@ -1171,67 +1164,39 @@ export default function AdminCourseEditorPage() {
               .from('video_lessons')
               .insert({
                 module_id: savedModuleId,
-                title: lesson.title,
-                description: lesson.description || null,
-                video_source_type: lesson.video_source_type || null,
-                video_source_id: lesson.video_source_id || null,
-                duration_seconds: lesson.duration_seconds || null,
-                is_active: lesson.is_active,
-                is_preview: lesson.is_preview,
-                order_index: li,
-                accompanying_pdf_attachment_id: pdfId || null,
-                topic_id: lesson.topic_id || null,
-                quiz_id: lesson.quiz_id || null,
-                quiz_required: lesson.quiz_required,
-                quiz_min_percentage: lesson.quiz_min_percentage,
-              })
-              .select('id')
-              .single()
+                title: lesson.title, description: lesson.description || null,
+                video_source_type: lesson.video_source_type || null, video_source_id: lesson.video_source_id || null,
+                duration_seconds: lesson.duration_seconds || null, is_active: lesson.is_active, is_preview: lesson.is_preview,
+                order_index: li, accompanying_pdf_attachment_id: pdfId || null,
+                topic_id: lesson.topic_id || null, quiz_id: lesson.quiz_id || null,
+                quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage,
+              }).select('id').single()
             if (error) throw error
             savedLessonId = newLesson.id
           } else {
             const pdfIdForUpdate = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
-            const { error } = await supabase
-              .from('video_lessons')
-              .update({
-                title: lesson.title,
-                description: lesson.description || null,
-                video_source_type: lesson.video_source_type || null,
-                video_source_id: lesson.video_source_id || null,
-                duration_seconds: lesson.duration_seconds || null,
-                is_active: lesson.is_active,
-                is_preview: lesson.is_preview,
-                order_index: li,
-                accompanying_pdf_attachment_id: pdfIdForUpdate || null,
-                topic_id: lesson.topic_id || null,
-                quiz_id: lesson.quiz_id || null,
-                quiz_required: lesson.quiz_required,
-                quiz_min_percentage: lesson.quiz_min_percentage,
-              })
-              .eq('id', savedLessonId)
+            const { error } = await supabase.from('video_lessons').update({
+              title: lesson.title, description: lesson.description || null,
+              video_source_type: lesson.video_source_type || null, video_source_id: lesson.video_source_id || null,
+              duration_seconds: lesson.duration_seconds || null, is_active: lesson.is_active, is_preview: lesson.is_preview,
+              order_index: li, accompanying_pdf_attachment_id: pdfIdForUpdate || null,
+              topic_id: lesson.topic_id || null, quiz_id: lesson.quiz_id || null,
+              quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage,
+            }).eq('id', savedLessonId)
             if (error) throw error
           }
 
-          // Save new attachments
-          const savedAttachments: AttachmentData[] = []
-          for (const att of lesson.attachments) {
-            if (att.isNew) {
-              const { data: newAtt, error } = await supabase
-                .from('lesson_attachments')
-                .insert({
-                  lesson_id: savedLessonId,
-                  file_url: att.file_url,
-                  file_name: att.file_name,
-                  file_type: att.file_type,
-                })
-                .select('id, file_url, file_name, file_type')
-                .single()
-              if (error) throw error
-              savedAttachments.push(newAtt)
-            } else {
-              savedAttachments.push(att)
-            }
-          }
+          // Save new attachments (parallel)
+          const newAtts = lesson.attachments.filter(a => a.isNew)
+          const existingAtts = lesson.attachments.filter(a => !a.isNew)
+          const insertedAtts = newAtts.length > 0
+            ? await Promise.all(newAtts.map(att =>
+                supabase.from('lesson_attachments').insert({
+                  lesson_id: savedLessonId, file_url: att.file_url, file_name: att.file_name, file_type: att.file_type,
+                }).select('id, file_url, file_name, file_type').single().then(r => { if (r.error) throw r.error; return r.data as AttachmentData })
+              ))
+            : []
+          const savedAttachments = [...existingAtts, ...insertedAtts]
 
           // Update accompanying PDF if it was a new attachment
           if (lesson.accompanying_pdf_attachment_id?.startsWith('temp_')) {
@@ -1242,15 +1207,21 @@ export default function AdminCourseEditorPage() {
             }
           }
 
-          savedLessons.push({
-            ...lesson,
-            id: savedLessonId,
-            order_index: li,
-            attachments: savedAttachments,
-            isNew: false,
-            isModified: false,
-          })
+          return { ...lesson, id: savedLessonId, order_index: li, attachments: savedAttachments, isNew: false, isModified: false } as LessonData
         }
+
+        // Existing lessons in parallel, new lessons sequentially (need IDs)
+        const existingLessons = mod.lessons.map((l, i) => ({ lesson: l, index: i })).filter(x => !x.lesson.isNew)
+        const newLessons = mod.lessons.map((l, i) => ({ lesson: l, index: i })).filter(x => x.lesson.isNew)
+
+        const savedExisting = await Promise.all(existingLessons.map(x => saveLesson(x.lesson, x.index)))
+        const savedNew: LessonData[] = []
+        for (const x of newLessons) {
+          savedNew.push(await saveLesson(x.lesson, x.index))
+        }
+
+        // Merge and sort by order_index
+        const savedLessons = [...savedExisting, ...savedNew].sort((a, b) => a.order_index - b.order_index)
 
         savedModules.push({
           ...mod,

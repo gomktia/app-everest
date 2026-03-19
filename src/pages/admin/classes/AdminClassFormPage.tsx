@@ -340,12 +340,14 @@ export default function AdminClassFormPage() {
             }))
           await saveAllModuleRules(insertedData.id, rulesToSave)
 
-          // Save lesson rules
-          for (const [lessonId, lr] of Object.entries(lessonRules)) {
-            if (lr.rule_type !== 'inherit') {
-              await upsertLessonRule({ class_id: insertedData.id, lesson_id: lessonId, rule_type: lr.rule_type as any, rule_value: lr.rule_value || null })
-            }
-          }
+          // Save lesson rules (parallel)
+          await Promise.all(
+            Object.entries(lessonRules)
+              .filter(([_, lr]) => lr.rule_type !== 'inherit')
+              .map(([lessonId, lr]) =>
+                upsertLessonRule({ class_id: insertedData.id, lesson_id: lessonId, rule_type: lr.rule_type as any, rule_value: lr.rule_value || null })
+              )
+          )
 
           // Save content access (parallel for speed)
           const newClassId = insertedData.id
