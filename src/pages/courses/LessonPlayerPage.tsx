@@ -276,6 +276,11 @@ export default function LessonPlayerPage() {
       if (!courseId || !lessonId) return
       try {
         setIsLoading(true)
+        // Reset quiz/flashcard state to prevent stale values while loading
+        setHasQuiz(false)
+        setQuizPassed(false)
+        setTopicFlashcardCount(0)
+        setTopicSubjectId(null)
 
         // Check enrollment before allowing lesson access
         const { data: enrollment } = await supabase
@@ -422,7 +427,8 @@ export default function LessonPlayerPage() {
         } else {
           setTopicFlashcardCount(0)
           setTopicSubjectId(null)
-          setQuizPassed(!foundLesson.quiz_required)
+          // If no topic linked, allow completion even if quiz_required (misconfigured lesson)
+          setQuizPassed(!foundLesson.quiz_required || !foundLesson.quiz_id)
         }
 
         const { data: attData } = await supabase
@@ -1478,7 +1484,7 @@ export default function LessonPlayerPage() {
                       Quiz
                     </button>
                   )}
-                  {lessonData?.topic_id && topicFlashcardCount > 0 && (
+                  {lessonData?.topic_id && topicFlashcardCount > 0 && topicSubjectId && (
                     <button
                       onClick={() => navigate(`/flashcards/${topicSubjectId}/${lessonData.topic_id}/study?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)}
                       className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"

@@ -313,6 +313,7 @@ function SortableLessonItem({
   onOpenVideoPicker,
   allSubjects,
   allTopics,
+  allQuizzes,
 }: {
   lesson: LessonData
   lessonIndex: number
@@ -328,6 +329,18 @@ function SortableLessonItem({
 }) {
   const [expanded, setExpanded] = useState(lesson.isNew || false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Local subject state for cascade (subject is not stored in DB, derived from topic)
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(() => {
+    if (lesson.quiz_id) {
+      const q = allQuizzes.find(q => q.id === lesson.quiz_id)
+      if (q) return allTopics.find(t => t.id === q.topic_id)?.subject_id || ''
+    }
+    if (lesson.topic_id) {
+      return allTopics.find(t => t.id === lesson.topic_id)?.subject_id || ''
+    }
+    return ''
+  })
 
   const {
     attributes,
@@ -481,13 +494,8 @@ function SortableLessonItem({
           <div className="space-y-2">
             <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Quiz da Aula</label>
             {(() => {
-              const selectedQuiz = allQuizzes.find(q => q.id === lesson.quiz_id)
-              const selectedTopic = selectedQuiz ? allTopics.find(t => t.id === selectedQuiz.topic_id) : lesson.topic_id ? allTopics.find(t => t.id === lesson.topic_id) : null
-              const selectedSubject = selectedTopic ? allSubjects.find(s => s.id === selectedTopic.subject_id) : null
-              const currentSubjectId = selectedSubject?.id || ''
-              const currentTopicId = selectedTopic?.id || ''
-
-              const filteredTopics = currentSubjectId ? allTopics.filter(t => t.subject_id === currentSubjectId) : []
+              const currentTopicId = lesson.topic_id || ''
+              const filteredTopics = selectedSubjectId ? allTopics.filter(t => t.subject_id === selectedSubjectId) : []
               const filteredQuizzes = currentTopicId ? allQuizzes.filter(q => q.topic_id === currentTopicId) : []
 
               return (
@@ -495,12 +503,11 @@ function SortableLessonItem({
                   {/* Matéria */}
                   <select
                     className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs"
-                    value={currentSubjectId}
+                    value={selectedSubjectId}
                     onChange={(e) => {
-                      // Reset topic and quiz when subject changes
+                      setSelectedSubjectId(e.target.value)
                       onUpdate('topic_id', null)
                       onUpdate('quiz_id', null)
-                      // Force re-render by setting topic to trigger cascade
                     }}
                   >
                     <option value="">Matéria...</option>
@@ -517,7 +524,7 @@ function SortableLessonItem({
                       onUpdate('topic_id', e.target.value || null)
                       onUpdate('quiz_id', null)
                     }}
-                    disabled={!currentSubjectId}
+                    disabled={!selectedSubjectId}
                   >
                     <option value="">Conteúdo...</option>
                     {filteredTopics.map(t => (
@@ -532,7 +539,6 @@ function SortableLessonItem({
                     onChange={(e) => {
                       const qId = e.target.value || null
                       onUpdate('quiz_id', qId)
-                      // Auto-set topic_id from the selected quiz
                       if (qId) {
                         const q = allQuizzes.find(quiz => quiz.id === qId)
                         if (q) onUpdate('topic_id', q.topic_id)
@@ -1183,6 +1189,7 @@ export default function AdminCourseEditorPage() {
             if (error) throw error
             savedLessonId = newLesson.id
           } else {
+            const pdfIdForUpdate = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
             const { error } = await supabase
               .from('video_lessons')
               .update({
@@ -1194,7 +1201,7 @@ export default function AdminCourseEditorPage() {
                 is_active: lesson.is_active,
                 is_preview: lesson.is_preview,
                 order_index: li,
-                accompanying_pdf_attachment_id: lesson.accompanying_pdf_attachment_id || null,
+                accompanying_pdf_attachment_id: pdfIdForUpdate || null,
                 topic_id: lesson.topic_id || null,
                 quiz_id: lesson.quiz_id || null,
                 quiz_required: lesson.quiz_required,

@@ -25,7 +25,9 @@ export const useAuth = () => {
   const isStudent = effectiveRole === 'student'
   const realRole = auth.profile?.role
   // When impersonating a specific student, use their ID for data queries
-  const effectiveUserId = impersonatedStudent?.id || auth.profile?.id || null
+  const effectiveUserId = (viewingAsStudent && impersonatedStudent)
+    ? impersonatedStudent.id
+    : auth.profile?.id || null
 
   // Helper functions
   const hasRole = (role: string | string[]) => {

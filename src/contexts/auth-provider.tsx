@@ -246,8 +246,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(newSession)
 
     if (newSession?.user) {
-      // Skip if already fetched or currently fetching
-      if (profileFetchAttemptedRef.current && profileRef.current) {
+      // Skip if already fetched for the SAME user, or currently fetching
+      if (profileFetchAttemptedRef.current && profileRef.current && profileRef.current.id === newSession.user.id) {
         return
       }
 

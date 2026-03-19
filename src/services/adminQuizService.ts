@@ -510,13 +510,13 @@ const generateFlashcardsFromQuiz = async (quizId: string): Promise<void> => {
     const questions = await getQuizQuestions(quizId)
     if (questions.length === 0) return
 
-    // Delete existing auto-generated flashcards for this topic from this quiz
-    // We use source_type='quiz_auto' to identify auto-generated ones
+    // Delete existing auto-generated flashcards for THIS SPECIFIC quiz only
+    // source_type='quiz_auto' + source_exam=quizId scopes the delete
     await supabase
       .from('flashcards')
       .delete()
-      .eq('topic_id', quiz.topic_id)
       .eq('source_type', 'quiz_auto')
+      .eq('source_exam', quizId)
 
     // Build flashcards from questions
     const flashcards = questions.map((q) => {
@@ -534,6 +534,7 @@ const generateFlashcardsFromQuiz = async (quizId: string): Promise<void> => {
         topic_id: quiz.topic_id!,
         created_by_user_id: quiz.created_by_user_id,
         source_type: 'quiz_auto',
+        source_exam: quizId,
         difficulty: 3,
       }
     })
