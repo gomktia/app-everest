@@ -322,6 +322,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfile(cached)
           setProfileFetchAttempted(true)
 
+          // Track last seen on cached init
+          supabase.rpc('update_last_seen', { p_user_id: cached.id }).then(() => {}, () => {})
+
           // Refresh both in background (non-blocking)
           supabase.auth.getSession().then(({ data }) => {
             if (data.session && mounted) {
