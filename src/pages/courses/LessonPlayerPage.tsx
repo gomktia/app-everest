@@ -188,6 +188,7 @@ export default function LessonPlayerPage() {
 
   // Topic-linked quizzes & flashcards
   const [topicQuizCount, setTopicQuizCount] = useState(0)
+  const [topicQuizIds, setTopicQuizIds] = useState<string[]>([])
   const [topicFlashcardCount, setTopicFlashcardCount] = useState(0)
   const [topicSubjectId, setTopicSubjectId] = useState<string | null>(null)
   const [quizPassed, setQuizPassed] = useState(false)
@@ -402,6 +403,7 @@ export default function LessonPlayerPage() {
             supabase.from('quizzes').select('id').eq('topic_id', foundLesson.topic_id).or('type.eq.quiz,type.is.null'),
           ])
           setTopicQuizCount(qCount || 0)
+          setTopicQuizIds((topicQuizzes || []).map(q => q.id))
           setTopicFlashcardCount(fCount || 0)
           setTopicSubjectId(topicData?.subject_id || null)
 
@@ -421,6 +423,7 @@ export default function LessonPlayerPage() {
           }
         } else {
           setTopicQuizCount(0)
+          setTopicQuizIds([])
           setTopicFlashcardCount(0)
           setTopicSubjectId(null)
           setQuizPassed(true)
@@ -1362,8 +1365,13 @@ export default function LessonPlayerPage() {
                     {lessonData.quiz_required && !quizPassed && !lessonData.completed ? (
                       <button
                         onClick={() => {
-                          if (topicQuizCount > 0 && topicSubjectId) {
-                            navigate(`/quizzes/${topicSubjectId}?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)
+                          if (topicQuizCount > 0) {
+                            const returnPath = encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)
+                            if (topicQuizIds.length === 1) {
+                              navigate(`/quiz/${topicQuizIds[0]}?returnTo=${returnPath}`)
+                            } else {
+                              navigate(`/quizzes/${topicSubjectId}?returnTo=${returnPath}`)
+                            }
                           } else {
                             toast({ title: 'Quiz obrigatório', description: 'Esta aula exige aprovação no quiz para ser concluída, mas nenhum quiz foi vinculado ainda.', variant: 'destructive' })
                           }
@@ -1472,12 +1480,19 @@ export default function LessonPlayerPage() {
                   </button>
                   {lessonData?.topic_id && topicQuizCount > 0 && (
                     <button
-                      onClick={() => navigate(`/quizzes/${topicSubjectId}?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)}
+                      onClick={() => {
+                        const returnPath = encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)
+                        if (topicQuizIds.length === 1) {
+                          navigate(`/quiz/${topicQuizIds[0]}?returnTo=${returnPath}`)
+                        } else {
+                          navigate(`/quizzes/${topicSubjectId}?returnTo=${returnPath}`)
+                        }
+                      }}
                       className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"
                     >
                       <HelpCircle className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
-                      Quizzes
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted min-w-[18px] text-center">{topicQuizCount}</span>
+                      {topicQuizCount === 1 ? 'Quiz' : 'Quizzes'}
+                      {topicQuizCount > 1 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted min-w-[18px] text-center">{topicQuizCount}</span>}
                     </button>
                   )}
                   {lessonData?.topic_id && topicFlashcardCount > 0 && (
