@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft, Trash, Upload, Download, Loader2, BookOpen, Plus, Pencil } from 'lucide-react'
+import { ArrowLeft, Trash, Upload, Download, Loader2, BookOpen, Plus, Pencil, Search } from 'lucide-react'
 import { useRef, useState, useEffect } from 'react'
 import { useToast } from '@/components/ui/use-toast'
 import {
@@ -36,8 +36,12 @@ import {
   createReadingText,
   updateReadingText,
   deleteReadingText,
+  getAllQuestions,
   type ReadingText
 } from '@/services/adminQuizService'
+import { supabase } from '@/lib/supabase/client'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import { SectionLoader } from '@/components/SectionLoader'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 
@@ -72,6 +76,16 @@ export default function AdminQuizQuestionsPage() {
 
   // State for Reading Text Dialog
   const [isTextDialogOpen, setIsTextDialogOpen] = useState(false)
+
+  // Bank import state
+  const [bankOpen, setBankOpen] = useState(false)
+  const [bankQuestions, setBankQuestions] = useState<any[]>([])
+  const [bankSubjects, setBankSubjects] = useState<{ id: string; name: string }[]>([])
+  const [bankTopics, setBankTopics] = useState<{ id: string; name: string; subject_id: string }[]>([])
+  const [bankFilterSubject, setBankFilterSubject] = useState('all')
+  const [bankFilterTopic, setBankFilterTopic] = useState('all')
+  const [bankSelected, setBankSelected] = useState<Set<string>>(new Set())
+  const [bankLoading, setBankLoading] = useState(false)
   const [editingText, setEditingText] = useState<ReadingText | null>(null)
   const [textFormTitle, setTextFormTitle] = useState('')
   const [textFormContent, setTextFormContent] = useState('')
@@ -177,6 +191,43 @@ export default function AdminQuizQuestionsPage() {
       setTextFormContent('')
     }
     setIsTextDialogOpen(true)
+  }
+
+  const openBank = async () => {
+    setBankOpen(true)
+    setBankSelected(new Set())
+    setBankFilterSubject('all')
+    setBankFilterTopic('all')
+    if (bankQuestions.length > 0) return
+    try {
+      setBankLoading(true)
+      const [questions, { data: subjects }, { data: topics }] = await Promise.all([
+        getAllQuestions(),
+        supabase.from('subjects').select('id, name').order('name'),
+        supabase.from('topics').select('id, name, subject_id').order('name'),
+      ])
+      setBankQuestions(questions || [])
+      setBankSubjects(subjects || [])
+      setBankTopics(topics || [])
+    } catch { toast({ title: 'Erro ao carregar questões', variant: 'destructive' }) }
+    finally { setBankLoading(false) }
+  }
+
+  const importFromBank = () => {
+    const toImport = bankQuestions
+      .filter(q => bankSelected.has(q.id))
+      .map(q => ({
+        question_text: q.question_text,
+        options: Array.isArray(q.options) ? q.options : [],
+        correct_answer: q.correct_answer || '',
+        explanation: q.explanation || '',
+        points: q.points || 1,
+        reading_text_id: null,
+      }))
+    if (toImport.length === 0) { setBankOpen(false); return }
+    for (const q of toImport) { append(q) }
+    toast({ title: `${toImport.length} questões importadas do banco` })
+    setBankOpen(false)
   }
 
   const onSubmit = async (data: QuizQuestionsFormValues) => {
@@ -345,6 +396,13 @@ export default function AdminQuizQuestionsPage() {
               <Button
                 type="button"
                 variant="outline"
+                onClick={openBank}
+              >
+                <Search className="mr-2 h-4 w-4" /> Banco de Questões
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsTextDialogOpen(true)}
               >
                 <BookOpen className="mr-2 h-4 w-4" /> Textos de Apoio
@@ -492,6 +550,79 @@ export default function AdminQuizQuestionsPage() {
           </Button>
         </form>
       </Form>
+
+      {/* Bank Import Dialog */}
+      <Dialog open={bankOpen} onOpenChange={setBankOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Importar do Banco de Questões</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-3 mb-3">
+            <Select value={bankFilterSubject} onValueChange={(v) => { setBankFilterSubject(v); setBankFilterTopic('all') }}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Matéria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Matérias</SelectItem>
+                {bankSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={bankFilterTopic} onValueChange={setBankFilterTopic}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Tópico" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Tópicos</SelectItem>
+                {bankTopics
+                  .filter(t => bankFilterSubject === 'all' || t.subject_id === bankFilterSubject)
+                  .map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)
+                }
+              </SelectContent>
+            </Select>
+            {bankSelected.size > 0 && <Badge className="ml-auto self-center">{bankSelected.size} selecionadas</Badge>}
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
+            {bankLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+            ) : (() => {
+              const filtered = bankQuestions.filter(q => {
+                if (bankFilterSubject !== 'all' && q.topics?.subjects?.id !== bankFilterSubject) return false
+                if (bankFilterTopic !== 'all' && q.topics?.id !== bankFilterTopic) return false
+                return true
+              })
+              if (filtered.length === 0) return <div className="text-center py-12 text-muted-foreground">Nenhuma questão encontrada.</div>
+              return filtered.map(q => (
+                <div
+                  key={q.id}
+                  onClick={() => setBankSelected(prev => {
+                    const next = new Set(prev)
+                    if (next.has(q.id)) next.delete(q.id); else next.add(q.id)
+                    return next
+                  })}
+                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${bankSelected.has(q.id) ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}
+                >
+                  <Checkbox checked={bankSelected.has(q.id)} className="mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm line-clamp-2">{q.question_text}</p>
+                    <div className="flex gap-2 mt-1">
+                      <span className="text-[10px] text-muted-foreground">{q.topics?.subjects?.name}</span>
+                      <span className="text-[10px] text-muted-foreground">·</span>
+                      <span className="text-[10px] text-muted-foreground">{q.topics?.name}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            })()}
+          </div>
+          <div className="flex justify-end gap-2 pt-3 border-t">
+            <Button variant="outline" onClick={() => setBankOpen(false)}>Cancelar</Button>
+            <Button onClick={importFromBank} disabled={bankSelected.size === 0}>
+              <Plus className="mr-2 h-4 w-4" />
+              Importar {bankSelected.size > 0 ? `(${bankSelected.size})` : ''}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
