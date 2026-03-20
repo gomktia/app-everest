@@ -106,7 +106,8 @@ export default function QuizResultSummaryPage() {
       id: q.id,
       question: q.question_text,
       correctAnswer: q.correct_answer,
-      options: q.options
+      options: q.options,
+      explanation: q.explanation,
     }))
   }
 

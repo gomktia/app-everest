@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { 
+import {
   CheckCircle,
   XCircle,
   Trophy,
@@ -14,8 +14,13 @@ import {
   ChevronRight,
   ArrowRight,
   RotateCcw,
-  Share2
+  Share2,
+  Lightbulb,
+  Sparkles,
+  Loader2
 } from 'lucide-react'
+import { aiAssistantService } from '@/services/ai/aiAssistantService'
+import { supabase } from '@/lib/supabase/client'
 import {
   Accordion,
   AccordionContent,
@@ -30,6 +35,7 @@ interface Question {
   question: string
   correctAnswer: string
   options: string[]
+  explanation?: string
 }
 
 interface Topic {
@@ -55,7 +61,31 @@ export const QuizResult = ({
   durationSeconds,
 }: QuizResultProps) => {
   const [isShareOpen, setIsShareOpen] = useState(false)
-  
+  const [aiExplanations, setAiExplanations] = useState<Record<string | number, string>>({})
+  const [loadingExplanation, setLoadingExplanation] = useState<Record<string | number, boolean>>({})
+
+  const handleExplainWithAI = async (q: Question) => {
+    setLoadingExplanation(prev => ({ ...prev, [q.id]: true }))
+    try {
+      const result = await aiAssistantService.explainQuestion({
+        question_text: q.question,
+        options: q.options,
+        correct_answer: q.correctAnswer,
+        question_type: 'multiple_choice',
+      })
+      setAiExplanations(prev => ({ ...prev, [q.id]: result.explanation }))
+      // Persist to database if the question has a numeric/string id
+      await supabase
+        .from('quiz_questions')
+        .update({ explanation: result.explanation })
+        .eq('id', q.id)
+    } catch {
+      // silently fail — user can retry
+    } finally {
+      setLoadingExplanation(prev => ({ ...prev, [q.id]: false }))
+    }
+  }
+
   const { questions } = topic
   const score = questions.reduce((acc, question) => {
     return answers[question.id] === question.correctAnswer ? acc + 1 : acc
@@ -237,6 +267,41 @@ export const QuizResult = ({
                             </div>
                           )}
                         </div>
+
+                        {/* Explanation block */}
+                        {(() => {
+                          const explanation = q.explanation || aiExplanations[q.id]
+                          if (explanation) {
+                            return (
+                              <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Lightbulb className="h-4 w-4 text-blue-500" />
+                                  <span className="text-sm font-semibold text-blue-600">Explicação</span>
+                                </div>
+                                <p className="text-sm text-foreground leading-relaxed">{explanation}</p>
+                              </div>
+                            )
+                          }
+                          if (!isCorrect) {
+                            return (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2 text-blue-600 border-blue-500/30 hover:bg-blue-500/10"
+                                onClick={() => handleExplainWithAI(q)}
+                                disabled={loadingExplanation[q.id]}
+                              >
+                                {loadingExplanation[q.id] ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Sparkles className="h-4 w-4" />
+                                )}
+                                {loadingExplanation[q.id] ? 'Gerando explicação...' : 'Explicar com IA'}
+                              </Button>
+                            )
+                          }
+                          return null
+                        })()}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
