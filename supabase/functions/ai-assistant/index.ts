@@ -9,7 +9,7 @@ const corsHeaders = {
 // Types
 // ============================================================
 
-type Action = 'audit_questions' | 'explain_question' | 'generate_quiz' | 'lesson_chat' | 'study_plan'
+type Action = 'audit_questions' | 'explain_question' | 'generate_quiz' | 'lesson_chat' | 'study_plan' | 'generate_mind_map'
 
 interface RequestBody {
   action: Action
@@ -40,6 +40,9 @@ interface RequestBody {
   performance?: Record<string, unknown>
   available_hours_per_week?: number
   target_exam?: string
+  // generate_mind_map
+  subject_name?: string
+  topic_name?: string
 }
 
 interface Provider {
@@ -128,6 +131,7 @@ Deno.serve(async (req) => {
         generate_quiz: 'quiz_gen',
         lesson_chat: 'lesson_chat',
         study_plan: 'study_plan',
+        generate_mind_map: 'quiz_gen', // shares quiz_gen toggle
       }
       const featureKey = actionToSettingsKey[body.action] ?? body.action
       if (settings[featureKey] === false) {
@@ -178,9 +182,12 @@ Deno.serve(async (req) => {
       case 'study_plan':
         ;({ result, usage } = await handleStudyPlan(provider as Provider, body))
         break
+      case 'generate_mind_map':
+        ;({ result, usage } = await handleGenerateMindMap(provider as Provider, body))
+        break
       default:
         return new Response(
-          JSON.stringify({ error: `Ação inválida: ${(body as RequestBody).action}. Use: audit_questions, explain_question, generate_quiz, lesson_chat, study_plan.` }),
+          JSON.stringify({ error: `Ação inválida: ${(body as RequestBody).action}. Use: audit_questions, explain_question, generate_quiz, lesson_chat, study_plan, generate_mind_map.` }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
@@ -191,12 +198,14 @@ Deno.serve(async (req) => {
     const costEstimateBrl = (tokensIn * 0.0000004) + (tokensOut * 0.0000016)
 
     // Map action names to CHECK constraint values: 'audit','explain','quiz_gen','lesson_chat','study_plan'
+    // Note: generate_mind_map logs as 'quiz_gen' to satisfy the existing CHECK constraint
     const actionToFeature: Record<string, string> = {
       audit_questions: 'audit',
       explain_question: 'explain',
       generate_quiz: 'quiz_gen',
       lesson_chat: 'lesson_chat',
       study_plan: 'study_plan',
+      generate_mind_map: 'quiz_gen',
     }
     await supabase.from('ai_usage_log').insert({
       user_id: userId,
@@ -519,6 +528,58 @@ Retorne um JSON com esta estrutura exata:
 }
 
 O cronograma deve ser realista para ${body.available_hours_per_week}h/semana, priorizando matérias com maior peso no ${targetExam} e maior dificuldade do aluno.`
+
+  const { text, usage } = await callGeminiJson(provider, systemPrompt, userPrompt)
+  const result = parseJsonResponse(text)
+  return { result, usage }
+}
+
+async function handleGenerateMindMap(
+  provider: Provider,
+  body: RequestBody
+): Promise<{ result: Record<string, unknown>; usage: GeminiUsage }> {
+  if (!body.content_text) {
+    throw new Error('Campo obrigatório: content_text')
+  }
+
+  const systemPrompt = `Você é um especialista em criar mapas mentais para concursos brasileiros (CIAAR, CEBRASPE, PRF, PF).
+Crie mapas mentais claros, hierárquicos e focados nos pontos mais cobrados em provas.
+Responda EXCLUSIVAMENTE com JSON válido, sem markdown, sem texto adicional.`
+
+  const userPrompt = `Crie um mapa mental estruturado sobre "${body.topic_name || 'o conteúdo abaixo'}" da matéria "${body.subject_name || 'Geral'}".
+
+Regras:
+- Organize hierarquicamente: tema principal → subtemas → detalhes
+- Cada nó tem: id (string numérica como "1", "1.1", "1.1.2"), label (título curto), detail (explicação 1-2 frases), type, children
+- Types possíveis: concept (conceito teórico), example (exemplo prático), exception (exceção à regra), tip (dica de estudo/prova), rule (regra importante), warning (pegadinha/cuidado)
+- Máximo 4 níveis de profundidade
+- Foque nos pontos mais cobrados em concursos
+- Inclua exemplos práticos e pegadinhas comuns
+- Mínimo 15 nós, máximo 60 nós
+
+Retorne JSON:
+{
+  "nodes": [
+    {
+      "id": "1",
+      "label": "Título do tema",
+      "type": "concept",
+      "detail": "Explicação geral",
+      "children": [
+        {
+          "id": "1.1",
+          "label": "Subtema",
+          "type": "concept",
+          "detail": "Explicação do subtema",
+          "children": [...]
+        }
+      ]
+    }
+  ]
+}
+
+CONTEÚDO:
+${body.content_text}`
 
   const { text, usage } = await callGeminiJson(provider, systemPrompt, userPrompt)
   const result = parseJsonResponse(text)
