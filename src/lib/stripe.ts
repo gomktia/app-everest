@@ -1,9 +1,10 @@
 import { loadStripe } from '@stripe/stripe-js'
+import { logger } from '@/lib/logger'
 
 const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
 
 if (!publishableKey) {
-  console.warn('VITE_STRIPE_PUBLISHABLE_KEY not set')
+  logger.warn('VITE_STRIPE_PUBLISHABLE_KEY not set')
 }
 
 export const stripePromise = publishableKey ? loadStripe(publishableKey) : null

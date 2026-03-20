@@ -273,70 +273,91 @@ export const audioLessonService = {
       }
       if (!courses || courses.length === 0) return []
 
-      // Get modules and lessons for these courses
-      const result: EvercastCourse[] = await Promise.all(
-        courses.map(async (course) => {
-          const { data: modules } = await supabase
-            .from('video_modules')
-            .select('id, name, order_index')
-            .eq('course_id', course.id)
-            .eq('is_active', true)
-            .order('order_index')
+      // Batch fetch all modules for all courses in one query
+      const allCourseIds = courses.map(c => c.id)
+      const { data: allModules } = await supabase
+        .from('video_modules')
+        .select('id, name, order_index, course_id')
+        .in('course_id', allCourseIds)
+        .eq('is_active', true)
+        .order('order_index')
 
-          const moduleIds = modules?.map(m => m.id) || []
-          let lessons: any[] = []
+      const allModuleIds = allModules?.map(m => m.id) || []
 
-          if (moduleIds.length > 0) {
-            const { data: lessonData } = await supabase
-              .from('video_lessons')
-              .select('id, title, description, duration_seconds, module_id, order_index, video_source_id, video_source_type, is_preview')
-              .in('module_id', moduleIds)
-              .eq('is_active', true)
-              .not('video_source_id', 'is', null)
-              .order('order_index')
+      // Batch fetch all lessons for all modules in one query
+      let allLessons: any[] = []
+      if (allModuleIds.length > 0) {
+        const { data: lessonData } = await supabase
+          .from('video_lessons')
+          .select('id, title, description, duration_seconds, module_id, order_index, video_source_id, video_source_type, is_preview')
+          .in('module_id', allModuleIds)
+          .eq('is_active', true)
+          .not('video_source_id', 'is', null)
+          .order('order_index')
 
-            lessons = lessonData || []
-          }
+        allLessons = lessonData || []
+      }
 
-          const evercastModules: EvercastModule[] = (modules || []).map(mod => ({
+      // Group modules by course_id and lessons by module_id in-memory
+      const modulesByCourse = new Map<string, typeof allModules>()
+      for (const mod of allModules || []) {
+        const existing = modulesByCourse.get(mod.course_id) || []
+        existing.push(mod)
+        modulesByCourse.set(mod.course_id, existing)
+      }
+
+      const lessonsByModule = new Map<string, typeof allLessons>()
+      for (const lesson of allLessons) {
+        const existing = lessonsByModule.get(lesson.module_id) || []
+        existing.push(lesson)
+        lessonsByModule.set(lesson.module_id, existing)
+      }
+
+      // Assemble result from in-memory data
+      const result: EvercastCourse[] = courses.map((course) => {
+        const modules = modulesByCourse.get(course.id) || []
+        const courseLessons: any[] = []
+
+        const evercastModules: EvercastModule[] = modules.map(mod => {
+          const modLessons = lessonsByModule.get(mod.id) || []
+          courseLessons.push(...modLessons)
+          return {
             id: mod.id,
             name: mod.name,
             order_index: mod.order_index,
-            lessons: lessons
-              .filter(l => l.module_id === mod.id)
-              .map(l => ({
-                id: `video_${l.id}`,
-                lesson_id: l.id,
-                title: l.title,
-                description: l.description || '',
-                series: course.name,
-                module_id: l.module_id,
-                duration_minutes: l.duration_seconds ? Math.round(l.duration_seconds / 60) : 0,
-                audio_url: l.video_source_id
-                  ? `https://b-vz-d0b3ae60-2ea.tv.pandavideo.com.br/${l.video_source_id}/playlist.m3u8`
-                  : undefined,
-                audio_source_type: 'panda_video_hls' as const,
-                thumbnail_url: course.thumbnail_url || undefined,
-                is_preview: l.is_preview || false,
-                created_at: undefined,
-              }))
-          }))
-
-          const totalLessons = lessons.length
-          const totalDuration = lessons.reduce((sum: number, l: any) => sum + (l.duration_seconds || 0), 0)
-
-          return {
-            id: course.id,
-            name: course.name,
-            description: course.description,
-            thumbnail_url: course.thumbnail_url,
-            sales_url: (course as any).sales_url || null,
-            modules: evercastModules,
-            total_lessons: totalLessons,
-            total_duration_minutes: Math.round(totalDuration / 60),
+            lessons: modLessons.map(l => ({
+              id: `video_${l.id}`,
+              lesson_id: l.id,
+              title: l.title,
+              description: l.description || '',
+              series: course.name,
+              module_id: l.module_id,
+              duration_minutes: l.duration_seconds ? Math.round(l.duration_seconds / 60) : 0,
+              audio_url: l.video_source_id
+                ? `https://b-vz-d0b3ae60-2ea.tv.pandavideo.com.br/${l.video_source_id}/playlist.m3u8`
+                : undefined,
+              audio_source_type: 'panda_video_hls' as const,
+              thumbnail_url: course.thumbnail_url || undefined,
+              is_preview: l.is_preview || false,
+              created_at: undefined,
+            }))
           }
         })
-      )
+
+        const totalLessons = courseLessons.length
+        const totalDuration = courseLessons.reduce((sum: number, l: any) => sum + (l.duration_seconds || 0), 0)
+
+        return {
+          id: course.id,
+          name: course.name,
+          description: course.description,
+          thumbnail_url: course.thumbnail_url,
+          sales_url: (course as any).sales_url || null,
+          modules: evercastModules,
+          total_lessons: totalLessons,
+          total_duration_minutes: Math.round(totalDuration / 60),
+        }
+      })
 
       return result
     } catch (error) {
