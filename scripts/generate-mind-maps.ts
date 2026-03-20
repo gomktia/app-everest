@@ -127,6 +127,36 @@ function findPDFs(dir: string): { filePath: string; topicName: string }[] {
   return results
 }
 
+// ─── JSON Parser with fixup ─────────────────────────────
+
+function tryParseJson(text: string): any {
+  // Remove markdown wrappers
+  let json = text.trim()
+  const codeBlock = json.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (codeBlock) json = codeBlock[1].trim()
+
+  // Try direct parse
+  try { return JSON.parse(json) } catch {}
+
+  // Try to fix common Gemini JSON issues:
+  // 1. Trailing commas before ] or }
+  let fixed = json.replace(/,\s*([\]}])/g, '$1')
+  try { return JSON.parse(fixed) } catch {}
+
+  // 2. Unescaped quotes in strings — try replacing smart quotes
+  fixed = fixed.replace(/[""]/g, '"').replace(/['']/g, "'")
+  try { return JSON.parse(fixed) } catch {}
+
+  // 3. Try extracting the largest JSON object
+  const match = json.match(/\{[\s\S]*\}/)
+  if (match) {
+    const extracted = match[0].replace(/,\s*([\]}])/g, '$1')
+    try { return JSON.parse(extracted) } catch {}
+  }
+
+  return null
+}
+
 // ─── Main ───────────────────────────────────────────────
 
 async function main() {
@@ -197,25 +227,20 @@ Retorne JSON:
 CONTEÚDO:
 ${text}`
 
-      const responseText = await callGemini(prompt, systemPrompt)
-
-      // 3. Parse JSON
-      let parsed: any
-      try {
-        parsed = JSON.parse(responseText)
-      } catch {
-        // Try to extract JSON from markdown
-        const match = responseText.match(/```(?:json)?\s*([\s\S]*?)```/)
-        if (match) {
-          parsed = JSON.parse(match[1].trim())
-        } else {
-          const jsonMatch = responseText.match(/[\[{][\s\S]*[\]}]/)
-          parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+      // 3. Call Gemini with retry on JSON parse failure
+      let parsed: any = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const responseText = await callGemini(prompt, systemPrompt)
+        parsed = tryParseJson(responseText)
+        if (parsed?.nodes) break
+        if (attempt < 2) {
+          console.log(`  ⚠️ JSON inválido, tentativa ${attempt + 2}/3...`)
+          await new Promise(r => setTimeout(r, 1500))
         }
       }
 
       if (!parsed || !parsed.nodes) {
-        console.log(`  ❌ Gemini não retornou JSON válido`)
+        console.log(`  ❌ Gemini não retornou JSON válido após 3 tentativas`)
         failed++
         continue
       }
