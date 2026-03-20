@@ -141,7 +141,7 @@ export const dashboardService = {
           event.event_type === 'ESSAY_DEADLINE' ? 'deadline' : 'exam'
       })) || []
     } catch (error) {
-      logger.error('Erro ao buscar eventos:', error)
+      logger.warn('Erro ao buscar eventos:', error)
       return []
     }
   },

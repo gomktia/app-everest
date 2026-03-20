@@ -90,7 +90,7 @@ export const rankingService = {
       if (error) throw error
       return data || []
     } catch (error) {
-      logger.error('Erro ao buscar ranking de usuários:', error)
+      logger.warn('Erro ao buscar ranking de usuários:', error)
       return []
     }
   },
@@ -105,7 +105,7 @@ export const rankingService = {
       if (error) throw error
       return data?.[0] || null
     } catch (error) {
-      logger.error('Erro ao buscar posição do usuário:', error)
+      logger.warn('Erro ao buscar posição do usuário:', error)
       return null
     }
   },
@@ -121,7 +121,7 @@ export const rankingService = {
       if (error) throw error
       return data || []
     } catch (error) {
-      logger.error('Erro ao buscar ranking por atividade:', error)
+      logger.warn('Erro ao buscar ranking por atividade:', error)
       return []
     }
   },

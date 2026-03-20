@@ -1266,7 +1266,7 @@ export default function AdminCourseEditorPage() {
         navigate(`/admin/courses/${savedCourseId}/edit`, { replace: true })
       }
     } catch (err) {
-      logger.error('Error saving course:', err)
+      logger.warn('Error saving course:', err)
       toast({ title: 'Erro ao salvar', description: 'Tente novamente.', variant: 'destructive' })
     } finally {
       setSaving(false)

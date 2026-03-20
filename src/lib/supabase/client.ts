@@ -10,7 +10,7 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ||
                                 import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  logger.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables')
+  logger.warn('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables')
 }
 
 // Create client with error handling and better timeout configuration

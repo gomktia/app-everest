@@ -49,5 +49,8 @@ Sentry.init({
     'Auth session missing',
     'AuthRetryableFetchError',
     'Invalid login credentials',
+    // Supabase client init (missing env vars on stale cache)
+    'supabaseUrl is required',
+    'Missing VITE_SUPABASE_URL',
   ],
 })
