@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/components/ui/use-toast'
 import { StudyPlannerTutorial } from '@/components/study-planner/StudyPlannerTutorial'
+import { AIStudyPlanGenerator } from '@/components/study-planner/AIStudyPlanGenerator'
 import {
   Play,
   Pause,
@@ -27,7 +28,7 @@ import {
   Volume2,
   VolumeX,
   Zap,
-
+  Sparkles,
   Search,
   Filter,
   Bell,
@@ -97,6 +98,7 @@ export default function StudyPlannerPage() {
 
   const [activeTab, setActiveTab] = useState<'planner' | 'timer' | 'history'>('planner')
   const [isLoading, setIsLoading] = useState(true)
+  const [showAIPlan, setShowAIPlan] = useState(false)
 
   // Tutorial states
   const [showTutorial, setShowTutorial] = useState(false)
@@ -564,6 +566,14 @@ export default function StudyPlannerPage() {
             <HelpCircle className="h-5 w-5" />
           </Button>
           <Button
+            variant="outline"
+            onClick={() => setShowAIPlan(true)}
+            aria-label="Gerar plano de estudos com IA"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            Gerar com IA
+          </Button>
+          <Button
             onClick={() => { setEditingTopic(null); setShowAddModal(true); }}
             className="flex-1 md:flex-none hover:bg-green-600"
             aria-label="Adicionar novo conteúdo de estudo"
@@ -930,6 +940,13 @@ export default function StudyPlannerPage() {
         open={showTutorial}
         onOpenChange={setShowTutorial}
         onComplete={handleTutorialComplete}
+      />
+
+      {/* AI Study Plan Generator */}
+      <AIStudyPlanGenerator
+        open={showAIPlan}
+        onOpenChange={setShowAIPlan}
+        userId={user?.id ?? ''}
       />
     </div>
   )
