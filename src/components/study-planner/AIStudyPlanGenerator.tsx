@@ -33,20 +33,26 @@ type Phase = 'config' | 'loading' | 'results'
 
 interface DiagnosisItem {
   subject: string
-  accuracy: number
-  level: 'weak' | 'medium' | 'strong'
-  recommendation: string
+  accuracy?: number
+  accuracy_percent?: number
+  level: string
+  priority?: string
+  recommendation?: string
+  observation?: string
 }
 
 interface StudyBlock {
   subject: string
-  hours: number
+  hours?: number
+  duration_minutes?: number
   focus: string
+  technique?: string
 }
 
 interface DaySchedule {
   day: string
-  blocks: StudyBlock[]
+  blocks?: StudyBlock[]
+  sessions?: StudyBlock[]
 }
 
 interface StudyPlanResult {
@@ -55,10 +61,12 @@ interface StudyPlanResult {
   tips: string[]
 }
 
-function levelBadge(level: 'weak' | 'medium' | 'strong') {
-  if (level === 'weak') return <Badge variant="destructive">Fraco</Badge>
-  if (level === 'medium') return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">Médio</Badge>
-  return <Badge className="bg-green-600 hover:bg-green-700 text-white">Forte</Badge>
+function levelBadge(level: string) {
+  const l = level?.toLowerCase()
+  if (l === 'weak' || l === 'fraco') return <Badge variant="destructive">Fraco</Badge>
+  if (l === 'medium' || l === 'regular' || l === 'médio') return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">Médio</Badge>
+  if (l === 'strong' || l === 'bom' || l === 'excelente') return <Badge className="bg-green-600 hover:bg-green-700 text-white">Forte</Badge>
+  return <Badge variant="outline">{level}</Badge>
 }
 
 export function AIStudyPlanGenerator({ open, onOpenChange, userId }: Props) {
@@ -258,12 +266,14 @@ export function AIStudyPlanGenerator({ open, onOpenChange, userId }: Props) {
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <span className="font-medium text-sm truncate">{item.subject}</span>
                         {levelBadge(item.level)}
-                        <span className="text-xs text-muted-foreground ml-auto sm:ml-0 shrink-0">
-                          {item.accuracy}% acerto
-                        </span>
+                        {(item.accuracy ?? item.accuracy_percent) != null && (
+                          <span className="text-xs text-muted-foreground ml-auto sm:ml-0 shrink-0">
+                            {item.accuracy ?? item.accuracy_percent}% acerto
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground sm:border-l sm:pl-3 sm:ml-3">
-                        {item.recommendation}
+                        {item.recommendation || item.observation}
                       </p>
                     </CardContent>
                   </Card>
@@ -285,19 +295,24 @@ export function AIStudyPlanGenerator({ open, onOpenChange, userId }: Props) {
                       <span className="text-sm font-semibold text-foreground">{day.day}</span>
                     </div>
                     <div className="space-y-1.5 pl-5">
-                      {day.blocks.map((block, j) => (
-                        <div
-                          key={j}
-                          className="flex items-start gap-2 text-sm text-muted-foreground"
-                        >
-                          <span className="shrink-0 font-medium text-foreground">
-                            {block.hours}h
-                          </span>
-                          <span className="font-medium text-foreground">{block.subject}</span>
-                          <span>—</span>
-                          <span>{block.focus}</span>
-                        </div>
-                      ))}
+                      {(day.blocks || day.sessions || []).map((block, j) => {
+                        const hours = block.hours ?? (block.duration_minutes ? Math.round(block.duration_minutes / 60 * 10) / 10 : null)
+                        return (
+                          <div
+                            key={j}
+                            className="flex items-start gap-2 text-sm text-muted-foreground"
+                          >
+                            {hours != null && (
+                              <span className="shrink-0 font-medium text-foreground">
+                                {hours}h
+                              </span>
+                            )}
+                            <span className="font-medium text-foreground">{block.subject}</span>
+                            <span>—</span>
+                            <span>{block.focus}{block.technique ? ` (${block.technique})` : ''}</span>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 ))}

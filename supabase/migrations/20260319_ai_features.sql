@@ -59,5 +59,4 @@ VALUES (
     'cost_alert_threshold', 500
   )
 )
-ON CONFLICT (key) DO UPDATE
-  SET value = EXCLUDED.value;
+ON CONFLICT (key) DO NOTHING;

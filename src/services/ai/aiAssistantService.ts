@@ -168,7 +168,7 @@ export const aiAssistantService = {
     try {
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: {
-          action: 'generate_study_plan',
+          action: 'study_plan',
           ...params,
         },
       })

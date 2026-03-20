@@ -121,7 +121,15 @@ Deno.serve(async (req) => {
         )
       }
 
-      const featureKey = body.action
+      // Map action names to settings keys
+      const actionToSettingsKey: Record<string, string> = {
+        audit_questions: 'audit',
+        explain_question: 'audit', // shares audit toggle
+        generate_quiz: 'quiz_gen',
+        lesson_chat: 'lesson_chat',
+        study_plan: 'study_plan',
+      }
+      const featureKey = actionToSettingsKey[body.action] ?? body.action
       if (settings[featureKey] === false) {
         return new Response(
           JSON.stringify({ error: `A funcionalidade "${body.action}" está desativada pelo administrador.` }),
@@ -139,8 +147,9 @@ Deno.serve(async (req) => {
         .eq('user_id', userId)
         .gte('created_at', oneMinuteAgo)
 
-      // Default rate limit: 10 req/min; provider config may override
-      const rateLimitPerMinute = (provider as Provider).config?.rate_limit_per_minute as number ?? 10
+      // Rate limit from system_settings (ai_features.rate_limit_per_minute), default 10
+      const settings = aiSetting?.value ? (typeof aiSetting.value === 'string' ? JSON.parse(aiSetting.value) : aiSetting.value) : {}
+      const rateLimitPerMinute = settings.rate_limit_per_minute ?? 10
       if ((count ?? 0) >= rateLimitPerMinute) {
         return new Response(
           JSON.stringify({ error: 'Limite de requisições por minuto atingido. Aguarde um momento e tente novamente.' }),
@@ -181,9 +190,17 @@ Deno.serve(async (req) => {
     const tokensOut = usage.candidatesTokenCount
     const costEstimateBrl = (tokensIn * 0.0000004) + (tokensOut * 0.0000016)
 
+    // Map action names to CHECK constraint values: 'audit','explain','quiz_gen','lesson_chat','study_plan'
+    const actionToFeature: Record<string, string> = {
+      audit_questions: 'audit',
+      explain_question: 'explain',
+      generate_quiz: 'quiz_gen',
+      lesson_chat: 'lesson_chat',
+      study_plan: 'study_plan',
+    }
     await supabase.from('ai_usage_log').insert({
       user_id: userId,
-      feature: body.action,
+      feature: actionToFeature[body.action] ?? body.action,
       tokens_input: tokensIn,
       tokens_output: tokensOut,
       cost_estimate_brl: costEstimateBrl,
