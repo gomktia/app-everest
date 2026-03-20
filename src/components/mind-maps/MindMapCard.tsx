@@ -35,83 +35,83 @@ const colorStyles: Record<
 > = {
   blue: {
     root: 'from-blue-600 to-blue-500',
-    l1Bg: 'bg-blue-50 dark:bg-blue-950/20',
+    l1Bg: 'bg-blue-50 dark:bg-blue-950/60',
     l1Border: 'border-blue-500',
-    l2Border: 'border-blue-300',
-    l3Border: 'border-blue-200',
-    badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    chevron: 'text-blue-500',
-    count: 'text-blue-400 dark:text-blue-500',
+    l2Border: 'border-blue-400 dark:border-blue-500',
+    l3Border: 'border-blue-300 dark:border-blue-600',
+    badge: 'bg-blue-100 text-blue-700 dark:bg-blue-800/60 dark:text-blue-200',
+    chevron: 'text-blue-500 dark:text-blue-400',
+    count: 'text-blue-500 dark:text-blue-400',
   },
   purple: {
     root: 'from-purple-600 to-purple-500',
-    l1Bg: 'bg-purple-50 dark:bg-purple-950/20',
+    l1Bg: 'bg-purple-50 dark:bg-purple-950/60',
     l1Border: 'border-purple-500',
-    l2Border: 'border-purple-300',
-    l3Border: 'border-purple-200',
-    badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    chevron: 'text-purple-500',
-    count: 'text-purple-400 dark:text-purple-500',
+    l2Border: 'border-purple-400 dark:border-purple-500',
+    l3Border: 'border-purple-300 dark:border-purple-600',
+    badge: 'bg-purple-100 text-purple-700 dark:bg-purple-800/60 dark:text-purple-200',
+    chevron: 'text-purple-500 dark:text-purple-400',
+    count: 'text-purple-500 dark:text-purple-400',
   },
   red: {
     root: 'from-red-600 to-red-500',
-    l1Bg: 'bg-red-50 dark:bg-red-950/20',
+    l1Bg: 'bg-red-50 dark:bg-red-950/60',
     l1Border: 'border-red-500',
-    l2Border: 'border-red-300',
-    l3Border: 'border-red-200',
-    badge: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-    chevron: 'text-red-500',
-    count: 'text-red-400 dark:text-red-500',
+    l2Border: 'border-red-400 dark:border-red-500',
+    l3Border: 'border-red-300 dark:border-red-600',
+    badge: 'bg-red-100 text-red-700 dark:bg-red-800/60 dark:text-red-200',
+    chevron: 'text-red-500 dark:text-red-400',
+    count: 'text-red-500 dark:text-red-400',
   },
   emerald: {
     root: 'from-emerald-600 to-emerald-500',
-    l1Bg: 'bg-emerald-50 dark:bg-emerald-950/20',
+    l1Bg: 'bg-emerald-50 dark:bg-emerald-950/60',
     l1Border: 'border-emerald-500',
-    l2Border: 'border-emerald-300',
-    l3Border: 'border-emerald-200',
-    badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-    chevron: 'text-emerald-500',
-    count: 'text-emerald-400 dark:text-emerald-500',
+    l2Border: 'border-emerald-400 dark:border-emerald-500',
+    l3Border: 'border-emerald-300 dark:border-emerald-600',
+    badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-800/60 dark:text-emerald-200',
+    chevron: 'text-emerald-500 dark:text-emerald-400',
+    count: 'text-emerald-500 dark:text-emerald-400',
   },
   cyan: {
     root: 'from-cyan-600 to-cyan-500',
-    l1Bg: 'bg-cyan-50 dark:bg-cyan-950/20',
+    l1Bg: 'bg-cyan-50 dark:bg-cyan-950/60',
     l1Border: 'border-cyan-500',
-    l2Border: 'border-cyan-300',
-    l3Border: 'border-cyan-200',
-    badge: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-    chevron: 'text-cyan-500',
-    count: 'text-cyan-400 dark:text-cyan-500',
+    l2Border: 'border-cyan-400 dark:border-cyan-500',
+    l3Border: 'border-cyan-300 dark:border-cyan-600',
+    badge: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-800/60 dark:text-cyan-200',
+    chevron: 'text-cyan-500 dark:text-cyan-400',
+    count: 'text-cyan-500 dark:text-cyan-400',
   },
   orange: {
     root: 'from-orange-600 to-orange-500',
-    l1Bg: 'bg-orange-50 dark:bg-orange-950/20',
+    l1Bg: 'bg-orange-50 dark:bg-orange-950/60',
     l1Border: 'border-orange-500',
-    l2Border: 'border-orange-300',
-    l3Border: 'border-orange-200',
-    badge: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-    chevron: 'text-orange-500',
-    count: 'text-orange-400 dark:text-orange-500',
+    l2Border: 'border-orange-400 dark:border-orange-500',
+    l3Border: 'border-orange-300 dark:border-orange-600',
+    badge: 'bg-orange-100 text-orange-700 dark:bg-orange-800/60 dark:text-orange-200',
+    chevron: 'text-orange-500 dark:text-orange-400',
+    count: 'text-orange-500 dark:text-orange-400',
   },
   amber: {
     root: 'from-amber-600 to-amber-500',
-    l1Bg: 'bg-amber-50 dark:bg-amber-950/20',
+    l1Bg: 'bg-amber-50 dark:bg-amber-950/60',
     l1Border: 'border-amber-500',
-    l2Border: 'border-amber-300',
-    l3Border: 'border-amber-200',
-    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    chevron: 'text-amber-500',
-    count: 'text-amber-400 dark:text-amber-500',
+    l2Border: 'border-amber-400 dark:border-amber-500',
+    l3Border: 'border-amber-300 dark:border-amber-600',
+    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-800/60 dark:text-amber-200',
+    chevron: 'text-amber-500 dark:text-amber-400',
+    count: 'text-amber-500 dark:text-amber-400',
   },
   rose: {
     root: 'from-rose-600 to-rose-500',
-    l1Bg: 'bg-rose-50 dark:bg-rose-950/20',
+    l1Bg: 'bg-rose-50 dark:bg-rose-950/60',
     l1Border: 'border-rose-500',
-    l2Border: 'border-rose-300',
-    l3Border: 'border-rose-200',
-    badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
-    chevron: 'text-rose-500',
-    count: 'text-rose-400 dark:text-rose-500',
+    l2Border: 'border-rose-400 dark:border-rose-500',
+    l3Border: 'border-rose-300 dark:border-rose-600',
+    badge: 'bg-rose-100 text-rose-700 dark:bg-rose-800/60 dark:text-rose-200',
+    chevron: 'text-rose-500 dark:text-rose-400',
+    count: 'text-rose-500 dark:text-rose-400',
   },
 }
 
@@ -123,37 +123,37 @@ const typeMeta: Record<
     icon: <BookOpen className="w-3 h-3" />,
     label: 'Conceito',
     className:
-      'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+      'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-800/60 dark:text-blue-200 dark:border-blue-700',
   },
   example: {
     icon: <Code className="w-3 h-3" />,
     label: 'Exemplo',
     className:
-      'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+      'bg-green-100 text-green-700 border-green-200 dark:bg-green-800/60 dark:text-green-200 dark:border-green-700',
   },
   exception: {
     icon: <AlertTriangle className="w-3 h-3" />,
     label: 'Exceção',
     className:
-      'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
+      'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-800/60 dark:text-orange-200 dark:border-orange-700',
   },
   tip: {
     icon: <Lightbulb className="w-3 h-3" />,
     label: 'Dica',
     className:
-      'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+      'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-800/60 dark:text-purple-200 dark:border-purple-700',
   },
   rule: {
     icon: <Scale className="w-3 h-3" />,
     label: 'Regra',
     className:
-      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/40 dark:text-slate-300 dark:border-slate-700',
+      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600',
   },
   warning: {
     icon: <ShieldAlert className="w-3 h-3" />,
     label: 'Atenção',
     className:
-      'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+      'bg-red-100 text-red-700 border-red-200 dark:bg-red-800/60 dark:text-red-200 dark:border-red-700',
   },
 }
 
@@ -225,7 +225,7 @@ export function MindMapCard({
             style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
           >
             <div className="overflow-hidden">
-              <div className="mt-3 space-y-2 pl-4 border-l-2 border-dashed border-muted-foreground/20">
+              <div className="mt-3 space-y-2 pl-4 border-l-2 border-dashed border-muted-foreground/20 dark:border-muted-foreground/40">
                 {node.children!.map((child) => (
                   <MindMapCard
                     key={child.id}
@@ -310,7 +310,7 @@ export function MindMapCard({
             style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
           >
             <div className="overflow-hidden">
-              <div className="mt-2 space-y-1.5 pl-4 border-l-2 border-dashed border-muted-foreground/20">
+              <div className="mt-2 space-y-1.5 pl-4 border-l-2 border-dashed border-muted-foreground/20 dark:border-muted-foreground/40">
                 {node.children!.map((child) => (
                   <MindMapCard
                     key={child.id}
@@ -335,12 +335,12 @@ export function MindMapCard({
         <div
           onClick={handleToggle}
           className={cn(
-            'w-full p-3 rounded-lg bg-muted/30',
+            'w-full p-3 rounded-lg bg-muted/30 dark:bg-muted/50',
             'border-l-2',
             styles.l2Border,
             hasChildren && 'cursor-pointer select-none',
             'transition-all duration-200',
-            hasChildren && 'hover:bg-muted/50',
+            hasChildren && 'hover:bg-muted/50 dark:hover:bg-muted/60',
           )}
         >
           <div className="flex items-start gap-2">
@@ -393,7 +393,7 @@ export function MindMapCard({
             style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
           >
             <div className="overflow-hidden">
-              <div className="mt-1.5 space-y-1 pl-3.5 border-l border-dashed border-muted-foreground/20">
+              <div className="mt-1.5 space-y-1 pl-3.5 border-l border-dashed border-muted-foreground/20 dark:border-muted-foreground/40">
                 {node.children!.map((child) => (
                   <MindMapCard
                     key={child.id}
@@ -417,12 +417,12 @@ export function MindMapCard({
       <div
         onClick={handleToggle}
         className={cn(
-          'w-full p-2.5 rounded-md bg-muted/20',
+          'w-full p-2.5 rounded-md bg-muted/20 dark:bg-muted/40',
           'border-l',
           styles.l3Border,
           hasChildren && 'cursor-pointer select-none',
           'transition-all duration-200',
-          hasChildren && 'hover:bg-muted/40',
+          hasChildren && 'hover:bg-muted/40 dark:hover:bg-muted/50',
         )}
       >
         <div className="flex items-start gap-1.5">
@@ -473,7 +473,7 @@ export function MindMapCard({
           style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
         >
           <div className="overflow-hidden">
-            <div className="mt-1 space-y-1 pl-3 border-l border-dashed border-muted-foreground/15">
+            <div className="mt-1 space-y-1 pl-3 border-l border-dashed border-muted-foreground/20 dark:border-muted-foreground/35">
               {node.children!.map((child) => (
                 <MindMapCard
                   key={child.id}
