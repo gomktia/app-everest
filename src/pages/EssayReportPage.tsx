@@ -281,7 +281,7 @@ export default function EssayReportPage() {
                   </div>
                 </div>
                 {analysis.debit_level === 'Fuga TOTAL' && (
-                  <div className="flex items-center gap-2 text-red-600 bg-red-50 dark:bg-red-950/20 rounded-md px-3 py-1.5">
+                  <div className="flex items-center gap-2 text-red-600 bg-red-50 dark:bg-red-950/50 rounded-md px-3 py-1.5">
                     <AlertTriangle className="h-4 w-4" />
                     <span className="text-xs font-medium">Fuga total: nota final zerada</span>
                   </div>

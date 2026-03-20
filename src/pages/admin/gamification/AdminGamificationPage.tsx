@@ -46,7 +46,7 @@ import {
   ClipboardList
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
 import { useTeacherClasses } from '@/hooks/useTeacherClasses'

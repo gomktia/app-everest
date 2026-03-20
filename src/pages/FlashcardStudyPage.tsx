@@ -591,33 +591,33 @@ export default function FlashcardStudyPage() {
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => handleAnswer(1)}
-                className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10 p-4 transition-all hover:border-red-400 hover:shadow-md active:scale-[0.97]"
+                className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/50 p-4 transition-all hover:border-red-400 hover:shadow-md active:scale-[0.97]"
               >
                 <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
                   <XCircle className="h-5 w-5 text-red-500" />
                 </div>
                 <span className="text-sm font-bold text-red-600">Difícil</span>
-                <kbd className="px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-500/20 text-[10px] font-mono text-red-500">1</kbd>
+                <kbd className="px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-500/50 text-[10px] font-mono text-red-500">1</kbd>
               </button>
               <button
                 onClick={() => handleAnswer(3)}
-                className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-yellow-200 bg-yellow-50 dark:border-yellow-500/30 dark:bg-yellow-500/10 p-4 transition-all hover:border-yellow-400 hover:shadow-md active:scale-[0.97]"
+                className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-yellow-200 bg-yellow-50 dark:border-yellow-500/30 dark:bg-yellow-500/50 p-4 transition-all hover:border-yellow-400 hover:shadow-md active:scale-[0.97]"
               >
                 <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
                   <Clock className="h-5 w-5 text-yellow-500" />
                 </div>
                 <span className="text-sm font-bold text-yellow-600">Médio</span>
-                <kbd className="px-1.5 py-0.5 rounded bg-yellow-100 dark:bg-yellow-500/20 text-[10px] font-mono text-yellow-500">2</kbd>
+                <kbd className="px-1.5 py-0.5 rounded bg-yellow-100 dark:bg-yellow-500/50 text-[10px] font-mono text-yellow-500">2</kbd>
               </button>
               <button
                 onClick={() => handleAnswer(5)}
-                className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-green-200 bg-green-50 dark:border-green-500/30 dark:bg-green-500/10 p-4 transition-all hover:border-green-400 hover:shadow-md active:scale-[0.97]"
+                className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-green-200 bg-green-50 dark:border-green-500/30 dark:bg-green-500/50 p-4 transition-all hover:border-green-400 hover:shadow-md active:scale-[0.97]"
               >
                 <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 </div>
                 <span className="text-sm font-bold text-green-600">Fácil</span>
-                <kbd className="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-500/20 text-[10px] font-mono text-green-500">3</kbd>
+                <kbd className="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-500/50 text-[10px] font-mono text-green-500">3</kbd>
               </button>
             </div>
           </div>

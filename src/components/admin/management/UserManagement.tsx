@@ -376,7 +376,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
     <>
       {/* Online Now Card */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/30">
+        <Card className="border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/50">
           <CardHeader className="pb-3">
             <CardDescription className="text-emerald-700 dark:text-emerald-400">Online Agora</CardDescription>
             <CardTitle className="text-3xl text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
@@ -392,7 +392,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
         </Card>
         {tastingCount > 0 && (
           <>
-          <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/30">
+          <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/50">
             <CardHeader className="pb-3">
               <CardDescription className="text-amber-700 dark:text-amber-400">Aguardando Aprovação</CardDescription>
               <CardTitle className="text-3xl text-amber-900 dark:text-amber-300">
@@ -413,7 +413,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
               </Button>
             </CardContent>
           </Card>
-          <Card className="border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/30">
+          <Card className="border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/50">
             <CardHeader className="pb-3">
               <CardDescription className="text-green-700 dark:text-green-400">Alunos Ativos</CardDescription>
               <CardTitle className="text-3xl text-green-900 dark:text-green-300">
@@ -426,7 +426,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
               </p>
             </CardContent>
           </Card>
-          <Card className="border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/30">
+          <Card className="border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/50">
             <CardHeader className="pb-3">
               <CardDescription className="text-red-700 dark:text-red-400">Necessita Atenção</CardDescription>
               <CardTitle className="text-3xl text-red-900 dark:text-red-300">
@@ -594,15 +594,15 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
                         {user.role === 'student' && (
                           <>
                             {user.isInTastingClass ? (
-                              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-700">
+                              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-700">
                                 Degustação
                               </Badge>
                             ) : user.classes && user.classes.length > 0 ? (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 dark:bg-green-950/30 dark:text-green-400 dark:border-green-700">
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 dark:bg-green-950/50 dark:text-green-400 dark:border-green-700">
                                 {user.classes.length} turma(s)
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-950/30 dark:text-red-400 dark:border-red-700">
+                              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-950/50 dark:text-red-400 dark:border-red-700">
                                 Sem turma
                               </Badge>
                             )}
@@ -611,7 +611,7 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
                         {user.role !== 'student' && (
                           <>
                             {user.classes && user.classes.length > 0 ? (
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-700">
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-700">
                                 {user.classes.length} turma(s)
                               </Badge>
                             ) : (

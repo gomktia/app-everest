@@ -349,9 +349,9 @@ export default function EssaySubmissionPage() {
                   />
                 </div>
               ) : (
-                <div className="flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 p-3">
+                <div className="flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/50 p-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center shrink-0">
                       <Upload className="h-4 w-4 text-green-600 dark:text-green-400" />
                     </div>
                     <div className="min-w-0">

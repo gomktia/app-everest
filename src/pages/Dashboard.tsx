@@ -313,8 +313,8 @@ export default function DashboardPage() {
             className={cn(
               'flex items-center gap-3 p-4 rounded-lg border',
               isUrgent
-                ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/30 dark:border-red-800 dark:text-red-300'
-                : 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950/30 dark:border-yellow-800 dark:text-yellow-300'
+                ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/50 dark:border-red-800 dark:text-red-300'
+                : 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950/50 dark:border-yellow-800 dark:text-yellow-300'
             )}
           >
             <AlertTriangle className={cn('h-5 w-5 shrink-0', isUrgent ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400')} />

@@ -1517,9 +1517,9 @@ export default function AdminEssayCorrectionPage() {
               competencyScores.map((c) => (
                 <Badge key={c.competency_number} variant="outline" className={cn(
                   'gap-1 py-1',
-                  c.score >= 160 ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' :
-                  c.score >= 80 ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800' :
-                  'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
+                  c.score >= 160 ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800' :
+                  c.score >= 80 ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-800' :
+                  'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-800'
                 )}>
                   C{c.competency_number}: {c.score}
                 </Badge>
@@ -1527,15 +1527,15 @@ export default function AdminEssayCorrectionPage() {
             ) : (
               // CIAAR: show debit badges
               <>
-                <Badge variant="outline" className="gap-1.5 py-1 bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800">
+                <Badge variant="outline" className="gap-1.5 py-1 bg-red-50 text-red-700 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-800">
                   <PenLine className="h-3 w-3" />
                   Expressão: -{expressionDebitTotal.toFixed(3)} ({expressionErrors.length})
                 </Badge>
-                <Badge variant="outline" className="gap-1.5 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
+                <Badge variant="outline" className="gap-1.5 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800">
                   <BookOpen className="h-3 w-3" />
                   Estrutura: -{structureDebitTotal.toFixed(3)}
                 </Badge>
-                <Badge variant="outline" className="gap-1.5 py-1 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800">
+                <Badge variant="outline" className="gap-1.5 py-1 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800">
                   <FileText className="h-3 w-3" />
                   Conteúdo: -{contentDebitTotal.toFixed(3)}
                 </Badge>

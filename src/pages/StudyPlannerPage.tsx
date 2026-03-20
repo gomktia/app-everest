@@ -976,22 +976,22 @@ function CategoryCard({
 
   const colorClasses = {
     icon: {
-      'blue': "bg-blue-100 dark:bg-blue-950/30 text-blue-600",
-      'purple': "bg-purple-100 dark:bg-purple-950/30 text-purple-600",
-      'orange': "bg-orange-100 dark:bg-orange-950/30 text-orange-600",
-      'cyan': "bg-cyan-100 dark:bg-cyan-950/30 text-cyan-600",
-      'green': "bg-green-100 dark:bg-green-950/30 text-green-600",
-      'emerald': "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600",
-      'red': "bg-red-100 dark:bg-red-950/30 text-red-600",
-      'indigo': "bg-indigo-100 dark:bg-indigo-950/30 text-indigo-600",
-      'yellow': "bg-yellow-100 dark:bg-yellow-950/30 text-yellow-600",
-      'pink': "bg-pink-100 dark:bg-pink-950/30 text-pink-600",
-      'violet': "bg-violet-100 dark:bg-violet-950/30 text-violet-600",
-      'sky': "bg-sky-100 dark:bg-sky-950/30 text-sky-600",
-      'amber': "bg-amber-100 dark:bg-amber-950/30 text-amber-600",
-      'teal': "bg-teal-100 dark:bg-teal-950/30 text-teal-600",
-      'lime': "bg-lime-100 dark:bg-lime-950/30 text-lime-600",
-      'gray': "bg-muted dark:bg-gray-950/30 text-muted-foreground"
+      'blue': "bg-blue-100 dark:bg-blue-950/50 text-blue-600",
+      'purple': "bg-purple-100 dark:bg-purple-950/50 text-purple-600",
+      'orange': "bg-orange-100 dark:bg-orange-950/50 text-orange-600",
+      'cyan': "bg-cyan-100 dark:bg-cyan-950/50 text-cyan-600",
+      'green': "bg-green-100 dark:bg-green-950/50 text-green-600",
+      'emerald': "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600",
+      'red': "bg-red-100 dark:bg-red-950/50 text-red-600",
+      'indigo': "bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600",
+      'yellow': "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-600",
+      'pink': "bg-pink-100 dark:bg-pink-950/50 text-pink-600",
+      'violet': "bg-violet-100 dark:bg-violet-950/50 text-violet-600",
+      'sky': "bg-sky-100 dark:bg-sky-950/50 text-sky-600",
+      'amber': "bg-amber-100 dark:bg-amber-950/50 text-amber-600",
+      'teal': "bg-teal-100 dark:bg-teal-950/50 text-teal-600",
+      'lime': "bg-lime-100 dark:bg-lime-950/50 text-lime-600",
+      'gray': "bg-muted dark:bg-gray-950/50 text-muted-foreground"
     },
     hover: {
       'blue': "hover:bg-blue-50 dark:hover:bg-blue-950/20",
@@ -1078,9 +1078,9 @@ function TopicCard({
     <div
       className={cn(
         "p-4 rounded-lg border-2 transition-colors duration-300",
-        topic.status === 'completed' && "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800",
-        topic.status === 'in-progress' && "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800",
-        topic.status === 'pending' && "bg-muted/50 dark:bg-gray-950/20 border-border dark:border-gray-800"
+        topic.status === 'completed' && "bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800",
+        topic.status === 'in-progress' && "bg-yellow-50 dark:bg-yellow-950/50 border-yellow-200 dark:border-yellow-800",
+        topic.status === 'pending' && "bg-muted/50 dark:bg-gray-950/50 border-border dark:border-gray-800"
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -1492,8 +1492,8 @@ function StudyHistory({
                       <div className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
                         session.completed
-                          ? "bg-green-100 dark:bg-green-950/30 text-green-600"
-                          : "bg-muted dark:bg-gray-950/30 text-muted-foreground"
+                          ? "bg-green-100 dark:bg-green-950/50 text-green-600"
+                          : "bg-muted dark:bg-gray-950/50 text-muted-foreground"
                       )}>
                         {session.completed ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                       </div>

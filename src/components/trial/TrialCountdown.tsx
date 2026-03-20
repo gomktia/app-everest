@@ -197,10 +197,10 @@ function TimeBox({ value, label, critical, urgent }: { value: number; label: str
     <div className={cn(
       'flex flex-col items-center rounded-xl px-3 py-2 min-w-[52px] border shadow-sm',
       critical
-        ? 'bg-red-100/80 border-red-200 dark:bg-red-900/30 dark:border-red-700'
+        ? 'bg-red-100/80 border-red-200 dark:bg-red-900/50 dark:border-red-700'
         : urgent
-          ? 'bg-orange-100/80 border-orange-200 dark:bg-orange-900/30 dark:border-orange-700'
-          : 'bg-white/80 border-amber-200/60 dark:bg-amber-900/20 dark:border-amber-700/50'
+          ? 'bg-orange-100/80 border-orange-200 dark:bg-orange-900/50 dark:border-orange-700'
+          : 'bg-white/80 border-amber-200/60 dark:bg-amber-900/50 dark:border-amber-700/50'
     )}>
       <span
         className={cn(

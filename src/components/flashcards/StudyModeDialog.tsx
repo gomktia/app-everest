@@ -139,8 +139,8 @@ export const StudyModeDialog = ({
                   <div className="flex items-start gap-3">
                     <div className={cn(
                       "p-2.5 rounded-lg",
-                      mode.color === 'blue' && "bg-blue-100 dark:bg-blue-900/30",
-                      mode.color === 'red' && "bg-red-100 dark:bg-red-900/30"
+                      mode.color === 'blue' && "bg-blue-100 dark:bg-blue-900/50",
+                      mode.color === 'red' && "bg-red-100 dark:bg-red-900/50"
                     )}>
                       <mode.icon className={cn(
                         "h-5 w-5",
@@ -187,7 +187,7 @@ export const StudyModeDialog = ({
               >
                 <CardContent className="p-4 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
                       <option.icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
 
@@ -210,7 +210,7 @@ export const StudyModeDialog = ({
             >
               <CardContent className="p-4 text-center">
                 <div className="flex items-center justify-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50">
                     <BookOpen className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
 

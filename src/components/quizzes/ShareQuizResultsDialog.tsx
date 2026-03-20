@@ -166,7 +166,7 @@ ${motivationalMessage}
               </div>
 
               <div className="flex items-center justify-center gap-6">
-                <div className="text-center p-4 rounded-xl bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                <div className="text-center p-4 rounded-xl bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <CheckCircle className="h-6 w-6 text-green-500" />
                     <span className="text-3xl font-bold text-green-500">{correct}</span>
@@ -174,7 +174,7 @@ ${motivationalMessage}
                   <p className="text-xs font-medium text-muted-foreground">Acertos</p>
                 </div>
 
-                <div className="text-center p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+                <div className="text-center p-4 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <XCircle className="h-6 w-6 text-red-500" />
                     <span className="text-3xl font-bold text-red-500">{total - correct}</span>

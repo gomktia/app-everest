@@ -132,15 +132,15 @@ export default function NotificationsPage() {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'achievement': return { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/40', border: 'border-l-amber-500' }
-      case 'course': return { text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/40', border: 'border-l-blue-500' }
-      case 'reminder': return { text: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-100 dark:bg-cyan-900/40', border: 'border-l-cyan-500' }
-      case 'social': return { text: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-900/40', border: 'border-l-violet-500' }
-      case 'system': return { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/40', border: 'border-l-emerald-500' }
-      case 'warning': return { text: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900/40', border: 'border-l-orange-500' }
-      case 'quiz': return { text: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/40', border: 'border-l-green-500' }
-      case 'material': return { text: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/40', border: 'border-l-indigo-500' }
-      default: return { text: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-100 dark:bg-gray-800/40', border: 'border-l-gray-500' }
+      case 'achievement': return { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/50', border: 'border-l-amber-500' }
+      case 'course': return { text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/50', border: 'border-l-blue-500' }
+      case 'reminder': return { text: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-100 dark:bg-cyan-900/50', border: 'border-l-cyan-500' }
+      case 'social': return { text: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-900/50', border: 'border-l-violet-500' }
+      case 'system': return { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/50', border: 'border-l-emerald-500' }
+      case 'warning': return { text: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900/50', border: 'border-l-orange-500' }
+      case 'quiz': return { text: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-900/50', border: 'border-l-green-500' }
+      case 'material': return { text: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-900/50', border: 'border-l-indigo-500' }
+      default: return { text: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-100 dark:bg-gray-800/50', border: 'border-l-gray-500' }
     }
   }
 

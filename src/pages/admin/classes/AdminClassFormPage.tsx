@@ -673,7 +673,7 @@ export default function AdminClassFormPage() {
                                     {mod.courseName}
                                     {lessons.length > 0 && <span> &middot; {lessons.length} aulas</span>}
                                     {lessonOverrideCount > 0 && (
-                                      <Badge variant="outline" className="ml-2 text-xs py-0 px-1.5 bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-700">
+                                      <Badge variant="outline" className="ml-2 text-xs py-0 px-1.5 bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-700">
                                         {lessonOverrideCount} com regra propria
                                       </Badge>
                                     )}

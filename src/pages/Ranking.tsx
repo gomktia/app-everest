@@ -321,7 +321,7 @@ export default function RankingPage() {
         className={cn(
           "border-border shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/30",
           position <= 3 && "ring-2 ring-primary/20",
-          isCurrentUser && "ring-2 ring-blue-500/40 bg-blue-50/50 dark:bg-blue-950/20"
+          isCurrentUser && "ring-2 ring-blue-500/40 bg-blue-50/50 dark:bg-blue-950/50"
         )}
       >
         <div className="flex items-center gap-2.5 sm:gap-4 p-3 sm:p-4">

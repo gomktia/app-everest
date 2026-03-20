@@ -24,7 +24,7 @@ export const FlashcardInstructionsDialog = ({
       <ResponsiveDialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <ResponsiveDialogHeader className="space-y-3 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
               <Brain className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
@@ -45,7 +45,7 @@ export const FlashcardInstructionsDialog = ({
               <Info className="h-5 w-5 text-blue-600" />
               <h3 className="font-bold text-lg">Como Funciona</h3>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 space-y-2">
+            <div className="bg-blue-50 dark:bg-blue-950/50 rounded-lg p-4 space-y-2">
               <p className="text-sm">
                 1. Você verá a <strong>pergunta</strong> do flashcard
               </p>
@@ -70,9 +70,9 @@ export const FlashcardInstructionsDialog = ({
 
             <div className="space-y-3">
               {/* Difícil */}
-              <div className="border-2 border-red-200 dark:border-red-900/50 rounded-lg p-4 bg-red-50/50 dark:bg-red-950/10">
+              <div className="border-2 border-red-200 dark:border-red-900/50 rounded-lg p-4 bg-red-50/50 dark:bg-red-950/50">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+                  <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/50">
                     <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -96,9 +96,9 @@ export const FlashcardInstructionsDialog = ({
               </div>
 
               {/* Médio */}
-              <div className="border-2 border-yellow-200 dark:border-yellow-900/50 rounded-lg p-4 bg-yellow-50/50 dark:bg-yellow-950/10">
+              <div className="border-2 border-yellow-200 dark:border-yellow-900/50 rounded-lg p-4 bg-yellow-50/50 dark:bg-yellow-950/50">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+                  <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/50">
                     <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                   </div>
                   <div className="flex-1 space-y-2">
@@ -122,9 +122,9 @@ export const FlashcardInstructionsDialog = ({
               </div>
 
               {/* Fácil */}
-              <div className="border-2 border-green-200 dark:border-green-900/50 rounded-lg p-4 bg-green-50/50 dark:bg-green-950/10">
+              <div className="border-2 border-green-200 dark:border-green-900/50 rounded-lg p-4 bg-green-50/50 dark:bg-green-950/50">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                  <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50">
                     <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div className="flex-1 space-y-2">

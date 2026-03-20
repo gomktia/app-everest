@@ -69,7 +69,7 @@ export const ProtectedRoute = ({ allowedRoles, redirectTo }: ProtectedRouteProps
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
         <div className="max-w-md space-y-4">
-          <div className="p-4 rounded-full bg-orange-100 dark:bg-orange-900/30 w-fit mx-auto">
+          <div className="p-4 rounded-full bg-orange-100 dark:bg-orange-900/50 w-fit mx-auto">
             <svg className="h-12 w-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
