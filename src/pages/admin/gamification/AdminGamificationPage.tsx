@@ -41,9 +41,12 @@ import {
   Crown,
   Shield,
   Flame,
-  Gift
+  Gift,
+  FileText,
+  ClipboardList
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/hooks/use-toast'
 import { useTeacherClasses } from '@/hooks/useTeacherClasses'
@@ -62,6 +65,8 @@ export default function AdminGamificationPage() {
   usePageTitle('Gamificação')
   const [achievements, setAchievements] = useState<Achievement[]>([])
   const [ranking, setRanking] = useState<RankingEntry[]>([])
+  const [simulationRanking, setSimulationRanking] = useState<{ user_id: string; first_name: string; last_name: string; total_attempts: number; best_percentage: number; avg_percentage: number }[]>([])
+  const [essayRanking, setEssayRanking] = useState<{ user_id: string; first_name: string; last_name: string; total_essays: number; best_grade: number; avg_grade: number }[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -104,6 +109,85 @@ export default function AdminGamificationPage() {
       if (achievementsData.status === 'fulfilled') setAchievements(achievementsData.value)
       if (rankingData.status === 'fulfilled') setRanking(rankingData.value)
       if (statsData.status === 'fulfilled') setStats(statsData.value)
+
+      // Load simulation ranking (from quiz_attempts where quiz type is 'simulation')
+      try {
+        const { data: simData } = await supabase
+          .from('quiz_attempts')
+          .select('user_id, percentage, quiz:quizzes!inner(type)')
+          .eq('status', 'submitted')
+          .eq('quizzes.type', 'simulation')
+          .not('percentage', 'is', null)
+
+        if (simData && simData.length > 0) {
+          const simMap = new Map<string, { percentages: number[] }>()
+          for (const row of simData) {
+            const entry = simMap.get(row.user_id) || { percentages: [] }
+            entry.percentages.push(row.percentage || 0)
+            simMap.set(row.user_id, entry)
+          }
+          const userIds = [...simMap.keys()]
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .in('id', userIds)
+          const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+          const simRanking = userIds.map(uid => {
+            const p = profileMap.get(uid)
+            const entry = simMap.get(uid)!
+            const best = Math.max(...entry.percentages)
+            const avg = entry.percentages.reduce((a, b) => a + b, 0) / entry.percentages.length
+            return {
+              user_id: uid,
+              first_name: p?.first_name || '',
+              last_name: p?.last_name || '',
+              total_attempts: entry.percentages.length,
+              best_percentage: Math.round(best * 100) / 100,
+              avg_percentage: Math.round(avg * 100) / 100,
+            }
+          }).sort((a, b) => b.best_percentage - a.best_percentage)
+          setSimulationRanking(simRanking)
+        }
+      } catch (e) { logger.error('Erro ao carregar ranking simulados:', e) }
+
+      // Load essay ranking (from essays with status=corrected)
+      try {
+        const { data: essayData } = await supabase
+          .from('essays')
+          .select('student_id, final_grade')
+          .eq('status', 'corrected' as any)
+          .not('final_grade', 'is', null)
+
+        if (essayData && essayData.length > 0) {
+          const essayMap = new Map<string, { grades: number[] }>()
+          for (const row of essayData) {
+            const entry = essayMap.get(row.student_id) || { grades: [] }
+            entry.grades.push(row.final_grade || 0)
+            essayMap.set(row.student_id, entry)
+          }
+          const userIds = [...essayMap.keys()]
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .in('id', userIds)
+          const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+          const essRanking = userIds.map(uid => {
+            const p = profileMap.get(uid)
+            const entry = essayMap.get(uid)!
+            const best = Math.max(...entry.grades)
+            const avg = entry.grades.reduce((a, b) => a + b, 0) / entry.grades.length
+            return {
+              user_id: uid,
+              first_name: p?.first_name || '',
+              last_name: p?.last_name || '',
+              total_essays: entry.grades.length,
+              best_grade: Math.round(best),
+              avg_grade: Math.round(avg),
+            }
+          }).sort((a, b) => b.best_grade - a.best_grade)
+          setEssayRanking(essRanking)
+        }
+      } catch (e) { logger.error('Erro ao carregar ranking redações:', e) }
     } catch (error) {
       logger.error('Erro ao carregar dados:', error)
     } finally {
@@ -214,6 +298,16 @@ export default function AdminGamificationPage() {
     }
   }, [stats, filteredRanking, isTeacher])
 
+  const filteredSimRanking = useMemo(() => {
+    if (!isTeacher) return simulationRanking
+    return simulationRanking.filter(e => studentIdSet.has(e.user_id))
+  }, [simulationRanking, isTeacher, studentIdSet])
+
+  const filteredEssayRanking = useMemo(() => {
+    if (!isTeacher) return essayRanking
+    return essayRanking.filter(e => studentIdSet.has(e.user_id))
+  }, [essayRanking, isTeacher, studentIdSet])
+
   if (loading || teacherLoading) {
     return <SectionLoader />
   }
@@ -299,7 +393,7 @@ export default function AdminGamificationPage() {
         <PageTabs
           value={activeTab}
           onChange={setActiveTab}
-          layout={isTeacher ? 2 : 3}
+          layout={isTeacher ? 4 : 5}
           tabs={[
             ...(!isTeacher ? [{
               value: 'overview',
@@ -615,6 +709,152 @@ export default function AdminGamificationPage() {
                         </TableBody>
                       </Table>
                     </div>
+                  </CardContent>
+                </Card>
+              ),
+            },
+            {
+              value: 'simulations',
+              label: 'Ranking Simulados',
+              icon: <ClipboardList className="h-4 w-4" />,
+              content: (
+                <Card className="border-border shadow-sm">
+                  <CardContent className="p-5">
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        {isTeacher ? `Ranking Simulados - Meus Alunos (${filteredSimRanking.length})` : `Top Estudantes em Simulados (${filteredSimRanking.length})`}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Ranking baseado na melhor nota percentual em simulados
+                      </p>
+                    </div>
+                    {filteredSimRanking.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <ClipboardList className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p>Nenhum simulado finalizado ainda</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-12 md:w-16">Pos</TableHead>
+                              <TableHead>Estudante</TableHead>
+                              <TableHead>Melhor Nota</TableHead>
+                              <TableHead className="hidden sm:table-cell">Média</TableHead>
+                              <TableHead className="hidden md:table-cell">Simulados</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredSimRanking.map((entry, idx) => (
+                              <TableRow
+                                key={entry.user_id}
+                                className={cn(
+                                  'group hover:bg-muted/50',
+                                  idx < 3 && 'bg-muted/50'
+                                )}
+                              >
+                                <TableCell>
+                                  <div className="flex items-center justify-center">
+                                    {getRankIcon(idx + 1)}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium group-hover:text-primary transition-colors text-sm md:text-base">
+                                    <span className="hidden sm:inline">{entry.first_name} {entry.last_name}</span>
+                                    <span className="sm:hidden">{entry.first_name}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className="bg-blue-100 border-blue-300 text-blue-700 text-xs">
+                                    {entry.best_percentage.toFixed(1)}%
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                  <span className="text-sm text-muted-foreground">{entry.avg_percentage.toFixed(1)}%</span>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  <span className="font-medium">{entry.total_attempts}</span>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ),
+            },
+            {
+              value: 'essays',
+              label: 'Ranking Redações',
+              icon: <FileText className="h-4 w-4" />,
+              content: (
+                <Card className="border-border shadow-sm">
+                  <CardContent className="p-5">
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        {isTeacher ? `Ranking Redações - Meus Alunos (${filteredEssayRanking.length})` : `Top Estudantes em Redações (${filteredEssayRanking.length})`}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Ranking baseado na melhor nota de redação corrigida
+                      </p>
+                    </div>
+                    {filteredEssayRanking.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                        <p>Nenhuma redação corrigida ainda</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-12 md:w-16">Pos</TableHead>
+                              <TableHead>Estudante</TableHead>
+                              <TableHead>Melhor Nota</TableHead>
+                              <TableHead className="hidden sm:table-cell">Média</TableHead>
+                              <TableHead className="hidden md:table-cell">Redações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredEssayRanking.map((entry, idx) => (
+                              <TableRow
+                                key={entry.user_id}
+                                className={cn(
+                                  'group hover:bg-muted/50',
+                                  idx < 3 && 'bg-muted/50'
+                                )}
+                              >
+                                <TableCell>
+                                  <div className="flex items-center justify-center">
+                                    {getRankIcon(idx + 1)}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium group-hover:text-primary transition-colors text-sm md:text-base">
+                                    <span className="hidden sm:inline">{entry.first_name} {entry.last_name}</span>
+                                    <span className="sm:hidden">{entry.first_name}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className="bg-emerald-100 border-emerald-300 text-emerald-700 text-xs">
+                                    {entry.best_grade}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                  <span className="text-sm text-muted-foreground">{entry.avg_grade}</span>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  <span className="font-medium">{entry.total_essays}</span>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ),
