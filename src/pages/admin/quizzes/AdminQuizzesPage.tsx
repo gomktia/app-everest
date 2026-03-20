@@ -33,17 +33,20 @@ import {
   ListChecks,
   BarChart2,
   Upload,
+  Sparkles,
 } from 'lucide-react'
 import { getAdminQuizzes, deleteQuiz, type AdminQuiz } from '@/services/adminQuizService'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/components/ui/use-toast'
 import { ImportQuestionsToQuizDialog } from '@/components/admin/ImportQuestionsToQuizDialog'
+import { QuestionAuditModal } from '@/components/admin/QuestionAuditModal'
 
 export default function AdminQuizzesPage() {
   usePageTitle('Quizzes')
   const [quizzes, setQuizzes] = useState<AdminQuiz[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [importTarget, setImportTarget] = useState<{ id: string; title: string } | null>(null)
+  const [auditOpen, setAuditOpen] = useState(false)
   const { toast } = useToast()
 
   const loadQuizzes = () => {
@@ -85,6 +88,7 @@ export default function AdminQuizzesPage() {
 
   return (
     <>
+    <QuestionAuditModal open={auditOpen} onOpenChange={setAuditOpen} />
     {importTarget && (
       <ImportQuestionsToQuizDialog
         isOpen={!!importTarget}
@@ -103,12 +107,18 @@ export default function AdminQuizzesPage() {
             Crie, edite e analise os quizzes da plataforma.
           </CardDescription>
         </div>
-        <Button asChild>
-          <Link to="/admin/quizzes/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Novo Quiz
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setAuditOpen(true)}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Auditar com IA
+          </Button>
+          <Button asChild>
+            <Link to="/admin/quizzes/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Novo Quiz
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
