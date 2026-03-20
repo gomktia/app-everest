@@ -211,7 +211,7 @@ export default function EssaysPage() {
                           variant={essay.status === 'Corrigida' ? 'default' : 'secondary'}
                           className={cn(
                             essay.status === 'Corrigida' &&
-                              'bg-green-100 text-green-700 dark:text-green-400 border-green-300',
+                              'bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-400 border-green-300 dark:border-green-800',
                           )}
                         >
                           {essay.status}

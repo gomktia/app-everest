@@ -166,10 +166,10 @@ export default function SimulationsPage() {
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'available': return { label: 'Disponível', color: 'border-green-300 text-green-600 bg-green-100', icon: <Play className="h-3 w-3" /> }
-      case 'completed': return { label: 'Realizado', color: 'border-blue-300 text-blue-600 bg-blue-100', icon: <CheckCircle className="h-3 w-3" /> }
+      case 'available': return { label: 'Disponível', color: 'border-green-300 dark:border-green-800 text-green-600 bg-green-100 dark:bg-green-950/50', icon: <Play className="h-3 w-3" /> }
+      case 'completed': return { label: 'Realizado', color: 'border-blue-300 dark:border-blue-800 text-blue-600 bg-blue-100 dark:bg-blue-950/50', icon: <CheckCircle className="h-3 w-3" /> }
       case 'expired': return { label: 'Encerrado', color: 'border-border text-muted-foreground bg-muted/50', icon: <AlertCircle className="h-3 w-3" /> }
-      case 'scheduled': return { label: 'Agendado', color: 'border-purple-300 text-purple-600 bg-purple-100', icon: <Clock className="h-3 w-3" /> }
+      case 'scheduled': return { label: 'Agendado', color: 'border-purple-300 dark:border-purple-800 text-purple-600 bg-purple-100 dark:bg-purple-950/50', icon: <Clock className="h-3 w-3" /> }
       default: return { label: 'Desconhecido', color: 'border-border text-muted-foreground', icon: <AlertCircle className="h-3 w-3" /> }
     }
   }

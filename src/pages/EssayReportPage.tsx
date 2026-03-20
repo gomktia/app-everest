@@ -238,7 +238,7 @@ export default function EssayReportPage() {
                   </div>
                   <Badge
                     variant={analysis.debit_value > 0 ? 'destructive' : 'outline'}
-                    className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300')}
+                    className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300 dark:border-green-800')}
                   >
                     {analysis.debit_value > 0 ? `-${analysis.debit_value.toFixed(3)}` : 'OK'}
                   </Badge>
@@ -274,7 +274,7 @@ export default function EssayReportPage() {
                     </Badge>
                     <Badge
                       variant={analysis.debit_value > 0 ? 'destructive' : 'outline'}
-                      className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300')}
+                      className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300 dark:border-green-800')}
                     >
                       {analysis.debit_value > 0 ? `-${analysis.debit_value.toFixed(3)}` : 'Sem débito'}
                     </Badge>

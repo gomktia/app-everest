@@ -93,10 +93,10 @@ const providerConfig: Record<LiveEventProvider, { label: string; icon: typeof Ra
 }
 
 const statusConfig: Record<LiveEventStatus, { label: string; className: string }> = {
-  scheduled: { label: 'Agendada', className: 'bg-blue-100 text-blue-600 border-blue-300' },
+  scheduled: { label: 'Agendada', className: 'bg-blue-100 dark:bg-blue-950/50 text-blue-600 border-blue-300 dark:border-blue-800' },
   live: { label: 'Ao Vivo', className: 'bg-red-500 text-white' },
   ended: { label: 'Encerrada', className: 'bg-muted text-muted-foreground' },
-  cancelled: { label: 'Cancelada', className: 'bg-yellow-100 text-yellow-600 border-yellow-300' },
+  cancelled: { label: 'Cancelada', className: 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-600 border-yellow-300 dark:border-yellow-800' },
 }
 
 interface FormData {
@@ -565,7 +565,7 @@ export default function AdminLiveEventsPage() {
               </div>
             </div>
             {form.provider === 'panda' && !editingId ? (
-              <div className="rounded-lg bg-blue-100 border border-blue-300 p-3">
+              <div className="rounded-lg bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800 p-3">
                 <p className="text-sm text-blue-600 dark:text-blue-400 flex items-center gap-2">
                   <Settings2 className="h-4 w-4 shrink-0" />
                   A URL do player e credenciais OBS serão geradas automaticamente pelo Panda Video.
@@ -702,7 +702,7 @@ export default function AdminLiveEventsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-amber-100 border border-amber-300 p-3 text-xs text-amber-600 dark:text-amber-400 space-y-1">
+              <div className="rounded-lg bg-amber-100 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 p-3 text-xs text-amber-600 dark:text-amber-400 space-y-1">
                 <p className="font-semibold">Como configurar no OBS Studio:</p>
                 <ol className="list-decimal ml-4 space-y-0.5">
                   <li>Abra Configurações → Transmissão</li>

@@ -16,15 +16,15 @@ import { useAuth } from '@/hooks/use-auth'
 const getModeDetails = (mode: string) => {
   switch (mode) {
     case 'full':
-      return { name: 'Sessão Completa', icon: BookOpen, color: 'bg-blue-100 text-blue-600 border-blue-300' }
+      return { name: 'Sessão Completa', icon: BookOpen, color: 'bg-blue-100 dark:bg-blue-950/50 text-blue-600 border-blue-300 dark:border-blue-800' }
     case 'difficult_review':
-      return { name: 'Revisão Difíceis', icon: Target, color: 'bg-red-100 text-red-600 border-red-300' }
+      return { name: 'Revisão Difíceis', icon: Target, color: 'bg-red-100 dark:bg-red-950/50 text-red-600 border-red-300 dark:border-red-800' }
     case 'lightning':
-      return { name: 'Relâmpago', icon: Zap, color: 'bg-yellow-100 text-yellow-600 border-yellow-300' }
+      return { name: 'Relâmpago', icon: Zap, color: 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-600 border-yellow-300 dark:border-yellow-800' }
     case 'test':
-      return { name: 'Modo Teste', icon: Clock, color: 'bg-purple-100 text-purple-600 border-purple-300' }
+      return { name: 'Modo Teste', icon: Clock, color: 'bg-purple-100 dark:bg-purple-950/50 text-purple-600 border-purple-300 dark:border-purple-800' }
     case 'free':
-      return { name: 'Estudo Livre', icon: Star, color: 'bg-green-100 text-green-600 border-green-300' }
+      return { name: 'Estudo Livre', icon: Star, color: 'bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800' }
     default:
       return { name: mode, icon: BookOpen, color: 'bg-muted/50 text-muted-foreground border-border' }
   }

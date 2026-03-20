@@ -33,10 +33,10 @@ function stripMarkdown(text: string): string {
 
 function getRoleBadge(role?: string) {
   if (role === 'teacher') {
-    return <Badge variant="secondary" className="bg-blue-100 text-blue-600 border-blue-300 text-[10px] px-1.5 py-0">Professor</Badge>
+    return <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-950/50 text-blue-600 border-blue-300 dark:border-blue-800 text-[10px] px-1.5 py-0">Professor</Badge>
   }
   if (role === 'administrator') {
-    return <Badge variant="secondary" className="bg-purple-100 text-purple-600 border-purple-300 text-[10px] px-1.5 py-0">Admin</Badge>
+    return <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-950/50 text-purple-600 border-purple-300 dark:border-purple-800 text-[10px] px-1.5 py-0">Admin</Badge>
   }
   return null
 }

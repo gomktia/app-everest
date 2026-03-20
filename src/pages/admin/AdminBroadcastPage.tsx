@@ -428,11 +428,11 @@ export default function AdminBroadcastPage() {
                 Alcance
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 rounded-lg bg-blue-100 border border-blue-300">
+                <div className="text-center p-3 rounded-lg bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                   <div className="text-xl font-bold text-blue-600">{totalStudents}</div>
                   <div className="text-xs text-muted-foreground">Alunos Total</div>
                 </div>
-                <div className="text-center p-3 rounded-lg bg-green-100 border border-green-300">
+                <div className="text-center p-3 rounded-lg bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                   <div className="text-xl font-bold text-green-600">{classes.length}</div>
                   <div className="text-xs text-muted-foreground">Turmas</div>
                 </div>

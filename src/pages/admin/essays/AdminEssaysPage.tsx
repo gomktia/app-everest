@@ -200,7 +200,7 @@ export default function AdminEssaysPage() {
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="truncate">{cls.className}</span>
                 {cls.submitted > 0 && (
-                  <Badge className="bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-300 ml-2 shrink-0" variant="outline">
+                  <Badge className="bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-800 ml-2 shrink-0" variant="outline">
                     {cls.submitted} pendente{cls.submitted !== 1 ? 's' : ''}
                   </Badge>
                 )}
@@ -300,7 +300,7 @@ export default function AdminEssaysPage() {
                   <Card className="border-border shadow-sm">
                     <CardContent className="p-0">
                       <div className="text-center py-16">
-                        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-green-100 flex items-center justify-center">
+                        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-green-100 dark:bg-green-950/50 flex items-center justify-center">
                           <CheckCircle className="w-8 h-8 text-green-600" />
                         </div>
                         <h3 className="text-xl font-bold text-foreground mb-2">Nenhuma redação pendente</h3>

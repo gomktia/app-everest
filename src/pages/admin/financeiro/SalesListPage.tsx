@@ -86,12 +86,12 @@ const PERIOD_OPTIONS = [
 
 const statusBadge = (status: string) => {
   const map: Record<string, string> = {
-    paid: 'bg-green-100 border-green-300 text-green-600',
-    pending: 'bg-yellow-100 border-yellow-300 text-yellow-600',
-    failed: 'bg-red-100 border-red-300 text-red-600',
-    refunded: 'bg-orange-100 border-orange-300 text-orange-600',
-    expired: 'bg-gray-100 border-gray-300 text-gray-500',
-    succeeded: 'bg-green-100 border-green-300 text-green-600',
+    paid: 'bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600',
+    pending: 'bg-yellow-100 dark:bg-yellow-950/50 border-yellow-300 dark:border-yellow-800 text-yellow-600',
+    failed: 'bg-red-100 dark:bg-red-950/50 border-red-300 dark:border-red-800 text-red-600',
+    refunded: 'bg-orange-100 dark:bg-orange-950/50 border-orange-300 dark:border-orange-800 text-orange-600',
+    expired: 'bg-gray-100 dark:bg-gray-950/50 border-gray-300 dark:border-gray-800 text-gray-500',
+    succeeded: 'bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600',
   }
   const labelMap: Record<string, string> = {
     paid: 'Pago',
@@ -102,7 +102,7 @@ const statusBadge = (status: string) => {
     succeeded: 'Concluido',
   }
   return (
-    <Badge className={map[status] || 'bg-gray-100 text-gray-500'}>
+    <Badge className={map[status] || 'bg-gray-100 dark:bg-gray-950/50 text-gray-500'}>
       {labelMap[status] || status}
     </Badge>
   )
@@ -111,9 +111,9 @@ const statusBadge = (status: string) => {
 const methodBadge = (method: string | null) => {
   if (!method) return <span className="text-muted-foreground">-</span>
   const map: Record<string, string> = {
-    card: 'bg-blue-100 border-blue-300 text-blue-600',
-    pix: 'bg-green-100 border-green-300 text-green-600',
-    split_card: 'bg-purple-100 border-purple-300 text-purple-600',
+    card: 'bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-600',
+    pix: 'bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600',
+    split_card: 'bg-purple-100 dark:bg-purple-950/50 border-purple-300 dark:border-purple-800 text-purple-600',
   }
   const labelMap: Record<string, string> = {
     card: 'Cartao',
@@ -121,7 +121,7 @@ const methodBadge = (method: string | null) => {
     split_card: '2 Cartoes',
   }
   return (
-    <Badge className={map[method] || 'bg-gray-100 text-gray-500'}>
+    <Badge className={map[method] || 'bg-gray-100 dark:bg-gray-950/50 text-gray-500'}>
       {labelMap[method] || method}
     </Badge>
   )

@@ -604,7 +604,7 @@ export default function StudyPlannerPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
                 <CardContent className="p-4">
-                  <div className="p-2 rounded-lg w-fit mb-3 bg-emerald-100">
+                  <div className="p-2 rounded-lg w-fit mb-3 bg-emerald-100 dark:bg-emerald-950/50">
                     <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">{completedTopics}</div>
@@ -614,7 +614,7 @@ export default function StudyPlannerPage() {
 
               <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
                 <CardContent className="p-4">
-                  <div className="p-2 rounded-lg w-fit mb-3 bg-blue-100">
+                  <div className="p-2 rounded-lg w-fit mb-3 bg-blue-100 dark:bg-blue-950/50">
                     <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">{topics.length}</div>
@@ -624,7 +624,7 @@ export default function StudyPlannerPage() {
 
               <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
                 <CardContent className="p-4">
-                  <div className="p-2 rounded-lg w-fit mb-3 bg-violet-100">
+                  <div className="p-2 rounded-lg w-fit mb-3 bg-violet-100 dark:bg-violet-950/50">
                     <Clock className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">{totalPomodoros}</div>
@@ -634,7 +634,7 @@ export default function StudyPlannerPage() {
 
               <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
                 <CardContent className="p-4">
-                  <div className="p-2 rounded-lg w-fit mb-3 bg-amber-100">
+                  <div className="p-2 rounded-lg w-fit mb-3 bg-amber-100 dark:bg-amber-950/50">
                     <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">{progressPercentage}%</div>
@@ -1223,7 +1223,7 @@ function PomodoroTimer({
               value={progress}
               className={cn(
                 "h-2",
-                timerMode === 'study' ? "bg-primary/20" : "bg-green-100"
+                timerMode === 'study' ? "bg-primary/20" : "bg-green-100 dark:bg-green-950/50"
               )}
               aria-label={`Progresso do ${timerMode === 'study' ? 'pomodoro' : 'intervalo'}: ${Math.round(progress)}%`}
             />
@@ -1235,7 +1235,7 @@ function PomodoroTimer({
               "text-sm px-4 py-2",
               timerMode === 'study'
                 ? "bg-primary/10 text-primary border-primary/30"
-                : "bg-green-100 text-green-600 border-green-300"
+                : "bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800"
             )}
           >
             {timerMode === 'study' ? '🎯 Foco total!' : '😌 Relaxe um pouco'}
@@ -1386,7 +1386,7 @@ function StudyHistory({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
               <CardContent className="p-4 text-center">
-                <div className="p-2 rounded-lg w-fit mb-3 mx-auto bg-violet-100">
+                <div className="p-2 rounded-lg w-fit mb-3 mx-auto bg-violet-100 dark:bg-violet-950/50">
                   <Clock className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                 </div>
                 <p className="text-3xl font-bold text-foreground mb-1">{totalPomodoros}</p>
@@ -1396,7 +1396,7 @@ function StudyHistory({
 
             <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
               <CardContent className="p-4 text-center">
-                <div className="p-2 rounded-lg w-fit mb-3 mx-auto bg-emerald-100">
+                <div className="p-2 rounded-lg w-fit mb-3 mx-auto bg-emerald-100 dark:bg-emerald-950/50">
                   <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <p className="text-3xl font-bold text-foreground mb-1">{completedTopics}</p>
@@ -1406,7 +1406,7 @@ function StudyHistory({
 
             <Card className="border-border shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-200">
               <CardContent className="p-4 text-center">
-                <div className="p-2 rounded-lg w-fit mb-3 mx-auto bg-amber-100">
+                <div className="p-2 rounded-lg w-fit mb-3 mx-auto bg-amber-100 dark:bg-amber-950/50">
                   <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <p className="text-3xl font-bold text-foreground mb-1">{totalPomodoros * 25}</p>

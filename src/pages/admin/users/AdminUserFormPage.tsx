@@ -161,7 +161,7 @@ export default function AdminUserFormPage() {
                 {/* Personal Information */}
                 <div className="space-y-4 md:space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-100">
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-950/50">
                       <User className="h-5 w-5 text-blue-500" />
                     </div>
                     <h2 className="text-lg md:text-xl font-semibold text-foreground">Informações Pessoais</h2>
@@ -233,7 +233,7 @@ export default function AdminUserFormPage() {
                 {/* Role and Permissions */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-100">
+                    <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-950/50">
                       <Shield className="h-5 w-5 text-purple-500" />
                     </div>
                     <h2 className="text-xl font-semibold text-foreground">Função e Permissões</h2>

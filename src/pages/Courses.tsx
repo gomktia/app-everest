@@ -134,22 +134,22 @@ export default function CoursesPage() {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                <div className="text-center p-3 md:p-4 rounded-xl bg-blue-100 border border-blue-300">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                   <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-blue-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-blue-600">{totalActiveCourses}</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Cursos Ativos</div>
                 </div>
-                <div className="text-center p-3 md:p-4 rounded-xl bg-green-100 border border-green-300">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                   <Play className="h-5 w-5 md:h-6 md:w-6 text-green-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-green-600">{totalLessonsCompleted}</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Aulas Concluidas</div>
                 </div>
-                <div className="text-center p-3 md:p-4 rounded-xl bg-purple-100 border border-purple-300">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-purple-100 dark:bg-purple-950/50 border border-purple-300 dark:border-purple-800">
                   <Clock className="h-5 w-5 md:h-6 md:w-6 text-purple-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-purple-600">{totalLessons}</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Total Aulas</div>
                 </div>
-                <div className="text-center p-3 md:p-4 rounded-xl bg-orange-100 border border-orange-300">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-orange-100 dark:bg-orange-950/50 border border-orange-300 dark:border-orange-800">
                   <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-orange-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-orange-600">{Math.round(averageProgress)}%</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Progresso Medio</div>

@@ -133,32 +133,32 @@ export default function AdminReportsPage() {
       title: 'Total de Usuários',
       value: stats ? stats.totalUsers.toLocaleString('pt-BR') : '0',
       icon: Users,
-      bgColor: 'bg-blue-100',
-      borderColor: 'border-blue-300',
+      bgColor: 'bg-blue-100 dark:bg-blue-950/50',
+      borderColor: 'border-blue-300 dark:border-blue-800',
       iconColor: 'text-blue-500'
     },
     {
       title: 'Cursos',
       value: stats ? stats.totalCourses.toLocaleString('pt-BR') : '0',
       icon: BookOpen,
-      bgColor: 'bg-green-100',
-      borderColor: 'border-green-300',
+      bgColor: 'bg-green-100 dark:bg-green-950/50',
+      borderColor: 'border-green-300 dark:border-green-800',
       iconColor: 'text-green-500'
     },
     {
       title: 'Redações',
       value: stats ? stats.totalEssays.toLocaleString('pt-BR') : '0',
       icon: FileText,
-      bgColor: 'bg-purple-100',
-      borderColor: 'border-purple-300',
+      bgColor: 'bg-purple-100 dark:bg-purple-950/50',
+      borderColor: 'border-purple-300 dark:border-purple-800',
       iconColor: 'text-purple-500'
     },
     {
       title: 'Taxa de Conclusão',
       value: stats ? `${stats.completionRate}%` : '0%',
       icon: Target,
-      bgColor: 'bg-orange-100',
-      borderColor: 'border-orange-300',
+      bgColor: 'bg-orange-100 dark:bg-orange-950/50',
+      borderColor: 'border-orange-300 dark:border-orange-800',
       iconColor: 'text-orange-500'
     }
   ]
@@ -178,7 +178,7 @@ export default function AdminReportsPage() {
         <Card className="border-border shadow-sm">
           <CardContent className="p-0">
             <div className="text-center py-16">
-              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-100 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center">
                 <BarChart3 className="w-8 h-8 text-amber-600" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-2">Relatórios globais disponíveis apenas para administradores</h3>
@@ -402,19 +402,19 @@ export default function AdminReportsPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300">
+                        <div className="text-center p-4 rounded-xl bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                           <div className="text-2xl font-bold text-blue-600">
                             {stats ? stats.totalStudents : 0}
                           </div>
                           <div className="text-sm text-muted-foreground">Alunos</div>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-green-100 border border-green-300">
+                        <div className="text-center p-4 rounded-xl bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                           <div className="text-2xl font-bold text-green-600">
                             {stats ? stats.totalTeachers : 0}
                           </div>
                           <div className="text-sm text-muted-foreground">Professores</div>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-purple-100 border border-purple-300">
+                        <div className="text-center p-4 rounded-xl bg-purple-100 dark:bg-purple-950/50 border border-purple-300 dark:border-purple-800">
                           <div className="text-2xl font-bold text-purple-600">
                             {stats ? stats.totalAdministrators : 0}
                           </div>
@@ -442,37 +442,37 @@ export default function AdminReportsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300">
+                      <div className="text-center p-4 rounded-xl bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                         <div className="text-2xl font-bold text-blue-600">
                           {stats ? stats.totalCourses : 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Cursos</div>
                       </div>
-                      <div className="text-center p-4 rounded-xl bg-green-100 border border-green-300">
+                      <div className="text-center p-4 rounded-xl bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                         <div className="text-2xl font-bold text-green-600">
                           {stats ? stats.totalFlashcards : 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Flashcards</div>
                       </div>
-                      <div className="text-center p-4 rounded-xl bg-purple-100 border border-purple-300">
+                      <div className="text-center p-4 rounded-xl bg-purple-100 dark:bg-purple-950/50 border border-purple-300 dark:border-purple-800">
                         <div className="text-2xl font-bold text-purple-600">
                           {stats ? stats.totalQuizzes : 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Quizzes</div>
                       </div>
-                      <div className="text-center p-4 rounded-xl bg-orange-100 border border-orange-300">
+                      <div className="text-center p-4 rounded-xl bg-orange-100 dark:bg-orange-950/50 border border-orange-300 dark:border-orange-800">
                         <div className="text-2xl font-bold text-orange-600">
                           {stats ? stats.totalEssays : 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Redações</div>
                       </div>
-                      <div className="text-center p-4 rounded-xl bg-pink-100 border border-pink-200">
+                      <div className="text-center p-4 rounded-xl bg-pink-100 dark:bg-pink-950/50 border border-pink-200 dark:border-pink-800">
                         <div className="text-2xl font-bold text-pink-600">
                           {stats ? stats.totalAudioCourses : 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Audio Cursos</div>
                       </div>
-                      <div className="text-center p-4 rounded-xl bg-cyan-100 border border-cyan-200">
+                      <div className="text-center p-4 rounded-xl bg-cyan-100 dark:bg-cyan-950/50 border border-cyan-200 dark:border-cyan-800">
                         <div className="text-2xl font-bold text-cyan-600">
                           {stats ? stats.totalClasses : 0}
                         </div>

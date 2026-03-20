@@ -216,7 +216,7 @@ export default function EvercastAlbumPage() {
 
       {/* Trial Upgrade Banner */}
       {isTrialUser && hasLockedLessons && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-2 border-amber-300 rounded-xl p-5 mx-4 md:mx-8">
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-2 border-amber-300 dark:border-amber-800 rounded-xl p-5 mx-4 md:mx-8">
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shrink-0">
               <Sparkles className="h-6 w-6 text-amber-500" />
@@ -331,7 +331,7 @@ export default function EvercastAlbumPage() {
                             locked
                               ? "cursor-pointer opacity-50 hover:opacity-70"
                               : "cursor-pointer hover:bg-white/5",
-                            isPlaying ? "bg-emerald-100 border border-emerald-300" : ""
+                            isPlaying ? "bg-emerald-100 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800" : ""
                           )}
                           onClick={() => handlePlay(lesson)}
                         >

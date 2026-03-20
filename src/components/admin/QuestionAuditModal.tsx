@@ -262,15 +262,15 @@ export function QuestionAuditModal({ open, onOpenChange }: Props) {
                 <p className="text-xs text-muted-foreground">Total auditadas</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-1">
+              <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 p-3 space-y-1">
                 <p className="text-xs text-blue-600">Ortografia corrigida</p>
                 <p className="text-2xl font-bold text-blue-700">{stats.spellingFixed}</p>
               </div>
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 space-y-1">
+              <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 p-3 space-y-1">
                 <p className="text-xs text-green-600">Explicacoes geradas</p>
                 <p className="text-2xl font-bold text-green-700">{stats.explanationsGenerated}</p>
               </div>
-              <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 space-y-1">
+              <div className="rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 p-3 space-y-1">
                 <div className="flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3 text-orange-500" />
                   <p className="text-xs text-orange-600">Gabaritos suspeitos</p>

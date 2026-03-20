@@ -289,7 +289,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.users.trend,
           icon: Users,
           color: 'text-blue-600',
-          bg: 'bg-blue-100',
+          bg: 'bg-blue-100 dark:bg-blue-950/50',
         },
         {
           label: 'Redacoes Pendentes',
@@ -298,7 +298,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.activeUsers.trend,
           icon: FileText,
           color: 'text-emerald-600',
-          bg: 'bg-emerald-100',
+          bg: 'bg-emerald-100 dark:bg-emerald-950/50',
         },
         {
           label: 'Minhas Turmas',
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.classes.trend,
           icon: GraduationCap,
           color: 'text-violet-600',
-          bg: 'bg-violet-100',
+          bg: 'bg-violet-100 dark:bg-violet-950/50',
         },
         {
           label: 'Taxa de Conclusao',
@@ -316,7 +316,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.completionRate.trend,
           icon: CheckCircle,
           color: 'text-amber-600',
-          bg: 'bg-amber-100',
+          bg: 'bg-amber-100 dark:bg-amber-950/50',
         },
       ]
     : [
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.users.trend,
           icon: Users,
           color: 'text-blue-600',
-          bg: 'bg-blue-100',
+          bg: 'bg-blue-100 dark:bg-blue-950/50',
         },
         {
           label: 'Usuarios Ativos',
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.activeUsers.trend,
           icon: Activity,
           color: 'text-emerald-600',
-          bg: 'bg-emerald-100',
+          bg: 'bg-emerald-100 dark:bg-emerald-950/50',
         },
         {
           label: 'Turmas Ativas',
@@ -345,7 +345,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.classes.trend,
           icon: GraduationCap,
           color: 'text-violet-600',
-          bg: 'bg-violet-100',
+          bg: 'bg-violet-100 dark:bg-violet-950/50',
         },
         {
           label: 'Taxa de Conclusao',
@@ -354,7 +354,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.completionRate.trend,
           icon: CheckCircle,
           color: 'text-amber-600',
-          bg: 'bg-amber-100',
+          bg: 'bg-amber-100 dark:bg-amber-950/50',
         },
       ]
 
@@ -384,7 +384,7 @@ export default function AdminDashboard() {
   if (teacherError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-100 flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center">
           <AlertCircle className="w-8 h-8 text-amber-500" />
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">Perfil de Professor Incompleto</h3>
@@ -405,7 +405,7 @@ export default function AdminDashboard() {
             {isTeacher ? 'Visao geral das suas turmas' : 'Visao geral da plataforma'}
           </p>
         </div>
-        <Badge variant="outline" className="bg-emerald-100 border-emerald-300 text-emerald-700 w-fit">
+        <Badge variant="outline" className="bg-emerald-100 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-800 text-emerald-700 w-fit">
           <Activity className="h-3 w-3 mr-1.5" />
           Sistema Online
         </Badge>
@@ -420,8 +420,8 @@ export default function AdminDashboard() {
               className={cn(
                 "flex items-start gap-3 p-3 rounded-lg border text-sm",
                 alert.type === 'warning'
-                  ? "bg-amber-100 border-amber-400 text-amber-900"
-                  : "bg-blue-100 border-blue-400 text-blue-900"
+                  ? "bg-amber-100 dark:bg-amber-950/50 border-amber-400 text-amber-900"
+                  : "bg-blue-100 dark:bg-blue-950/50 border-blue-400 text-blue-900"
               )}
             >
               <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -595,7 +595,7 @@ export default function AdminDashboard() {
                 <span className="text-sm font-medium text-foreground/80">Total de Redacoes</span>
                 <span className="text-lg font-bold text-foreground">{stats.totalEssays}</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-amber-100">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-amber-100 dark:bg-amber-950/50">
                 <span className="text-sm font-medium text-amber-800">Aguardando Correcao</span>
                 <span className="text-lg font-bold text-amber-800">{kpiChanges.activeUsers.current}</span>
               </div>

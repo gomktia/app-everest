@@ -176,11 +176,11 @@ export const ShareResultsDialog = ({
                 variant="outline"
                 className={cn(
                   "text-sm px-3 py-1",
-                  percentage >= 90 && "bg-purple-100 text-purple-600 border-purple-300",
-                  percentage >= 80 && percentage < 90 && "bg-green-100 text-green-600 border-green-300",
-                  percentage >= 70 && percentage < 80 && "bg-blue-100 text-blue-600 border-blue-300",
-                  percentage >= 60 && percentage < 70 && "bg-yellow-100 text-yellow-600 border-yellow-300",
-                  percentage < 60 && "bg-red-100 text-red-600 border-red-300"
+                  percentage >= 90 && "bg-purple-100 dark:bg-purple-950/50 text-purple-600 border-purple-300 dark:border-purple-800",
+                  percentage >= 80 && percentage < 90 && "bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800",
+                  percentage >= 70 && percentage < 80 && "bg-blue-100 dark:bg-blue-950/50 text-blue-600 border-blue-300 dark:border-blue-800",
+                  percentage >= 60 && percentage < 70 && "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-600 border-yellow-300 dark:border-yellow-800",
+                  percentage < 60 && "bg-red-100 dark:bg-red-950/50 text-red-600 border-red-300 dark:border-red-800"
                 )}
               >
                 {performanceText}

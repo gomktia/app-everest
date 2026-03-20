@@ -16,7 +16,7 @@ export function OfflineBanner({ fromCache, cachedAt }: OfflineBannerProps) {
     : ''
 
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-amber-100 border border-amber-300 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+    <div className="flex items-center gap-2 rounded-lg bg-amber-100 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-800 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
       <WifiOff className="h-3.5 w-3.5 shrink-0" />
       <span>
         Modo offline — exibindo dados do último acesso{timeAgo ? ` (${timeAgo})` : ''}

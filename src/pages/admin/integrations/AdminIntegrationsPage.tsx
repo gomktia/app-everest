@@ -257,10 +257,10 @@ export default function AdminIntegrationsPage() {
 
   const statusBadge = (status: Integration['status']) => {
     switch (status) {
-      case 'connected': return <Badge className="bg-green-100 text-green-600 border-green-300">Conectado</Badge>
+      case 'connected': return <Badge className="bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800">Conectado</Badge>
       case 'error': return <Badge variant="destructive">Erro</Badge>
       case 'checking': return <Badge variant="secondary">Verificando...</Badge>
-      default: return <Badge variant="outline" className="text-yellow-600 border-yellow-300">Desconectado</Badge>
+      default: return <Badge variant="outline" className="text-yellow-600 border-yellow-300 dark:border-yellow-800">Desconectado</Badge>
     }
   }
 
@@ -274,7 +274,7 @@ export default function AdminIntegrationsPage() {
     return (
       <Card key={integration.id} className={cn(
         'border-border shadow-sm overflow-hidden transition-all hover:shadow-md',
-        integration.status === 'error' && 'border-red-300'
+        integration.status === 'error' && 'border-red-300 dark:border-red-800'
       )}>
         {/* Banner gradient */}
         <div className={cn('h-2 bg-gradient-to-r', integration.bgGradient)} />

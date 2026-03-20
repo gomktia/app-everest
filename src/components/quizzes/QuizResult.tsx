@@ -165,10 +165,10 @@ export const QuizResult = ({
               {/* Performance Badge */}
               <div className={cn(
                 "inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 font-semibold",
-                performance.color === 'green' && "bg-green-100 border-green-300 text-green-600",
-                performance.color === 'blue' && "bg-blue-100 border-blue-300 text-blue-600",
-                performance.color === 'yellow' && "bg-yellow-100 border-yellow-300 text-yellow-600",
-                performance.color === 'red' && "bg-red-100 border-red-300 text-red-600"
+                performance.color === 'green' && "bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600",
+                performance.color === 'blue' && "bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-600",
+                performance.color === 'yellow' && "bg-yellow-100 dark:bg-yellow-950/50 border-yellow-300 dark:border-yellow-800 text-yellow-600",
+                performance.color === 'red' && "bg-red-100 dark:bg-red-950/50 border-red-300 dark:border-red-800 text-red-600"
               )}>
                 <PerformanceIcon className="h-5 w-5" />
                 {performance.level}
@@ -177,17 +177,17 @@ export const QuizResult = ({
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-6">
-              <div className="text-center p-6 rounded-xl bg-green-100 border border-green-300">
+              <div className="text-center p-6 rounded-xl bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                 <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-3" />
                 <div className="text-3xl font-bold text-green-600">{score}</div>
                 <div className="text-sm text-muted-foreground">Corretas</div>
               </div>
-              <div className="text-center p-6 rounded-xl bg-red-100 border border-red-300">
+              <div className="text-center p-6 rounded-xl bg-red-100 dark:bg-red-950/50 border border-red-300 dark:border-red-800">
                 <XCircle className="h-8 w-8 text-red-500 mx-auto mb-3" />
                 <div className="text-3xl font-bold text-red-600">{questions.length - score}</div>
                 <div className="text-sm text-muted-foreground">Incorretas</div>
               </div>
-              <div className="text-center p-6 rounded-xl bg-blue-100 border border-blue-300">
+              <div className="text-center p-6 rounded-xl bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                 <Clock className="h-8 w-8 text-blue-500 mx-auto mb-3" />
                 <div className="text-3xl font-bold text-blue-600">
                   {durationSeconds ? `${Math.floor(durationSeconds / 60)}min` : '—'}
@@ -223,8 +223,8 @@ export const QuizResult = ({
                         <div className={cn(
                           "p-2 rounded-lg",
                           isCorrect 
-                            ? "bg-green-100 text-green-600" 
-                            : "bg-red-100 text-red-600"
+                            ? "bg-green-100 dark:bg-green-950/50 text-green-600" 
+                            : "bg-red-100 dark:bg-red-950/50 text-red-600"
                         )}>
                           {isCorrect ? (
                             <CheckCircle className="h-5 w-5" />
@@ -259,7 +259,7 @@ export const QuizResult = ({
                           </div>
                           
                           {!isCorrect && (
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/5 border border-green-300">
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/5 border border-green-300 dark:border-green-800">
                               <span className="text-sm font-medium text-muted-foreground">Resposta correta:</span>
                               <span className="font-semibold text-green-600">
                                 {q.correctAnswer}
@@ -273,7 +273,7 @@ export const QuizResult = ({
                           const explanation = q.explanation || aiExplanations[q.id]
                           if (explanation) {
                             return (
-                              <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-300">
+                              <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-300 dark:border-blue-800">
                                 <div className="flex items-center gap-2 mb-2">
                                   <Lightbulb className="h-4 w-4 text-blue-500" />
                                   <span className="text-sm font-semibold text-blue-600">Explicação</span>
@@ -287,7 +287,7 @@ export const QuizResult = ({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="gap-2 text-blue-600 border-blue-300 hover:bg-blue-500/10"
+                                className="gap-2 text-blue-600 border-blue-300 dark:border-blue-800 hover:bg-blue-500/10"
                                 onClick={() => handleExplainWithAI(q)}
                                 disabled={loadingExplanation[q.id]}
                               >

@@ -839,11 +839,11 @@ export default function AdminSimulationFormPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {q.correct_answer ? (
-                      <Badge variant="outline" className="text-xs bg-green-100 text-green-600 border-green-300">
+                      <Badge variant="outline" className="text-xs bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800">
                         Resp. definida
                       </Badge>
                     ) : q.question_format !== 'essay' ? (
-                      <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-600 border-yellow-300">
+                      <Badge variant="outline" className="text-xs bg-yellow-100 dark:bg-yellow-950/50 text-yellow-600 border-yellow-300 dark:border-yellow-800">
                         Sem resposta
                       </Badge>
                     ) : null}

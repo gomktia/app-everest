@@ -92,7 +92,7 @@ export default function EvercastPage() {
         <Card className="border-border shadow-sm">
           <CardContent className="text-center py-24">
             <div className="max-w-md mx-auto">
-              <div className="w-20 h-20 mx-auto mb-8 rounded-3xl bg-purple-100 flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-8 rounded-3xl bg-purple-100 dark:bg-purple-950/50 flex items-center justify-center">
                 <Lock className="w-10 h-10 text-purple-600" />
               </div>
               <h3 className="text-2xl font-bold text-foreground mb-4">
@@ -136,7 +136,7 @@ export default function EvercastPage() {
 
       {/* Trial Upgrade Banner */}
       {isTrialUser && evercastCourses.some(c => !enrolledCourseIds.has(c.id)) && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-2 border-amber-300 rounded-xl p-5 mx-4 md:mx-8">
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-2 border-amber-300 dark:border-amber-800 rounded-xl p-5 mx-4 md:mx-8">
           <div className="flex flex-col sm:flex-row gap-4 items-center">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shrink-0">
               <Sparkles className="h-6 w-6 text-amber-500" />

@@ -852,7 +852,7 @@ export default function LessonPlayerPage() {
         <div className={cn(
           "rounded-md flex items-center justify-center shrink-0 font-bold w-6 h-6 text-[10px]",
           modCompleted === modTotal && modTotal > 0
-            ? "bg-emerald-100 text-emerald-600"
+            ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600"
             : "bg-primary/10 text-primary"
         )}>
           {modCompleted === modTotal && modTotal > 0 ? (
@@ -894,7 +894,7 @@ export default function LessonPlayerPage() {
                     modBlocked
                       ? "bg-muted text-muted-foreground border border-transparent"
                       : modProgress === 100
-                        ? "bg-emerald-100 text-emerald-600 border border-emerald-300"
+                        ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-300 dark:border-emerald-800"
                         : isSel
                           ? "bg-primary/10 text-primary border border-primary/20"
                           : "bg-muted text-muted-foreground group-hover/mod:bg-primary/10 group-hover/mod:text-primary group-hover/mod:border-primary/20 border border-transparent"
@@ -1096,7 +1096,7 @@ export default function LessonPlayerPage() {
               <div className="flex-1" />
               <button
                 onClick={() => setTheaterMode(false)}
-                className="p-2.5 rounded-lg bg-emerald-100 text-emerald-500 transition-all hover:bg-emerald-500/30"
+                className="p-2.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/50 text-emerald-500 transition-all hover:bg-emerald-500/30"
                 title="Acender Luz"
               >
                 <Sun className="h-5 w-5" />
@@ -1166,7 +1166,7 @@ export default function LessonPlayerPage() {
 
         {/* ── Trial upgrade banner ── */}
         {isTrialUser && !theaterMode && (
-          <div className="flex items-center justify-between gap-3 px-4 py-2 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-b border-amber-300">
+          <div className="flex items-center justify-between gap-3 px-4 py-2 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border-b border-amber-300 dark:border-amber-800">
             <div className="flex items-center gap-2 min-w-0">
               <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
               <span className="text-sm text-amber-700 dark:text-amber-400 truncate">
@@ -1374,7 +1374,7 @@ export default function LessonPlayerPage() {
                             toast({ title: 'Quiz obrigatório', description: 'Esta aula exige aprovação no quiz para ser concluída, mas nenhum quiz foi vinculado ainda.', variant: 'destructive' })
                           }
                         }}
-                        className="flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px] bg-amber-100 text-amber-600 border border-amber-300 hover:bg-amber-500/20"
+                        className="flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px] bg-amber-100 dark:bg-amber-950/50 text-amber-600 border border-amber-300 dark:border-amber-800 hover:bg-amber-500/20"
                       >
                         <HelpCircle className="h-4 w-4" />
                         Fazer Quiz ({lessonData.quiz_min_percentage || 70}% para concluir)
@@ -1384,7 +1384,7 @@ export default function LessonPlayerPage() {
                         className={cn(
                           "flex items-center gap-2.5 h-10 px-5 rounded-xl text-sm font-semibold transition-all min-h-[44px]",
                           lessonData.completed
-                            ? "bg-emerald-100 text-emerald-500 cursor-default"
+                            ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-500 cursor-default"
                             : "bg-primary hover:bg-emerald-500 text-primary-foreground hover:text-white shadow-sm hover:shadow-md active:scale-[0.97]"
                         )}
                       >
@@ -1778,7 +1778,7 @@ export default function LessonPlayerPage() {
                                 <div className="flex items-start gap-3">
                                   <div className={cn(
                                     "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                                    isPdf ? "bg-red-100 text-red-500" : isOffice ? "bg-orange-100 text-orange-500" : "bg-primary/10 text-primary"
+                                    isPdf ? "bg-red-100 dark:bg-red-950/50 text-red-500" : isOffice ? "bg-orange-100 dark:bg-orange-950/50 text-orange-500" : "bg-primary/10 text-primary"
                                   )}>
                                     <FileText className="h-6 w-6" />
                                   </div>

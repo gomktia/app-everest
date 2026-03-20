@@ -561,8 +561,8 @@ export default function QuestionBankPage() {
         {/* Question card */}
         <Card className={cn(
           'border-border shadow-sm transition-all duration-300',
-          isAnswered && isCorrect && 'border-green-300',
-          isAnswered && !isCorrect && 'border-red-300',
+          isAnswered && isCorrect && 'border-green-300 dark:border-green-800',
+          isAnswered && !isCorrect && 'border-red-300 dark:border-red-800',
         )}>
           <CardContent className="p-6 space-y-5">
             {/* Badges */}
@@ -649,12 +649,12 @@ export default function QuestionBankPage() {
                       onClick={() => handleOptionSelect(option)}
                       className={cn(
                         'flex items-center justify-center gap-2 p-4 rounded-lg border-2 text-base font-bold transition-all cursor-pointer',
-                        !isAnswered && option === 'Certo' && 'border-green-300 hover:bg-green-500/10 hover:border-green-500 text-green-600',
-                        !isAnswered && option === 'Errado' && 'border-red-300 hover:bg-red-500/10 hover:border-red-500 text-red-600',
-                        isAnswered && isCorrectOption && 'bg-green-100 border-green-500 text-green-700',
-                        isAnswered && isSelected && !isCorrectOption && 'bg-red-100 border-red-500 text-red-700',
+                        !isAnswered && option === 'Certo' && 'border-green-300 dark:border-green-800 hover:bg-green-500/10 hover:border-green-500 text-green-600',
+                        !isAnswered && option === 'Errado' && 'border-red-300 dark:border-red-800 hover:bg-red-500/10 hover:border-red-500 text-red-600',
+                        isAnswered && isCorrectOption && 'bg-green-100 dark:bg-green-950/50 border-green-500 text-green-700',
+                        isAnswered && isSelected && !isCorrectOption && 'bg-red-100 dark:bg-red-950/50 border-red-500 text-red-700',
                         isAnswered && !isSelected && !isCorrectOption && 'opacity-40 border-transparent',
-                        isAnswered && !isSelected && isCorrectOption && 'bg-green-100 border-green-500 text-green-700',
+                        isAnswered && !isSelected && isCorrectOption && 'bg-green-100 dark:bg-green-950/50 border-green-500 text-green-700',
                         isAnswered && 'cursor-default',
                       )}
                     >
@@ -673,10 +673,10 @@ export default function QuestionBankPage() {
 
                 if (isAnswered) {
                   if (option === currentQuestion.correct_answer) {
-                    optionStyle = 'bg-green-100 border-green-500 text-green-700 dark:text-green-300 font-medium'
+                    optionStyle = 'bg-green-100 dark:bg-green-950/50 border-green-500 text-green-700 dark:text-green-300 font-medium'
                     icon = <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                   } else if (option === wrongSelection) {
-                    optionStyle = 'bg-red-100 border-red-500 text-red-700 dark:text-red-300'
+                    optionStyle = 'bg-red-100 dark:bg-red-950/50 border-red-500 text-red-700 dark:text-red-300'
                     icon = <XCircle className="h-4 w-4 text-red-500 shrink-0" />
                   } else {
                     optionStyle = 'opacity-50 border-transparent'
@@ -719,8 +719,8 @@ export default function QuestionBankPage() {
                 <div className={cn(
                   'flex items-center gap-3 p-4 rounded-lg',
                   isCorrect
-                    ? 'bg-green-100 border border-green-300'
-                    : 'bg-red-100 border border-red-300'
+                    ? 'bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800'
+                    : 'bg-red-100 dark:bg-red-950/50 border border-red-300 dark:border-red-800'
                 )}>
                   {isCorrect ? (
                     <>
@@ -823,10 +823,10 @@ export default function QuestionBankPage() {
   if (phase === 'summary') {
     const stats = getSummaryStats()
     const getGrade = () => {
-      if (stats.percentage >= 90) return { label: 'Excelente!', color: 'text-green-500', bg: 'bg-green-100 border-green-300' }
-      if (stats.percentage >= 70) return { label: 'Muito Bom!', color: 'text-blue-500', bg: 'bg-blue-100 border-blue-300' }
-      if (stats.percentage >= 50) return { label: 'Regular', color: 'text-yellow-500', bg: 'bg-yellow-100 border-yellow-300' }
-      return { label: 'Precisa Melhorar', color: 'text-red-500', bg: 'bg-red-100 border-red-300' }
+      if (stats.percentage >= 90) return { label: 'Excelente!', color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800' }
+      if (stats.percentage >= 70) return { label: 'Muito Bom!', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800' }
+      if (stats.percentage >= 50) return { label: 'Regular', color: 'text-yellow-500', bg: 'bg-yellow-100 dark:bg-yellow-950/50 border-yellow-300 dark:border-yellow-800' }
+      return { label: 'Precisa Melhorar', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-950/50 border-red-300 dark:border-red-800' }
     }
     const grade = getGrade()
 
@@ -883,7 +883,7 @@ export default function QuestionBankPage() {
               <h3 className="font-semibold text-foreground">Questões que você errou</h3>
               <div className="space-y-3">
                 {wrongQuestions.map((q) => (
-                  <div key={q.id} className="p-4 rounded-lg bg-red-500/5 border border-red-200 space-y-2 transition-all duration-200 hover:bg-red-500/10 hover:border-red-500/20">
+                  <div key={q.id} className="p-4 rounded-lg bg-red-500/5 border border-red-200 dark:border-red-800 space-y-2 transition-all duration-200 hover:bg-red-500/10 hover:border-red-500/20">
                     <div className="flex items-center gap-2 text-xs">
                       <Badge variant="outline">{q.topics?.subjects?.name || 'Geral'}</Badge>
                       <Badge variant="secondary">{q.topics?.name || 'Tópico'}</Badge>

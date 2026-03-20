@@ -217,7 +217,7 @@ export function AIProviderConfigPanel() {
                     </TableCell>
                     <TableCell className="text-center">
                       {provider.is_active ? (
-                        <Badge className="bg-green-100 text-green-600 border-green-300">
+                        <Badge className="bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Ativo
                         </Badge>

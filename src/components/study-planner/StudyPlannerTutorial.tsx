@@ -150,34 +150,34 @@ export function StudyPlannerTutorial({ open, onOpenChange, onComplete }: StudyPl
   const getColorClasses = (color: string) => {
     const colors: Record<string, { bg: string; text: string; border: string }> = {
       blue: {
-        bg: 'bg-blue-100',
+        bg: 'bg-blue-100 dark:bg-blue-950/50',
         text: 'text-blue-600',
-        border: 'border-blue-300'
+        border: 'border-blue-300 dark:border-blue-800'
       },
       orange: {
-        bg: 'bg-orange-100',
+        bg: 'bg-orange-100 dark:bg-orange-950/50',
         text: 'text-orange-600',
-        border: 'border-orange-300'
+        border: 'border-orange-300 dark:border-orange-800'
       },
       green: {
-        bg: 'bg-green-100',
+        bg: 'bg-green-100 dark:bg-green-950/50',
         text: 'text-green-600',
-        border: 'border-green-300'
+        border: 'border-green-300 dark:border-green-800'
       },
       purple: {
-        bg: 'bg-purple-100',
+        bg: 'bg-purple-100 dark:bg-purple-950/50',
         text: 'text-purple-600',
-        border: 'border-purple-300'
+        border: 'border-purple-300 dark:border-purple-800'
       },
       cyan: {
-        bg: 'bg-cyan-100',
+        bg: 'bg-cyan-100 dark:bg-cyan-950/50',
         text: 'text-cyan-600',
-        border: 'border-cyan-300'
+        border: 'border-cyan-300 dark:border-cyan-800'
       },
       yellow: {
-        bg: 'bg-yellow-100',
+        bg: 'bg-yellow-100 dark:bg-yellow-950/50',
         text: 'text-yellow-600',
-        border: 'border-yellow-300'
+        border: 'border-yellow-300 dark:border-yellow-800'
       }
     }
     return colors[color] || colors.blue

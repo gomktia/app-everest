@@ -32,7 +32,7 @@ export function LiveBanner() {
   const live = activeLives[0]
 
   return (
-    <div className="relative overflow-hidden rounded-lg border border-red-300 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent p-3 sm:p-4">
+    <div className="relative overflow-hidden rounded-lg border border-red-300 dark:border-red-800 bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent p-3 sm:p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="relative flex items-center justify-center shrink-0" aria-hidden="true">

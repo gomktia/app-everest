@@ -65,9 +65,9 @@ const eventIcons = {
 }
 
 const eventColors = {
-  exam: 'bg-blue-100 text-blue-600 dark:text-blue-400',
-  deadline: 'bg-red-100 text-red-600 dark:text-red-400',
-  live: 'bg-emerald-100 text-emerald-600 dark:text-emerald-400',
+  exam: 'bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400',
+  deadline: 'bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400',
+  live: 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400',
 }
 
 export default function DashboardPage() {
@@ -255,35 +255,35 @@ export default function DashboardPage() {
       value: stats.activeCourses,
       icon: BookOpen,
       color: 'text-blue-600 dark:text-blue-400',
-      bg: 'bg-blue-100',
+      bg: 'bg-blue-100 dark:bg-blue-950/50',
     },
     {
       label: 'Progresso Médio',
       value: `${stats.averageProgress}%`,
       icon: TrendingUp,
       color: 'text-emerald-600 dark:text-emerald-400',
-      bg: 'bg-emerald-100',
+      bg: 'bg-emerald-100 dark:bg-emerald-950/50',
     },
     {
       label: 'Aulas Concluídas',
       value: stats.completedLessons,
       icon: CheckCircle,
       color: 'text-violet-600 dark:text-violet-400',
-      bg: 'bg-violet-100',
+      bg: 'bg-violet-100 dark:bg-violet-950/50',
     },
     {
       label: 'Horas de Estudo',
       value: `${stats.studyTime}h`,
       icon: Clock,
       color: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-100',
+      bg: 'bg-amber-100 dark:bg-amber-950/50',
     },
     {
       label: 'Dias em Sequência',
       value: streak,
       icon: Zap,
       color: 'text-orange-600 dark:text-orange-400',
-      bg: 'bg-orange-100',
+      bg: 'bg-orange-100 dark:bg-orange-950/50',
     },
   ]
 

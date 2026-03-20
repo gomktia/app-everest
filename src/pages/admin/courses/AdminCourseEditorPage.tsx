@@ -227,7 +227,7 @@ function SortableModuleItem({
             {module.lessons.length} {module.lessons.length === 1 ? 'aula' : 'aulas'}
           </Badge>
           {module.is_active ? (
-            <Badge className="text-[10px] bg-emerald-100 text-emerald-600 border-emerald-300">Ativo</Badge>
+            <Badge className="text-[10px] bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 border-emerald-300 dark:border-emerald-800">Ativo</Badge>
           ) : (
             <Badge variant="outline" className="text-[10px] text-muted-foreground">Inativo</Badge>
           )}
@@ -1302,7 +1302,7 @@ export default function AdminCourseEditorPage() {
                 {isNewCourse ? 'Novo Curso' : 'Editar Curso'}
               </h1>
               {hasChanges && (
-                <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-500 bg-amber-100">
+                <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-500 bg-amber-100 dark:bg-amber-950/50">
                   <AlertTriangle className="h-2.5 w-2.5 mr-1" />
                   Alterações não salvas
                 </Badge>

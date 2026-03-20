@@ -275,7 +275,7 @@ export default function CheckoutPage() {
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-md text-sm font-medium transition-colors ${
                     paymentMethod === tab.key
                       ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-950/50 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {tab.icon}

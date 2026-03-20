@@ -81,7 +81,7 @@ export function OfflineIndicator() {
             {/* Ícone de status */}
             <div
               className={`p-2 rounded-full ${
-                isOnline ? 'bg-green-100' : 'bg-red-100'
+                isOnline ? 'bg-green-100 dark:bg-green-950/50' : 'bg-red-100 dark:bg-red-950/50'
               }`}
             >
               {isOnline ? (

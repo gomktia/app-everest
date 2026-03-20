@@ -194,7 +194,7 @@ export default function CouponsPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-lg bg-green-100 p-3">
+            <div className="rounded-lg bg-green-100 dark:bg-green-950/50 p-3">
               <Tag className="h-5 w-5 text-green-500" />
             </div>
             <div>
@@ -205,7 +205,7 @@ export default function CouponsPage() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-lg bg-blue-100 p-3">
+            <div className="rounded-lg bg-blue-100 dark:bg-blue-950/50 p-3">
               <Hash className="h-5 w-5 text-blue-500" />
             </div>
             <div>
@@ -216,7 +216,7 @@ export default function CouponsPage() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-lg bg-yellow-100 p-3">
+            <div className="rounded-lg bg-yellow-100 dark:bg-yellow-950/50 p-3">
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
             </div>
             <div>

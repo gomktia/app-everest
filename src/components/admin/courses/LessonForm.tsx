@@ -604,7 +604,7 @@ export const LessonForm = ({ moduleIndex, lessonIndex }: LessonFormProps) => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="text-purple-600 border-purple-300 hover:bg-purple-50 hover:text-purple-700"
+                  className="text-purple-600 border-purple-300 dark:border-purple-800 hover:bg-purple-50 hover:text-purple-700"
                   onClick={() => {
                     setGeneratedQuestions([])
                     setIsQuizGenOpen(true)

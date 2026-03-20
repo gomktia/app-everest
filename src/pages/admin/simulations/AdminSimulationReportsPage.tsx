@@ -321,7 +321,7 @@ export default function AdminSimulationReportsPage() {
                   <div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
                       <h1 className="text-xl md:text-2xl font-bold text-foreground">{simulation.name}</h1>
-                      <Badge variant="outline" className="bg-blue-100 border-blue-300 text-blue-600 w-fit">
+                      <Badge variant="outline" className="bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-600 w-fit">
                         {simulation.totalQuestions} questões
                       </Badge>
                     </div>
@@ -578,9 +578,9 @@ export default function AdminSimulationReportsPage() {
                           <Badge
                             variant="outline"
                             className={cn(
-                              parseFloat(percentCorrect) >= 70 ? "bg-green-100 border-green-300 text-green-600" :
-                              parseFloat(percentCorrect) >= 50 ? "bg-orange-100 border-orange-300 text-orange-600" :
-                              "bg-red-100 border-red-300 text-red-600"
+                              parseFloat(percentCorrect) >= 70 ? "bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600" :
+                              parseFloat(percentCorrect) >= 50 ? "bg-orange-100 dark:bg-orange-950/50 border-orange-300 dark:border-orange-800 text-orange-600" :
+                              "bg-red-100 dark:bg-red-950/50 border-red-300 dark:border-red-800 text-red-600"
                             )}
                           >
                             {percentCorrect}%
@@ -628,9 +628,9 @@ export default function AdminSimulationReportsPage() {
                           <div
                             className={cn(
                               "flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full font-bold text-sm md:text-base",
-                              student.rank === 1 ? "bg-yellow-100 text-yellow-700" :
+                              student.rank === 1 ? "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700" :
                               student.rank === 2 ? "bg-muted text-foreground/80" :
-                              student.rank === 3 ? "bg-orange-100 text-orange-700" :
+                              student.rank === 3 ? "bg-orange-100 dark:bg-orange-950/50 text-orange-700" :
                               "bg-muted text-muted-foreground"
                             )}
                           >
@@ -645,7 +645,7 @@ export default function AdminSimulationReportsPage() {
                         </div>
                         <Badge
                           variant="outline"
-                          className="bg-green-100 border-green-300 text-green-600 text-sm md:text-base"
+                          className="bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600 text-sm md:text-base"
                         >
                           {student.score}%
                         </Badge>
@@ -699,14 +699,14 @@ export default function AdminSimulationReportsPage() {
                               variant="outline"
                               className={cn(
                                 attempt.score >= 60
-                                  ? "bg-green-100 border-green-300 text-green-600"
-                                  : "bg-orange-100 border-orange-300 text-orange-600"
+                                  ? "bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600"
+                                  : "bg-orange-100 dark:bg-orange-950/50 border-orange-300 dark:border-orange-800 text-orange-600"
                               )}
                             >
                               {attempt.score}%
                             </Badge>
                             {!attempt.completed && (
-                              <Badge variant="outline" className="bg-yellow-100 border-yellow-300 text-yellow-600">
+                              <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-950/50 border-yellow-300 dark:border-yellow-800 text-yellow-600">
                                 Incompleto
                               </Badge>
                             )}

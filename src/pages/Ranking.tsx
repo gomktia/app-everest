@@ -592,7 +592,7 @@ export default function RankingPage() {
                               {entry.name}
                             </p>
                           </div>
-                          <Badge variant="outline" className="bg-green-100 text-green-600 border-green-300 font-bold">
+                          <Badge variant="outline" className="bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800 font-bold">
                             {entry.score.toFixed(0)}%
                           </Badge>
                         </div>
@@ -634,7 +634,7 @@ export default function RankingPage() {
                               {entry.name}
                             </p>
                           </div>
-                          <Badge variant="outline" className="bg-blue-100 text-blue-600 border-blue-300 font-bold">
+                          <Badge variant="outline" className="bg-blue-100 dark:bg-blue-950/50 text-blue-600 border-blue-300 dark:border-blue-800 font-bold">
                             {entry.score}
                           </Badge>
                         </div>

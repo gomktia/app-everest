@@ -116,7 +116,7 @@ function CiaarCorrectionTabs({ correction, expressionDebit, structureDebit, cont
                       </div>
                       <Badge
                         variant={analysis.debit_value > 0 ? 'destructive' : 'outline'}
-                        className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300')}
+                        className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300 dark:border-green-800')}
                       >
                         {analysis.debit_value > 0 ? `-${analysis.debit_value.toFixed(3)}` : 'OK'}
                       </Badge>
@@ -154,7 +154,7 @@ function CiaarCorrectionTabs({ correction, expressionDebit, structureDebit, cont
                         </Badge>
                         <Badge
                           variant={analysis.debit_value > 0 ? 'destructive' : 'outline'}
-                          className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300')}
+                          className={cn('text-[10px]', analysis.debit_value === 0 && 'text-green-600 border-green-300 dark:border-green-800')}
                         >
                           {analysis.debit_value > 0 ? `-${analysis.debit_value.toFixed(3)}` : 'Sem débito'}
                         </Badge>
@@ -343,8 +343,8 @@ export default function EssayDetailsPage() {
                   className={cn(
                     'text-xs',
                     isCorrected
-                      ? 'bg-green-100 text-green-600 border-green-300'
-                      : 'bg-yellow-100 text-yellow-600 border-yellow-300',
+                      ? 'bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800'
+                      : 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-600 border-yellow-300 dark:border-yellow-800',
                   )}
                 >
                   {isCorrected ? <CheckCircle className="h-3 w-3 mr-1" /> : <AlertCircle className="h-3 w-3 mr-1" />}

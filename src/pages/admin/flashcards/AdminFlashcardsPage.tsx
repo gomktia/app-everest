@@ -100,7 +100,7 @@ export default function AdminFlashcardsPage() {
             <CardContent className="p-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="p-3 rounded-2xl bg-blue-100">
+                  <div className="p-3 rounded-2xl bg-blue-100 dark:bg-blue-950/50">
                     <BookOpen className="h-6 w-6 text-blue-500" />
                   </div>
                 </div>
@@ -116,7 +116,7 @@ export default function AdminFlashcardsPage() {
             <CardContent className="p-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="p-3 rounded-2xl bg-green-100">
+                  <div className="p-3 rounded-2xl bg-green-100 dark:bg-green-950/50">
                     <Layers className="h-6 w-6 text-green-500" />
                   </div>
                 </div>
@@ -132,7 +132,7 @@ export default function AdminFlashcardsPage() {
             <CardContent className="p-5">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="p-3 rounded-2xl bg-purple-100">
+                  <div className="p-3 rounded-2xl bg-purple-100 dark:bg-purple-950/50">
                     <TrendingUp className="h-6 w-6 text-purple-500" />
                   </div>
                   <Badge variant="secondary" className="text-xs">Ativo</Badge>

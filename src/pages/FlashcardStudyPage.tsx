@@ -422,12 +422,12 @@ export default function FlashcardStudyPage() {
           <CardContent className="p-3">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-950/50">
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   <span className="font-bold text-green-600 text-sm">{correctCount}</span>
                   <span className="text-xs text-muted-foreground hidden sm:inline">acertos</span>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-950/50">
                   <XCircle className="h-4 w-4 text-red-500" />
                   <span className="font-bold text-red-600 text-sm">{incorrectCount}</span>
                   <span className="text-xs text-muted-foreground hidden sm:inline">erros</span>
@@ -506,7 +506,7 @@ export default function FlashcardStudyPage() {
                 {lastAnswer && (
                   <div className={cn(
                     'absolute inset-0 flex items-center justify-center rounded-xl transition-opacity duration-300',
-                    lastAnswer === 'correct' ? 'bg-green-100' : 'bg-red-100',
+                    lastAnswer === 'correct' ? 'bg-green-100 dark:bg-green-950/50' : 'bg-red-100 dark:bg-red-950/50',
                   )}>
                     {lastAnswer === 'correct'
                       ? <CheckCircle className="h-24 w-24 text-green-500/50" />
@@ -534,7 +534,7 @@ export default function FlashcardStudyPage() {
               <div className="h-1.5 bg-green-500 w-full" />
               <CardContent className="h-full flex flex-col p-6 pt-5" style={{ minHeight: '344px' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <Badge className="bg-green-100 text-green-600 border-green-300 hover:bg-green-500/10">
+                  <Badge className="bg-green-100 dark:bg-green-950/50 text-green-600 border-green-300 dark:border-green-800 hover:bg-green-500/10">
                     <CheckCircle className="mr-1 h-3 w-3" />
                     Resposta
                   </Badge>
@@ -554,7 +554,7 @@ export default function FlashcardStudyPage() {
                     </p>
                   </div>
                   {currentCard.explanation && (
-                    <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-300 mt-4">
+                    <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-300 dark:border-blue-800 mt-4">
                       <p className="text-xs font-semibold text-blue-600 mb-1">Explicação:</p>
                       <p className="text-xs sm:text-sm text-foreground line-clamp-6">{currentCard.explanation}</p>
                     </div>
@@ -572,7 +572,7 @@ export default function FlashcardStudyPage() {
                 {lastAnswer && (
                   <div className={cn(
                     'absolute inset-0 flex items-center justify-center rounded-xl transition-opacity duration-300',
-                    lastAnswer === 'correct' ? 'bg-green-100' : 'bg-red-100',
+                    lastAnswer === 'correct' ? 'bg-green-100 dark:bg-green-950/50' : 'bg-red-100 dark:bg-red-950/50',
                   )}>
                     {lastAnswer === 'correct'
                       ? <CheckCircle className="h-24 w-24 text-green-500/50" />
@@ -593,7 +593,7 @@ export default function FlashcardStudyPage() {
                 onClick={() => handleAnswer(1)}
                 className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-red-200 bg-red-50 dark:border-red-500/30 dark:bg-red-500/50 p-4 transition-all hover:border-red-400 hover:shadow-md active:scale-[0.97]"
               >
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/50 flex items-center justify-center">
                   <XCircle className="h-5 w-5 text-red-500" />
                 </div>
                 <span className="text-sm font-bold text-red-600">Difícil</span>
@@ -603,7 +603,7 @@ export default function FlashcardStudyPage() {
                 onClick={() => handleAnswer(3)}
                 className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-yellow-200 bg-yellow-50 dark:border-yellow-500/30 dark:bg-yellow-500/50 p-4 transition-all hover:border-yellow-400 hover:shadow-md active:scale-[0.97]"
               >
-                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-950/50 flex items-center justify-center">
                   <Clock className="h-5 w-5 text-yellow-500" />
                 </div>
                 <span className="text-sm font-bold text-yellow-600">Médio</span>
@@ -613,7 +613,7 @@ export default function FlashcardStudyPage() {
                 onClick={() => handleAnswer(5)}
                 className="flex flex-col items-center gap-1.5 rounded-xl border-2 border-green-200 bg-green-50 dark:border-green-500/30 dark:bg-green-500/50 p-4 transition-all hover:border-green-400 hover:shadow-md active:scale-[0.97]"
               >
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center">
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 </div>
                 <span className="text-sm font-bold text-green-600">Fácil</span>

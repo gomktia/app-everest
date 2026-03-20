@@ -145,11 +145,11 @@ export default function AdminCoursesPage() {
     const status = (course as any).status || (course.is_active ? 'published' : 'draft')
     switch (status) {
       case 'published':
-        return <Badge className="bg-green-100 text-green-500 font-semibold">Publicado</Badge>
+        return <Badge className="bg-green-100 dark:bg-green-950/50 text-green-500 font-semibold">Publicado</Badge>
       case 'draft':
         return <Badge variant="secondary" className="font-semibold">Rascunho</Badge>
       case 'coming_soon':
-        return <Badge className="bg-orange-100 text-orange-500 font-semibold">Em Breve</Badge>
+        return <Badge className="bg-orange-100 dark:bg-orange-950/50 text-orange-500 font-semibold">Em Breve</Badge>
       default:
         return <Badge variant="secondary" className="font-semibold">Rascunho</Badge>
     }
@@ -193,19 +193,19 @@ export default function AdminCoursesPage() {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-4 gap-4">
-                <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300">
+                <div className="text-center p-4 rounded-xl bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                   <BookOpen className="h-6 w-6 text-blue-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-blue-600">{courses.length}</div>
                   <div className="text-sm text-muted-foreground">Total de Cursos</div>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-green-100 border border-green-300">
+                <div className="text-center p-4 rounded-xl bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                   <Play className="h-6 w-6 text-green-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-green-600">
                     {courses.filter(c => c.is_active).length}
                   </div>
                   <div className="text-sm text-muted-foreground">Publicados</div>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-purple-100 border border-purple-300">
+                <div className="text-center p-4 rounded-xl bg-purple-100 dark:bg-purple-950/50 border border-purple-300 dark:border-purple-800">
                   <Users className="h-6 w-6 text-purple-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-purple-600">
                     {totalStudents.toLocaleString('pt-BR')}

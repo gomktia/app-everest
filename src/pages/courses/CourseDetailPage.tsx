@@ -372,9 +372,9 @@ export default function CourseDetailPage() {
 
         {/* ── Storefront Banner (non-enrolled) ── */}
         {!isEnrolled && course && (
-          <div className="bg-gradient-to-r from-orange-500/10 to-amber-500/10 border-2 border-orange-300 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-orange-500/10 to-amber-500/10 border-2 border-orange-300 dark:border-orange-800 rounded-xl p-6">
             <div className="flex flex-col md:flex-row gap-6 items-center">
-              <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center shrink-0">
+              <div className="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-950/50 flex items-center justify-center shrink-0">
                 <Lock className="h-8 w-8 text-orange-500" />
               </div>
               <div className="flex-1 space-y-2 text-center md:text-left">
@@ -606,7 +606,7 @@ function StatBadge({
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm cursor-default transition-all duration-200',
         highlight
-          ? 'border-green-300 bg-green-100 text-green-500 hover:bg-green-500/20 hover:border-green-500/50'
+          ? 'border-green-300 dark:border-green-800 bg-green-100 dark:bg-green-950/50 text-green-500 hover:bg-green-500/20 hover:border-green-500/50'
           : 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/15 hover:border-primary/40 hover:shadow-sm'
       )}
     >
@@ -858,7 +858,7 @@ function ModuleListView({
                       className={cn(
                         'flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold',
                         allCompleted
-                          ? 'bg-green-100 text-green-500'
+                          ? 'bg-green-100 dark:bg-green-950/50 text-green-500'
                           : 'bg-primary/10 text-primary'
                       )}
                     >

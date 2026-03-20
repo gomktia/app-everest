@@ -421,12 +421,12 @@ export default function AdminAcervoPage() {
                                         variant="outline"
                                         className={cn(
                                           "font-semibold",
-                                          item.category === 'livro' && "border-green-300 text-green-600 bg-green-100",
-                                          item.category === 'prova' && "border-blue-300 text-blue-600 bg-blue-100",
-                                          item.category === 'apostila' && "border-amber-300 text-amber-600 bg-amber-100",
-                                          item.category === 'exercicio' && "border-purple-300 text-purple-600 bg-purple-100",
-                                          item.category === 'regulamento' && "border-red-300 text-red-600 bg-red-100",
-                                          item.category === 'mapa_mental' && "border-teal-300 text-teal-600 bg-teal-100",
+                                          item.category === 'livro' && "border-green-300 dark:border-green-800 text-green-600 bg-green-100 dark:bg-green-950/50",
+                                          item.category === 'prova' && "border-blue-300 dark:border-blue-800 text-blue-600 bg-blue-100 dark:bg-blue-950/50",
+                                          item.category === 'apostila' && "border-amber-300 dark:border-amber-800 text-amber-600 bg-amber-100 dark:bg-amber-950/50",
+                                          item.category === 'exercicio' && "border-purple-300 dark:border-purple-800 text-purple-600 bg-purple-100 dark:bg-purple-950/50",
+                                          item.category === 'regulamento' && "border-red-300 dark:border-red-800 text-red-600 bg-red-100 dark:bg-red-950/50",
+                                          item.category === 'mapa_mental' && "border-teal-300 dark:border-teal-800 text-teal-600 bg-teal-100 dark:bg-teal-950/50",
                                         )}
                                       >
                                         {CATEGORIES.find(c => c.value === item.category)?.label || item.category}
@@ -492,22 +492,22 @@ export default function AdminAcervoPage() {
                   <Card className="border-border shadow-sm">
                     <CardContent className="p-5">
                       <div className="grid grid-cols-4 gap-4">
-                        <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300">
+                        <div className="text-center p-4 rounded-xl bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                           <Library className="h-6 w-6 text-blue-500 mx-auto mb-2" />
                           <div className="text-2xl font-bold text-blue-600">{items.length}</div>
                           <div className="text-sm text-muted-foreground">Total de Itens</div>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-green-100 border border-green-300">
+                        <div className="text-center p-4 rounded-xl bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                           <BookOpen className="h-6 w-6 text-green-500 mx-auto mb-2" />
                           <div className="text-2xl font-bold text-green-600">{livrosCount}</div>
                           <div className="text-sm text-muted-foreground">Livros</div>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-purple-100 border border-purple-300">
+                        <div className="text-center p-4 rounded-xl bg-purple-100 dark:bg-purple-950/50 border border-purple-300 dark:border-purple-800">
                           <FileText className="h-6 w-6 text-purple-500 mx-auto mb-2" />
                           <div className="text-2xl font-bold text-purple-600">{provasCount}</div>
                           <div className="text-sm text-muted-foreground">Provas</div>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-orange-100 border border-orange-300">
+                        <div className="text-center p-4 rounded-xl bg-orange-100 dark:bg-orange-950/50 border border-orange-300 dark:border-orange-800">
                           <Download className="h-6 w-6 text-orange-500 mx-auto mb-2" />
                           <div className="text-2xl font-bold text-orange-600">{concursosCount}</div>
                           <div className="text-sm text-muted-foreground">Concursos</div>

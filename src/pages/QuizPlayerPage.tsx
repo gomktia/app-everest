@@ -243,7 +243,7 @@ export default function QuizPlayerPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 border border-blue-300">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                   <Target className="h-4 w-4 text-blue-500" />
                   <span className="text-sm font-medium">Quiz</span>
                 </div>
@@ -275,17 +275,17 @@ export default function QuizPlayerPage() {
 
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 rounded-xl bg-green-100 border border-green-300">
+                <div className="text-center p-4 rounded-xl bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800">
                   <CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-green-600">{answeredCount}</div>
                   <div className="text-sm text-muted-foreground">Respondidas</div>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300">
+                <div className="text-center p-4 rounded-xl bg-blue-100 dark:bg-blue-950/50 border border-blue-300 dark:border-blue-800">
                   <Clock className="h-6 w-6 text-blue-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-blue-600">{questions.length - answeredCount}</div>
                   <div className="text-sm text-muted-foreground">Restantes</div>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-purple-100 border border-purple-300">
+                <div className="text-center p-4 rounded-xl bg-purple-100 dark:bg-purple-950/50 border border-purple-300 dark:border-purple-800">
                   <Trophy className="h-6 w-6 text-purple-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-purple-600">{questions.length}</div>
                   <div className="text-sm text-muted-foreground">Total</div>
@@ -353,11 +353,11 @@ export default function QuizPlayerPage() {
                           disabled={!!selectedAnswers[currentQuestion.id]}
                           className={cn(
                             "flex items-center justify-center gap-3 p-5 rounded-xl border-2 text-lg font-bold transition-all duration-300",
-                            !selectedAnswers[currentQuestion.id] && option === 'Certo' && "border-green-300 hover:bg-green-500/10 hover:border-green-500 text-green-600",
-                            !selectedAnswers[currentQuestion.id] && option === 'Errado' && "border-red-300 hover:bg-red-500/10 hover:border-red-500 text-red-600",
+                            !selectedAnswers[currentQuestion.id] && option === 'Certo' && "border-green-300 dark:border-green-800 hover:bg-green-500/10 hover:border-green-500 text-green-600",
+                            !selectedAnswers[currentQuestion.id] && option === 'Errado' && "border-red-300 dark:border-red-800 hover:bg-red-500/10 hover:border-red-500 text-red-600",
                             selectedAnswers[currentQuestion.id] === option && "ring-2 ring-offset-2",
-                            selectedAnswers[currentQuestion.id] === option && option === 'Certo' && "bg-green-100 border-green-500 ring-green-500",
-                            selectedAnswers[currentQuestion.id] === option && option === 'Errado' && "bg-red-100 border-red-500 ring-red-500",
+                            selectedAnswers[currentQuestion.id] === option && option === 'Certo' && "bg-green-100 dark:bg-green-950/50 border-green-500 ring-green-500",
+                            selectedAnswers[currentQuestion.id] === option && option === 'Errado' && "bg-red-100 dark:bg-red-950/50 border-red-500 ring-red-500",
                             selectedAnswers[currentQuestion.id] && selectedAnswers[currentQuestion.id] !== option && "opacity-40",
                           )}
                         >

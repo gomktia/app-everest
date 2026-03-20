@@ -136,9 +136,9 @@ function VideoAnalyticsTabs({ courses, filteredLessons, students, searchTerm, se
                             <TableCell className="text-center">
                               <Badge variant="outline" className={cn(
                                 'text-xs',
-                                course.avgCompletionRate >= 70 ? 'bg-emerald-100 text-emerald-700' :
-                                course.avgCompletionRate >= 40 ? 'bg-amber-100 text-amber-700' :
-                                'bg-red-100 text-red-700'
+                                course.avgCompletionRate >= 70 ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700' :
+                                course.avgCompletionRate >= 40 ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700' :
+                                'bg-red-100 dark:bg-red-950/50 text-red-700'
                               )}>
                                 {course.avgCompletionRate}%
                               </Badge>
@@ -208,9 +208,9 @@ function VideoAnalyticsTabs({ courses, filteredLessons, students, searchTerm, se
                               <TableCell className="text-center">
                                 <Badge variant="outline" className={cn(
                                   'text-xs',
-                                  lesson.completionRate >= 70 ? 'bg-emerald-100 text-emerald-700' :
-                                  lesson.completionRate >= 40 ? 'bg-amber-100 text-amber-700' :
-                                  'bg-red-100 text-red-700'
+                                  lesson.completionRate >= 70 ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700' :
+                                  lesson.completionRate >= 40 ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700' :
+                                  'bg-red-100 dark:bg-red-950/50 text-red-700'
                                 )}>
                                   {lesson.completionRate}%
                                 </Badge>
@@ -271,9 +271,9 @@ function VideoAnalyticsTabs({ courses, filteredLessons, students, searchTerm, se
                           <TableCell className="text-center">
                             <Badge variant="outline" className={cn(
                               'text-xs',
-                              student.completionRate >= 70 ? 'bg-emerald-100 text-emerald-700' :
-                              student.completionRate >= 40 ? 'bg-amber-100 text-amber-700' :
-                              'bg-red-100 text-red-700'
+                              student.completionRate >= 70 ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700' :
+                              student.completionRate >= 40 ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700' :
+                              'bg-red-100 dark:bg-red-950/50 text-red-700'
                             )}>
                               {student.completionRate}%
                             </Badge>
@@ -359,28 +359,28 @@ export default function VideoAnalyticsPage() {
       value: overview?.totalLessons || 0,
       icon: Play,
       color: 'text-blue-600',
-      bg: 'bg-blue-100',
+      bg: 'bg-blue-100 dark:bg-blue-950/50',
     },
     {
       label: 'Alunos Assistindo',
       value: overview?.totalStudentsWatching || 0,
       icon: Users,
       color: 'text-emerald-600',
-      bg: 'bg-emerald-100',
+      bg: 'bg-emerald-100 dark:bg-emerald-950/50',
     },
     {
       label: 'Taxa de Conclusao',
       value: `${overview?.avgCompletionRate || 0}%`,
       icon: CheckCircle,
       color: 'text-violet-600',
-      bg: 'bg-violet-100',
+      bg: 'bg-violet-100 dark:bg-violet-950/50',
     },
     {
       label: 'Horas Assistidas',
       value: `${overview?.totalWatchTimeHours || 0}h`,
       icon: Clock,
       color: 'text-amber-600',
-      bg: 'bg-amber-100',
+      bg: 'bg-amber-100 dark:bg-amber-950/50',
     },
   ]
 
@@ -399,7 +399,7 @@ export default function VideoAnalyticsPage() {
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="bg-blue-100 border-blue-300 text-blue-700 w-fit">
+        <Badge variant="outline" className="bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-700 w-fit">
           <BarChart3 className="h-3 w-3 mr-1.5" />
           Dados internos (video_progress)
         </Badge>
@@ -491,9 +491,9 @@ export default function VideoAnalyticsPage() {
                   </div>
                   <Badge variant="outline" className={cn(
                     'text-xs shrink-0',
-                    lesson.completionRate >= 70 ? 'bg-emerald-100 text-emerald-700' :
-                    lesson.completionRate >= 40 ? 'bg-amber-100 text-amber-700' :
-                    'bg-red-100 text-red-700'
+                    lesson.completionRate >= 70 ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700' :
+                    lesson.completionRate >= 40 ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700' :
+                    'bg-red-100 dark:bg-red-950/50 text-red-700'
                   )}>
                     {lesson.completionRate}%
                   </Badge>

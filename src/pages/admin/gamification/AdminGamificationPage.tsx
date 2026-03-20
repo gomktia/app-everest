@@ -253,10 +253,10 @@ export default function AdminGamificationPage() {
   const getCategoryBadge = (category: string) => {
     const categories: Record<string, { label: string; className: string }> = {
       general: { label: 'Geral', className: 'bg-muted/50 border-border text-muted-foreground' },
-      study: { label: 'Estudos', className: 'bg-blue-100 border-blue-300 text-blue-600' },
-      quiz: { label: 'Quiz', className: 'bg-purple-100 border-purple-300 text-purple-600' },
-      essay: { label: 'Redação', className: 'bg-green-100 border-green-300 text-green-600' },
-      social: { label: 'Social', className: 'bg-orange-100 border-orange-300 text-orange-600' }
+      study: { label: 'Estudos', className: 'bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-600' },
+      quiz: { label: 'Quiz', className: 'bg-purple-100 dark:bg-purple-950/50 border-purple-300 dark:border-purple-800 text-purple-600' },
+      essay: { label: 'Redação', className: 'bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800 text-green-600' },
+      social: { label: 'Social', className: 'bg-orange-100 dark:bg-orange-950/50 border-orange-300 dark:border-orange-800 text-orange-600' }
     }
 
     const cat = categories[category] || categories.general
@@ -335,7 +335,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-yellow-100">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-yellow-100 dark:bg-yellow-950/50">
                   <Trophy className="h-5 w-5 md:h-6 md:w-6 text-yellow-600" />
                 </div>
                 <div>
@@ -349,7 +349,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-green-100">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-green-100 dark:bg-green-950/50">
                   <Award className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                 </div>
                 <div>
@@ -363,7 +363,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-blue-100">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-blue-100 dark:bg-blue-950/50">
                   <Zap className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                 </div>
                 <div>
@@ -377,7 +377,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-purple-100">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-purple-100 dark:bg-purple-950/50">
                   <Users className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
                 </div>
                 <div>
@@ -766,7 +766,7 @@ export default function AdminGamificationPage() {
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge className="bg-blue-100 border-blue-300 text-blue-700 text-xs">
+                                  <Badge className="bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-700 text-xs">
                                     {entry.best_percentage.toFixed(1)}%
                                   </Badge>
                                 </TableCell>
@@ -839,7 +839,7 @@ export default function AdminGamificationPage() {
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <Badge className="bg-emerald-100 border-emerald-300 text-emerald-700 text-xs">
+                                  <Badge className="bg-emerald-100 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-800 text-emerald-700 text-xs">
                                     {entry.best_grade}
                                   </Badge>
                                 </TableCell>

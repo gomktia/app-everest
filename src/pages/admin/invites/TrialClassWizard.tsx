@@ -1025,7 +1025,7 @@ export default function TrialClassWizard() {
                 <div
                   key={f.key}
                   className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
-                    enabled ? 'bg-green-100 border-green-300' : 'bg-muted/30'
+                    enabled ? 'bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800' : 'bg-muted/30'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -1404,7 +1404,7 @@ export default function TrialClassWizard() {
       return (
         <Card>
           <CardContent className="py-12 text-center space-y-6">
-            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center mx-auto">
               <Sparkles className="w-10 h-10 text-green-500" />
             </div>
             <h2 className="text-2xl font-bold">Turma Criada com Sucesso!</h2>

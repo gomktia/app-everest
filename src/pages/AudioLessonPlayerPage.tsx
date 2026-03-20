@@ -401,7 +401,7 @@ export default function AudioLessonPlayerPage() {
               </div>
 
               {/* Background Playback Info */}
-              <div className="bg-green-100 border border-green-300 rounded-xl p-4">
+              <div className="bg-green-100 dark:bg-green-950/50 border border-green-300 dark:border-green-800 rounded-xl p-4">
                 <div className="flex items-center space-x-2 text-green-600">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium">Background Playback Ativo</span>
