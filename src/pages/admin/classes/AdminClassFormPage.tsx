@@ -76,9 +76,11 @@ export default function AdminClassFormPage() {
   const [lessonRules, setLessonRules] = useState<Record<string, { rule_type: string; rule_value: string }>>({})
   const [moduleLessons, setModuleLessons] = useState<Record<string, { id: string; title: string; order_index: number }[]>>({})
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set())
+  const [allMindMaps, setAllMindMaps] = useState<any[]>([])
   const [contentToggles, setContentToggles] = useState({
     flashcard_topic: true,
     quiz_topic: true,
+    mind_map: true,
     acervo: true,
     simulation: true,
     essay_limit: true,
@@ -218,6 +220,10 @@ export default function AdminClassFormPage() {
       const { data: sims } = await supabase.from('quizzes').select('id, title').eq('type', 'simulation')
       setAllSimulations(sims || [])
 
+      // Load mind maps (grouped by subject)
+      const { data: mindMaps } = await supabase.from('mind_maps').select('id, title, subject').order('subject').order('title')
+      setAllMindMaps(mindMaps || [])
+
       // Load community spaces (only general ones, excluding 'geral' which is always visible)
       const { data: spaces } = await supabase
         .from('community_spaces')
@@ -236,6 +242,7 @@ export default function AdminClassFormPage() {
       setContentToggles({
         flashcard_topic: !access.flashcard_topic?.length,
         quiz_topic: !access.quiz_topic?.length,
+        mind_map: !access.mind_map?.length,
         acervo: !access.acervo_category?.length && !access.acervo_concurso?.length,
         simulation: !hasSimulationRestriction,
         essay_limit: !access.essay_limit?.length,
@@ -307,6 +314,7 @@ export default function AdminClassFormPage() {
         await Promise.all([
           saveContentAccess(classId!, 'flashcard_topic', contentToggles.flashcard_topic ? [] : contentAccess.flashcard_topic || []),
           saveContentAccess(classId!, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
+          saveContentAccess(classId!, 'mind_map', contentToggles.mind_map ? [] : contentAccess.mind_map || []),
           saveContentAccess(classId!, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
           saveContentAccess(classId!, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
           saveContentAccess(classId!, 'simulation', contentToggles.simulation ? [] : (contentAccess.simulation?.length ? contentAccess.simulation : ['__none__'])),
@@ -355,6 +363,7 @@ export default function AdminClassFormPage() {
             await Promise.all([
               saveContentAccess(newClassId, 'flashcard_topic', contentToggles.flashcard_topic ? [] : contentAccess.flashcard_topic || []),
               saveContentAccess(newClassId, 'quiz_topic', contentToggles.quiz_topic ? [] : contentAccess.quiz_topic || []),
+              saveContentAccess(newClassId, 'mind_map', contentToggles.mind_map ? [] : contentAccess.mind_map || []),
               saveContentAccess(newClassId, 'acervo_category', contentToggles.acervo ? [] : contentAccess.acervo_category || []),
               saveContentAccess(newClassId, 'acervo_concurso', contentToggles.acervo ? [] : contentAccess.acervo_concurso || []),
               saveContentAccess(newClassId, 'simulation', contentToggles.simulation ? [] : (contentAccess.simulation?.length ? contentAccess.simulation : ['__none__'])),
@@ -848,6 +857,42 @@ export default function AdminClassFormPage() {
                                           })
                                         }} />
                                         {topic.name}
+                                      </label>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ),
+                      },
+                      {
+                        value: 'mapas_mentais', label: 'Mapas Mentais',
+                        content: (
+                          <div className="space-y-3 pt-4">
+                            <div className="flex items-center justify-between">
+                              <label className="flex items-center gap-2 text-sm">
+                                <Switch checked={contentToggles.mind_map} onCheckedChange={checked => {
+                                  setContentToggles(p => ({...p, mind_map: checked}))
+                                  if (checked) setContentAccess(p => { const n = {...p}; delete n.mind_map; return n })
+                                }} />
+                                Todos os mapas mentais
+                              </label>
+                            </div>
+                            {!contentToggles.mind_map && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {[...new Set(allMindMaps.map(m => m.subject))].map(subject => (
+                                  <div key={subject}>
+                                    <p className="text-xs font-semibold text-muted-foreground mb-1">{subject}</p>
+                                    {allMindMaps.filter(m => m.subject === subject).map(map => (
+                                      <label key={map.id} className="flex items-center gap-2 text-sm py-0.5">
+                                        <Switch checked={contentAccess.mind_map?.includes(map.id) || false} onCheckedChange={checked => {
+                                          setContentAccess(prev => {
+                                            const current = prev.mind_map || []
+                                            return { ...prev, mind_map: checked ? [...current, map.id] : current.filter(id => id !== map.id) }
+                                          })
+                                        }} />
+                                        {map.title}
                                       </label>
                                     ))}
                                   </div>
