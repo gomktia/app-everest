@@ -78,6 +78,7 @@ const FlashcardSessionHistoryPage = lazy(
 const RankingPage = lazy(() => import('@/pages/Ranking'))
 const AchievementsPage = lazy(() => import('@/pages/Achievements'))
 const StudyPlannerPage = lazy(() => import('@/pages/StudyPlannerPage'))
+const MindMapsPage = lazy(() => import('@/pages/MindMapsPage'))
 
 const LiveEventsPage = lazy(() => import('@/pages/LiveEvents'))
 const LivePlayerPage = lazy(() => import('@/pages/LivePlayer'))
@@ -457,6 +458,7 @@ const App = () => (
                   <Route path="/conquistas" element={<AchievementsPage />} />
                   <Route path="/achievements" element={<Navigate to="/conquistas" replace />} />
                   <Route path="/plano-de-estudos" element={<StudyPlannerPage />} />
+                  <Route path="/mapas-mentais" element={<MindMapsPage />} />
                   <Route path="/study-planner" element={<Navigate to="/plano-de-estudos" replace />} />
                   <Route path="/faq" element={<FaqPage />} />
                   <Route path="/contato" element={<ContactPage />} />
