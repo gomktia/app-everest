@@ -15,27 +15,36 @@ interface PageTabsProps {
   value: string
   onChange: (value: string) => void
   className?: string
-  /** 'auto' = fit content, 'full' = grid equal width, number = fixed grid cols */
+  /** 'auto' = fit content, 'full' = equal width grid, number = fixed grid cols */
   layout?: 'auto' | 'full' | number
 }
 
+// Tailwind-safe grid classes (dynamic class names are not detected by purge)
+const gridColsMap: Record<number, string> = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-2',
+  3: 'grid-cols-3',
+  4: 'grid-cols-4',
+  5: 'grid-cols-5',
+  6: 'grid-cols-6',
+  7: 'grid-cols-7',
+  8: 'grid-cols-8',
+}
+
 export function PageTabs({ tabs, value, onChange, className, layout = 'auto' }: PageTabsProps) {
-  const gridClass = layout === 'full'
-    ? `grid grid-cols-${tabs.length}`
-    : layout === 'auto'
-    ? ''
-    : `grid grid-cols-${layout}`
+  const cols = layout === 'full' ? tabs.length : typeof layout === 'number' ? layout : 0
+  const useGrid = cols > 0 && cols <= 4
+  const gridClass = useGrid ? gridColsMap[cols] || '' : ''
 
   return (
     <Tabs value={value} onValueChange={onChange} className={cn('w-full', className)}>
       <TabsList className={cn(
-        layout === 'auto' ? '' : 'w-full max-w-md',
-        gridClass
+        useGrid ? `w-full max-w-md grid ${gridClass}` : 'overflow-x-auto flex w-full justify-start gap-0',
       )}>
         {tabs.map(tab => (
-          <TabsTrigger key={tab.value} value={tab.value} className="gap-2">
+          <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 shrink-0 text-xs sm:text-sm sm:gap-2">
             {tab.icon}
-            {tab.label}
+            <span className="truncate">{tab.label}</span>
             {tab.count !== undefined && (
               <span className="ml-1 text-xs opacity-70">({tab.count})</span>
             )}
