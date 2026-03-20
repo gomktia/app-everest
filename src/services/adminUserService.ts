@@ -9,12 +9,12 @@ export const getUsers = async (): Promise<User[]> => {
     .from('users')
     .select('*')
     .order('created_at', { ascending: false })
-  
+
   if (error) {
-    logger.error('❌ Error fetching users:', error)
+    logger.warn('Error fetching users:', error.message)
     throw error
   }
-  
+
   return data || []
 }
 
@@ -124,7 +124,7 @@ export const getUsersWithClasses = async (): Promise<UserWithClasses[]> => {
     .order('created_at', { ascending: false })
 
   if (usersError) {
-    logger.error('❌ Error fetching users:', usersError)
+    logger.warn('Error fetching users:', usersError.message)
     throw usersError
   }
 

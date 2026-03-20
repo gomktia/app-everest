@@ -37,11 +37,11 @@ export default function AdminManagementPage() {
     if (!teacherLoading) {
       loadStats()
     }
-  }, [teacherLoading, statsKey])
+  }, [teacherLoading, statsKey, isTeacher, isAdmin])
 
   const loadStats = async () => {
     try {
-      if (isTeacher) {
+      if (isTeacher && !isAdmin) {
         // Teachers only see their student count
         setStats({
           totalUsers: studentIds.length,
@@ -54,8 +54,15 @@ export default function AdminManagementPage() {
         return
       }
 
-      // Get users
-      const users = await getUsers()
+      // Get users — wrapped in try/catch so RLS errors don't crash
+      let users: Awaited<ReturnType<typeof getUsers>> = []
+      try {
+        users = await getUsers()
+      } catch {
+        logger.warn('Could not load users (RLS or permission issue)')
+        setStats(prev => ({ ...prev, loading: false }))
+        return
+      }
 
       // Count by role
       const students = users.filter(u => u.role === 'student').length
@@ -76,7 +83,7 @@ export default function AdminManagementPage() {
         loading: false
       })
     } catch (error) {
-      logger.error('Erro ao carregar estatisticas:', error)
+      logger.warn('Erro ao carregar estatisticas:', error)
       setStats(prev => ({ ...prev, loading: false }))
     }
   }
