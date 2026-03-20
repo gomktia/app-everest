@@ -113,18 +113,24 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
         .eq('id', userId)
         .single(),
       new Promise<any>((_, reject) =>
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 8000)
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 12000)
       )
     ])
 
-    // Single attempt - no retries to keep page load fast
+    // Try up to 2 attempts (retry once on timeout)
     let fetchError: any = null
-    try {
-      const { data: existingProfile, error } = await fetchWithTimeout()
-      if (!error && existingProfile) return existingProfile
-      fetchError = error
-    } catch (err) {
-      fetchError = err
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const { data: existingProfile, error } = await fetchWithTimeout()
+        if (!error && existingProfile) return existingProfile
+        fetchError = error
+        break // non-timeout error, don't retry
+      } catch (err: any) {
+        fetchError = err
+        if (attempt === 0 && err?.message === 'Profile fetch timeout') {
+          continue // retry once on timeout
+        }
+      }
     }
 
     // If profile doesn't exist (PGRST116 = no rows returned), try to create one
