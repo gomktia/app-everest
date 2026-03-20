@@ -24,6 +24,7 @@ import {
 } from '@/services/lessonInteractionService'
 import { logger } from '@/lib/logger'
 import { LessonTourButton } from '@/components/courses/LessonTour'
+import { LessonAIChat } from '@/components/lessons/LessonAIChat'
 import {
   ArrowLeft,
   CheckCircle,
@@ -174,7 +175,7 @@ export default function LessonPlayerPage() {
   const [replyText, setReplyText] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [hoverRating, setHoverRating] = useState(0)
-  const [activeTab, setActiveTab] = useState<'comments' | 'resources'>('comments')
+  const [activeTab, setActiveTab] = useState<'comments' | 'resources' | 'ai_chat'>('comments')
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Notes
@@ -1570,9 +1571,23 @@ export default function LessonPlayerPage() {
                           )}>{attachments.length}</span>
                         </button>
                       )}
+                      {attachments.some((a) => a.file_type?.includes('pdf') || a.file_name?.toLowerCase().endsWith('.pdf')) && (
+                        <button
+                          onClick={() => setActiveTab('ai_chat')}
+                          className={cn(
+                            "flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-all rounded-lg flex-1 justify-center",
+                            activeTab === 'ai_chat'
+                              ? "bg-white dark:bg-background text-primary shadow border border-border/40"
+                              : "text-muted-foreground hover:text-foreground hover:bg-white/50"
+                          )}
+                        >
+                          <Sparkles className="h-4 w-4" />
+                          IA
+                        </button>
+                      )}
                     </div>
                     <SheetTitle className="sr-only">
-                      {activeTab === 'comments' ? 'Comentários' : 'Arquivos'}
+                      {activeTab === 'comments' ? 'Comentários' : activeTab === 'resources' ? 'Arquivos' : 'IA'}
                     </SheetTitle>
                   </SheetHeader>
 
@@ -1729,6 +1744,19 @@ export default function LessonPlayerPage() {
                           </div>
                         )}
                       </div>
+                    )}
+
+                    {/* AI Chat */}
+                    {activeTab === 'ai_chat' && (
+                      <LessonAIChat
+                        lessonTitle={lessonData?.title ?? ''}
+                        moduleName={currentModule?.name ?? ''}
+                        attachments={attachments.map((a) => ({
+                          name: a.file_name,
+                          url: a.file_url,
+                          type: a.file_type ?? undefined,
+                        }))}
+                      />
                     )}
 
                     {/* Resources */}
