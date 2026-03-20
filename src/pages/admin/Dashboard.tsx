@@ -420,8 +420,8 @@ export default function AdminDashboard() {
               className={cn(
                 "flex items-start gap-3 p-3 rounded-lg border text-sm",
                 alert.type === 'warning'
-                  ? "bg-amber-500/10 border-amber-500/20 text-amber-800"
-                  : "bg-blue-500/10 border-blue-500/20 text-blue-800"
+                  ? "bg-amber-100 border-amber-400 text-amber-900"
+                  : "bg-blue-100 border-blue-400 text-blue-900"
               )}
             >
               <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
