@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AIProviderConfigPanel } from '@/components/admin/integrations/AIProviderConfig'
+import { AIFeaturesPanel } from '@/components/admin/integrations/AIFeaturesPanel'
 import { PageTabs } from '@/components/PageTabs'
 import { Settings } from 'lucide-react'
 
@@ -490,6 +491,9 @@ export default function AdminIntegrationsPage() {
               <div className="space-y-6 pt-4">
                 {/* AI Provider Configuration */}
                 <AIProviderConfigPanel />
+
+                {/* AI Features Kill Switch & Monitoring */}
+                <AIFeaturesPanel />
 
                 {/* API Keys & Webhook Details */}
                 <div className="grid gap-5 md:grid-cols-2">
