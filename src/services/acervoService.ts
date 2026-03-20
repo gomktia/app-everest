@@ -146,7 +146,7 @@ export const acervoService = {
       if (!session) throw new Error('Não autenticado')
 
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL || 'https://hnhzindsfuqnaxosujay.supabase.co'}/functions/v1/pdf-watermark`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/pdf-watermark`,
         {
           method: 'POST',
           headers: {
@@ -182,7 +182,7 @@ export const acervoService = {
     if (!session) throw new Error('Não autenticado')
 
     const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL || 'https://hnhzindsfuqnaxosujay.supabase.co'}/functions/v1/pdf-watermark`,
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/pdf-watermark`,
       {
         method: 'POST',
         headers: {

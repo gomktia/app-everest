@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { logger } from '@/lib/logger'
 
 export interface Job {
   id: string
@@ -42,11 +43,11 @@ export async function publishJob(
       body: JSON.stringify({ jobId: job.id, type }),
     })
     if (!response.ok) {
-      console.warn('QStash publish failed, job will be processed on next poll')
+      logger.warn('QStash publish failed, job will be processed on next poll')
     }
   } catch {
     // If QStash publish fails, job stays pending and can be retried
-    console.warn('QStash unavailable, job queued for later processing')
+    logger.warn('QStash unavailable, job queued for later processing')
   }
 
   return job.id

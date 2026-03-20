@@ -1,11 +1,10 @@
 /**
  * Serviço de integração direta com a API de Lives do Panda Video v2.
  * Usado apenas pelo admin para criar/gerenciar lives automaticamente.
+ * Todas as chamadas passam pelo Edge Function panda-proxy para não expor a API key.
  */
+import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
-
-const PANDA_API = 'https://api-v2.pandavideo.com.br'
-const PANDA_KEY = 'panda-33e2092c0e0334f9a6b353db3ce0ccf89d46dbe076b0aaabd3a88ac1a4ecfd6d'
 
 interface PandaStreamKey {
   id: string
@@ -37,34 +36,23 @@ export interface PandaLive {
   created_at: string
 }
 
-async function pandaFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${PANDA_API}${endpoint}`, {
-    ...options,
-    headers: {
-      'Authorization': PANDA_KEY,
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+async function pandaFetch<T>(endpoint: string, method: string = 'GET', body?: unknown): Promise<T> {
+  const { data, error } = await supabase.functions.invoke('panda-proxy', {
+    body: { endpoint, method, body },
   })
 
-  if (!res.ok) {
-    const text = await res.text()
-    logger.error(`[PandaLive] ${options?.method || 'GET'} ${endpoint} → ${res.status}:`, text)
-
-    // Parse Panda error message if possible
-    let message = `Erro na API Panda (${res.status})`
-    try {
-      const parsed = JSON.parse(text)
-      if (parsed.message) message = parsed.message
-      else if (parsed.error) message = parsed.error
-    } catch { /* use default message */ }
-
-    throw new Error(message)
+  if (error) {
+    logger.error(`[PandaLive] ${method} ${endpoint} → proxy error:`, error.message)
+    throw new Error(error.message || `Erro na API Panda`)
   }
 
-  const text = await res.text()
-  if (!text) return {} as T
-  return JSON.parse(text)
+  // The proxy may return an error inside the data payload
+  if (data?.error) {
+    logger.error(`[PandaLive] ${method} ${endpoint} → API error:`, data.error)
+    throw new Error(data.error)
+  }
+
+  return data as T
 }
 
 /**
@@ -99,16 +87,13 @@ export async function createPandaLive(params: {
     throw new Error('Nenhuma stream key disponível. Finalize a live ativa antes de criar outra.')
   }
 
-  return pandaFetch<PandaLive>('/lives/', {
-    method: 'POST',
-    body: JSON.stringify({
-      title: params.title,
-      stream_key_id: streamKey.id,
-      scheduled_at: params.scheduled_at || undefined,
-      active_dvr: params.active_dvr ?? false,
-      bitrate: params.bitrate || [],
-      folder_id: params.folder_id || undefined,
-    }),
+  return pandaFetch<PandaLive>('/lives/', 'POST', {
+    title: params.title,
+    stream_key_id: streamKey.id,
+    scheduled_at: params.scheduled_at || undefined,
+    active_dvr: params.active_dvr ?? false,
+    bitrate: params.bitrate || [],
+    folder_id: params.folder_id || undefined,
   })
 }
 
@@ -130,9 +115,7 @@ export async function listPandaLives(): Promise<PandaLive[]> {
  * Finaliza a live no Panda e inicia conversão para VOD.
  */
 export async function finishPandaLive(liveId: string): Promise<void> {
-  await pandaFetch<{ status: boolean }>(`/lives/${liveId}/finish`, {
-    method: 'POST',
-  })
+  await pandaFetch<{ status: boolean }>(`/lives/${liveId}/finish`, 'POST')
 }
 
 /**
@@ -142,17 +125,14 @@ export async function updatePandaLive(
   liveId: string,
   updates: { title?: string; scheduled_at?: string; active_dvr?: boolean; folder_id?: string }
 ): Promise<PandaLive> {
-  return pandaFetch<PandaLive>(`/lives/${liveId}`, {
-    method: 'PUT',
-    body: JSON.stringify(updates),
-  })
+  return pandaFetch<PandaLive>(`/lives/${liveId}`, 'PUT', updates)
 }
 
 /**
  * Deleta uma live no Panda.
  */
 export async function deletePandaLive(liveId: string): Promise<void> {
-  await pandaFetch<void>(`/lives/${liveId}`, { method: 'DELETE' })
+  await pandaFetch<void>(`/lives/${liveId}`, 'DELETE')
 }
 
 /**

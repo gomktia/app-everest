@@ -556,19 +556,20 @@ export const communityService = {
       const commentMap = new Map<string, CommunityComment>()
       const topLevel: CommunityComment[] = []
 
+      // Batch-fetch all reactions for all comments in a single query
+      const commentIds = allComments.map((c: any) => c.id)
+      const reactionsMap = await communityService.getReactionsBatch('comment', commentIds, userId)
+
       // First pass: enrich all comments with reactions
-      const enriched = await Promise.all(
-        allComments.map(async (c: any) => {
-          const reactions = await communityService.getReactions('comment', c.id, userId)
-          return {
-            ...c,
-            author: c.author || undefined,
-            attachments: c.attachments || [],
-            reactions,
-            replies: [],
-          } as CommunityComment
-        })
-      )
+      const enriched = allComments.map((c: any) => {
+        return {
+          ...c,
+          author: c.author || undefined,
+          attachments: c.attachments || [],
+          reactions: reactionsMap.get(c.id) || [],
+          replies: [],
+        } as CommunityComment
+      })
 
       // Second pass: build tree
       for (const comment of enriched) {
@@ -804,6 +805,71 @@ export const communityService = {
     } catch (error) {
       logger.error('getReactions failed', error)
       return []
+    }
+  },
+
+  /**
+   * Batch-fetch reactions for multiple targets in a single query.
+   * Returns a Map from targetId to its ReactionSummary[].
+   */
+  async getReactionsBatch(
+    targetType: string,
+    targetIds: string[],
+    userId?: string
+  ): Promise<Map<string, ReactionSummary[]>> {
+    const result = new Map<string, ReactionSummary[]>()
+    if (targetIds.length === 0) return result
+
+    try {
+      const { data, error } = await supabase
+        .from('community_reactions')
+        .select('emoji, user_id, target_id')
+        .eq('target_type', targetType)
+        .in('target_id', targetIds)
+
+      if (error) throw error
+
+      // Group by target_id, then by emoji
+      const grouped = new Map<string, Map<string, { count: number; reacted: boolean }>>()
+
+      for (const reaction of data || []) {
+        if (!grouped.has(reaction.target_id)) {
+          grouped.set(reaction.target_id, new Map())
+        }
+        const emojiMap = grouped.get(reaction.target_id)!
+        const existing = emojiMap.get(reaction.emoji) || { count: 0, reacted: false }
+        existing.count++
+        if (userId && reaction.user_id === userId) {
+          existing.reacted = true
+        }
+        emojiMap.set(reaction.emoji, existing)
+      }
+
+      // Convert to ReactionSummary[] per target
+      for (const targetId of targetIds) {
+        const emojiMap = grouped.get(targetId)
+        if (emojiMap) {
+          result.set(
+            targetId,
+            Array.from(emojiMap.entries()).map(([emoji, info]) => ({
+              emoji,
+              count: info.count,
+              reacted: info.reacted,
+            }))
+          )
+        } else {
+          result.set(targetId, [])
+        }
+      }
+
+      return result
+    } catch (error) {
+      logger.error('getReactionsBatch failed', error)
+      // Return empty arrays for all targets on failure
+      for (const targetId of targetIds) {
+        result.set(targetId, [])
+      }
+      return result
     }
   },
 

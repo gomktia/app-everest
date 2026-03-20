@@ -32,6 +32,7 @@ export function useNotifications() {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
+        .limit(100)
 
       if (fetchError) throw fetchError
 

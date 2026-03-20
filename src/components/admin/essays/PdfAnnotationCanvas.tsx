@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { logger } from '@/lib/logger'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -154,7 +155,7 @@ export const PdfAnnotationCanvas = ({
       } catch (err) {
         if (!cancelled) {
           const msg = err instanceof Error ? err.message : 'Erro desconhecido'
-          console.error('Failed to load PDF:', err)
+          logger.error('Failed to load PDF:', err)
           setPdfError(msg)
         }
       } finally {
@@ -184,7 +185,7 @@ export const PdfAnnotationCanvas = ({
           setImageLoaded(false)
         }
       } catch (err) {
-        console.error('Failed to render page:', err)
+        logger.error('Failed to render page:', err)
       } finally {
         if (!cancelled) setPdfLoading(false)
       }

@@ -30,18 +30,24 @@ Sentry.init({
   ignoreErrors: [
     // Stale chunks after deploy (user has old cached version)
     'Failed to fetch dynamically imported module',
+    'error loading dynamically imported module',
     "'text/html' is not a valid JavaScript MIME type",
     'Loading chunk',
     'Loading CSS chunk',
     // Benign: fetch aborted by component unmount or navigation
     'AbortError',
     'The operation was aborted',
+    'signal is aborted without reason',
     // Network errors — only ignore generic browser network failures
     'NetworkError when attempting to fetch resource',
     'net::ERR_INTERNET_DISCONNECTED',
     'net::ERR_NETWORK_CHANGED',
-    // Auth session missing on public pages (invite, login) — expected
+    'net::ERR_NAME_NOT_RESOLVED',
+    'Load failed',
+    // Auth noise — expected on public pages or wrong password
     'AuthSessionMissingError',
     'Auth session missing',
+    'AuthRetryableFetchError',
+    'Invalid login credentials',
   ],
 })

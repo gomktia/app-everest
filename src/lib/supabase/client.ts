@@ -2,14 +2,16 @@ import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 import { logger } from '@/lib/logger'
 
-// Get environment variables with fallbacks
+// Get environment variables — no hardcoded fallbacks for security
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ||
-                     import.meta.env.NEXT_PUBLIC_SUPABASE_URL ||
-                     'https://hnhzindsfuqnaxosujay.supabase.co'
+                     import.meta.env.NEXT_PUBLIC_SUPABASE_URL
 
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ||
-                                import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-                                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhuaHppbmRzZnVxbmF4b3N1amF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MzU5NTIsImV4cCI6MjA2ODUxMTk1Mn0.cT7fe1wjee9HfZw_IVD7K_exMqu-LtUxiClCD-sDLyU'
+                                import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  logger.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables')
+}
 
 // Create client with error handling and better timeout configuration
 let supabase: ReturnType<typeof createClient<Database>>

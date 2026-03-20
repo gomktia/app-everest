@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
         rewrite: (path: string) => path.replace(/^\/panda-api/, ''),
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('Authorization', 'panda-33e2092c0e0334f9a6b353db3ce0ccf89d46dbe076b0aaabd3a88ac1a4ecfd6d')
+            proxyReq.setHeader('Authorization', process.env.PANDA_API_KEY || '')
           })
         },
       },

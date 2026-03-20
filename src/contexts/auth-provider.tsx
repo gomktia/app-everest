@@ -451,7 +451,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Limitar sessões simultâneas (max 2 dispositivos)
           if (newSession?.access_token) {
             fetch(
-              `${import.meta.env.VITE_SUPABASE_URL || 'https://hnhzindsfuqnaxosujay.supabase.co'}/functions/v1/session-guard`,
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/session-guard`,
               {
                 method: 'POST',
                 headers: {

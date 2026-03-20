@@ -67,7 +67,7 @@ export default function MemberkitImportPage() {
 
   // Config state - pre-filled with known keys, service role key from localStorage
   const [memberkitApiKey, setMemberkitApiKey] = useState('3cG57cb4CAgAKMX7Fg59qY8f')
-  const [pandaApiKey, setPandaApiKey] = useState('panda-33e2092c0e0334f9a6b353db3ce0ccf89d46dbe076b0aaabd3a88ac1a4ecfd6d')
+  const [pandaApiKey, setPandaApiKey] = useState('')
   const [serviceRoleKey, setServiceRoleKey] = useState(() => localStorage.getItem('admin-service-role-key') || '')
   const [connected, setConnected] = useState(false)
   const [connecting, setConnecting] = useState(false)

@@ -562,12 +562,8 @@ export async function importMemberkitUsers(
     detail: `${activeMemberships.length} membros ativos encontrados`,
   })
 
-  const supabaseUrl =
-    import.meta.env.VITE_SUPABASE_URL ||
-    'https://hnhzindsfuqnaxosujay.supabase.co'
-  const supabaseAnonKey =
-    import.meta.env.VITE_SUPABASE_ANON_KEY ||
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhuaHppbmRzZnVxbmF4b3N1amF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5MzU5NTIsImV4cCI6MjA2ODUxMTk1Mn0.cT7fe1wjee9HfZw_IVD7K_exMqu-LtUxiClCD-sDLyU'
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
   // --- Process each membership ---
   for (let i = 0; i < activeMemberships.length; i++) {
