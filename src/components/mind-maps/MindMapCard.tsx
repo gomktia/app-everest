@@ -117,43 +117,49 @@ const colorStyles: Record<
 
 const typeMeta: Record<
   NonNullable<MindMapNode['type']>,
-  { icon: React.ReactNode; label: string; className: string }
+  { icon: React.ReactNode; label: string; badgeClass: string; cardBg: string; borderClass: string }
 > = {
   concept: {
-    icon: <BookOpen className="w-3 h-3" />,
+    icon: <BookOpen className="w-3.5 h-3.5" />,
     label: 'Conceito',
-    className:
-      'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-800/60 dark:text-blue-200 dark:border-blue-700',
+    badgeClass: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-800/60 dark:text-blue-200 dark:border-blue-700',
+    cardBg: 'bg-blue-50/80 dark:bg-blue-950/40',
+    borderClass: 'border-l-blue-500 dark:border-l-blue-400',
   },
   example: {
-    icon: <Code className="w-3 h-3" />,
+    icon: <Code className="w-3.5 h-3.5" />,
     label: 'Exemplo',
-    className:
-      'bg-green-100 text-green-700 border-green-200 dark:bg-green-800/60 dark:text-green-200 dark:border-green-700',
+    badgeClass: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-800/60 dark:text-green-200 dark:border-green-700',
+    cardBg: 'bg-green-50/80 dark:bg-green-950/40',
+    borderClass: 'border-l-green-500 dark:border-l-green-400',
   },
   exception: {
-    icon: <AlertTriangle className="w-3 h-3" />,
+    icon: <AlertTriangle className="w-3.5 h-3.5" />,
     label: 'Exceção',
-    className:
-      'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-800/60 dark:text-orange-200 dark:border-orange-700',
+    badgeClass: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-800/60 dark:text-orange-200 dark:border-orange-700',
+    cardBg: 'bg-orange-50/80 dark:bg-orange-950/40',
+    borderClass: 'border-l-orange-500 dark:border-l-orange-400',
   },
   tip: {
-    icon: <Lightbulb className="w-3 h-3" />,
+    icon: <Lightbulb className="w-3.5 h-3.5" />,
     label: 'Dica',
-    className:
-      'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-800/60 dark:text-purple-200 dark:border-purple-700',
+    badgeClass: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-800/60 dark:text-purple-200 dark:border-purple-700',
+    cardBg: 'bg-purple-50/80 dark:bg-purple-950/40',
+    borderClass: 'border-l-purple-500 dark:border-l-purple-400',
   },
   rule: {
-    icon: <Scale className="w-3 h-3" />,
+    icon: <Scale className="w-3.5 h-3.5" />,
     label: 'Regra',
-    className:
-      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600',
+    badgeClass: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700/60 dark:text-slate-200 dark:border-slate-600',
+    cardBg: 'bg-slate-50/80 dark:bg-slate-900/40',
+    borderClass: 'border-l-slate-500 dark:border-l-slate-400',
   },
   warning: {
-    icon: <ShieldAlert className="w-3 h-3" />,
+    icon: <ShieldAlert className="w-3.5 h-3.5" />,
     label: 'Atenção',
-    className:
-      'bg-red-100 text-red-700 border-red-200 dark:bg-red-800/60 dark:text-red-200 dark:border-red-700',
+    badgeClass: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-800/60 dark:text-red-200 dark:border-red-700',
+    cardBg: 'bg-red-50/80 dark:bg-red-950/40',
+    borderClass: 'border-l-red-500 dark:border-l-red-400',
   },
 }
 
@@ -195,7 +201,7 @@ export function MindMapCard({
                 {node.icon}
               </span>
             )}
-            <span className="text-lg font-bold leading-snug flex-1">{node.label}</span>
+            <span className="text-xl font-bold leading-snug flex-1">{node.label}</span>
 
             {hasChildren && (
               <ChevronRight
@@ -208,7 +214,7 @@ export function MindMapCard({
           </div>
 
           {node.detail && expanded && (
-            <p className="mt-2 text-sm text-white/80 leading-relaxed">{node.detail}</p>
+            <p className="mt-2 text-base text-white/80 leading-relaxed">{node.detail}</p>
           )}
 
           {!expanded && hasChildren && (
@@ -268,12 +274,12 @@ export function MindMapCard({
             )}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-base font-semibold leading-snug">{node.label}</span>
+                <span className="text-lg font-semibold leading-snug">{node.label}</span>
                 {typeDef && (
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium border',
-                      typeDef.className,
+                      'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border',
+                      typeDef.badgeClass,
                     )}
                   >
                     {typeDef.icon}
@@ -287,7 +293,7 @@ export function MindMapCard({
                 )}
               </div>
               {node.detail && expanded && (
-                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                <p className="mt-1.5 text-base text-muted-foreground leading-relaxed">
                   {node.detail}
                 </p>
               )}
@@ -335,9 +341,10 @@ export function MindMapCard({
         <div
           onClick={handleToggle}
           className={cn(
-            'w-full p-3 rounded-lg bg-muted/30 dark:bg-muted/50',
-            'border-l-2',
-            styles.l2Border,
+            'w-full p-3.5 rounded-lg',
+            typeDef ? typeDef.cardBg : 'bg-muted/30 dark:bg-muted/50',
+            'border-l-[3px]',
+            typeDef ? typeDef.borderClass : styles.l2Border,
             hasChildren && 'cursor-pointer select-none',
             'transition-all duration-200',
             hasChildren && 'hover:bg-muted/50 dark:hover:bg-muted/60',
@@ -351,12 +358,12 @@ export function MindMapCard({
             )}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-sm font-medium leading-snug">{node.label}</span>
+                <span className="text-base font-medium leading-snug">{node.label}</span>
                 {typeDef && (
                   <span
                     className={cn(
-                      'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium border',
-                      typeDef.className,
+                      'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium border',
+                      typeDef.badgeClass,
                     )}
                   >
                     {typeDef.icon}
@@ -370,7 +377,7 @@ export function MindMapCard({
                 )}
               </div>
               {node.detail && expanded && (
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
                   {node.detail}
                 </p>
               )}
@@ -417,9 +424,10 @@ export function MindMapCard({
       <div
         onClick={handleToggle}
         className={cn(
-          'w-full p-2.5 rounded-md bg-muted/20 dark:bg-muted/40',
-          'border-l',
-          styles.l3Border,
+          'w-full p-3 rounded-md',
+          typeDef ? typeDef.cardBg : 'bg-muted/20 dark:bg-muted/40',
+          'border-l-2',
+          typeDef ? typeDef.borderClass : styles.l3Border,
           hasChildren && 'cursor-pointer select-none',
           'transition-all duration-200',
           hasChildren && 'hover:bg-muted/40 dark:hover:bg-muted/50',
@@ -433,12 +441,12 @@ export function MindMapCard({
           )}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-sm leading-snug">{node.label}</span>
+              <span className="text-sm font-medium leading-snug">{node.label}</span>
               {typeDef && (
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 px-1 py-0.5 rounded text-[10px] font-medium border',
-                    typeDef.className,
+                    'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium border',
+                    typeDef.badgeClass,
                   )}
                 >
                   {typeDef.icon}
@@ -450,7 +458,7 @@ export function MindMapCard({
               )}
             </div>
             {node.detail && expanded && (
-              <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+              <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                 {node.detail}
               </p>
             )}
