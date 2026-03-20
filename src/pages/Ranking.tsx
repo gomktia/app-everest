@@ -33,6 +33,8 @@ import {
   type SubjectRanking
 } from '@/services/rankingService'
 import { getRankingByClass, getStudentClassIds, type RankingEntry } from '@/services/gamificationService'
+import { supabase } from '@/lib/supabase/client'
+import { FileText, ClipboardCheck } from 'lucide-react'
 import { SectionLoader } from '@/components/SectionLoader'
 import { logger } from '@/lib/logger'
 import { useAuth } from '@/hooks/use-auth'
@@ -65,6 +67,8 @@ export default function RankingPage() {
   const [studentClasses, setStudentClasses] = useState<{ class_id: string; class_name: string }[]>([])
   const [selectedClassId, setSelectedClassId] = useState<string>('')
   const [fromCache, setFromCache] = useState(false)
+  const [simuladoRanking, setSimuladoRanking] = useState<{ name: string; score: number; user_id: string }[]>([])
+  const [redacaoRanking, setRedacaoRanking] = useState<{ name: string; score: number; user_id: string }[]>([])
 
   useEffect(() => {
     const fetchRankingData = async () => {
@@ -100,6 +104,53 @@ export default function RankingPage() {
         setFlashcardRanking(flashcardData)
         setQuizRanking(quizData)
         setStudentClasses(classesData)
+
+        // Load simulado + redação rankings
+        try {
+          const [{ data: simData }, { data: essayData }] = await Promise.all([
+            supabase.from('quiz_attempts')
+              .select('percentage, users!quiz_attempts_user_id_fkey(id, first_name, last_name)')
+              .eq('status', 'submitted')
+              .in('quiz_id', (await supabase.from('quizzes').select('id').eq('type', 'simulation')).data?.map((q: any) => q.id) || [])
+              .order('percentage', { ascending: false })
+              .limit(50),
+            supabase.from('essays')
+              .select('final_grade_ciaar, final_grade, users!essays_student_id_fkey(id, first_name, last_name)')
+              .not('final_grade_ciaar', 'is', null)
+              .order('final_grade_ciaar', { ascending: false })
+              .limit(50),
+          ])
+
+          // Simulados: best score per user
+          const simMap = new Map<string, { name: string; score: number; user_id: string }>()
+          for (const a of simData || []) {
+            const u = (a as any).users
+            if (!u) continue
+            const uid = u.id
+            const name = `${u.first_name || ''} ${u.last_name || ''}`.trim()
+            const score = a.percentage || 0
+            if (!simMap.has(uid) || score > simMap.get(uid)!.score) {
+              simMap.set(uid, { name, score, user_id: uid })
+            }
+          }
+          setSimuladoRanking(Array.from(simMap.values()).sort((a, b) => b.score - a.score))
+
+          // Redações: best score per user
+          const essayMap = new Map<string, { name: string; score: number; user_id: string }>()
+          for (const e of essayData || []) {
+            const u = (e as any).users
+            if (!u) continue
+            const uid = u.id
+            const name = `${u.first_name || ''} ${u.last_name || ''}`.trim()
+            const score = (e as any).final_grade_ciaar || (e as any).final_grade || 0
+            if (!essayMap.has(uid) || score > essayMap.get(uid)!.score) {
+              essayMap.set(uid, { name, score: Math.round(score * 10) / 10, user_id: uid })
+            }
+          }
+          setRedacaoRanking(Array.from(essayMap.values()).sort((a, b) => b.score - a.score))
+        } catch (err) {
+          logger.error('Erro ao carregar ranking simulado/redação:', err)
+        }
 
         // Load ranking for first class
         if (classesData.length > 0) {
@@ -381,7 +432,7 @@ export default function RankingPage() {
       <PageTabs
         value={activeTab}
         onChange={setActiveTab}
-        layout={studentClasses.length > 0 ? 4 : 3}
+        layout="full"
         tabs={[
           ...(studentClasses.length > 0 ? [{
             value: 'turma',
@@ -509,6 +560,90 @@ export default function RankingPage() {
                       <Zap className="h-10 w-10 mx-auto mb-3 opacity-40" />
                       <p>Nenhum dado de ranking de quizzes disponível ainda.</p>
                       <p className="text-xs mt-1">Complete quizzes para aparecer no ranking!</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ),
+          },
+          {
+            value: 'simulados',
+            label: 'Simulados',
+            icon: <ClipboardCheck className="h-4 w-4" />,
+            content: (
+              <Card className="border-border shadow-sm">
+                <CardContent className="p-5">
+                  <h2 className="text-lg font-semibold mb-4">Ranking de Simulados (Melhor Nota)</h2>
+                  {simuladoRanking.length > 0 ? (
+                    <div className="space-y-2">
+                      {simuladoRanking.map((entry, idx) => (
+                        <div key={entry.user_id} className={cn(
+                          "flex items-center gap-4 p-3 rounded-xl transition-all",
+                          idx < 3 ? "bg-primary/5 border border-primary/20" : "bg-muted/30 border border-transparent hover:border-border"
+                        )}>
+                          <div className="w-10 text-center shrink-0">
+                            {idx === 0 ? <Crown className="h-6 w-6 text-yellow-500 mx-auto" /> :
+                             idx === 1 ? <Medal className="h-6 w-6 text-muted-foreground/70 mx-auto" /> :
+                             idx === 2 ? <Award className="h-6 w-6 text-amber-600 mx-auto" /> :
+                             <span className="text-lg font-bold text-muted-foreground">#{idx + 1}</span>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("font-semibold truncate", entry.user_id === user?.id && "text-primary")}>
+                              {entry.name}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20 font-bold">
+                            {entry.score.toFixed(0)}%
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <ClipboardCheck className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                      <p>Nenhum simulado realizado ainda.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ),
+          },
+          {
+            value: 'redacoes',
+            label: 'Redações',
+            icon: <FileText className="h-4 w-4" />,
+            content: (
+              <Card className="border-border shadow-sm">
+                <CardContent className="p-5">
+                  <h2 className="text-lg font-semibold mb-4">Ranking de Redações (Melhor Nota CIAAR)</h2>
+                  {redacaoRanking.length > 0 ? (
+                    <div className="space-y-2">
+                      {redacaoRanking.map((entry, idx) => (
+                        <div key={entry.user_id} className={cn(
+                          "flex items-center gap-4 p-3 rounded-xl transition-all",
+                          idx < 3 ? "bg-primary/5 border border-primary/20" : "bg-muted/30 border border-transparent hover:border-border"
+                        )}>
+                          <div className="w-10 text-center shrink-0">
+                            {idx === 0 ? <Crown className="h-6 w-6 text-yellow-500 mx-auto" /> :
+                             idx === 1 ? <Medal className="h-6 w-6 text-muted-foreground/70 mx-auto" /> :
+                             idx === 2 ? <Award className="h-6 w-6 text-amber-600 mx-auto" /> :
+                             <span className="text-lg font-bold text-muted-foreground">#{idx + 1}</span>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn("font-semibold truncate", entry.user_id === user?.id && "text-primary")}>
+                              {entry.name}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 font-bold">
+                            {entry.score}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <FileText className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                      <p>Nenhuma redação corrigida ainda.</p>
                     </div>
                   )}
                 </CardContent>
