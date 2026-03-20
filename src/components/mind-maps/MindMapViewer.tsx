@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { Brain, Expand, Shrink } from 'lucide-react'
+import { Network, Expand, Shrink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MindMapCard, type MindMapNode } from './MindMapCard'
 
@@ -79,7 +79,7 @@ export function MindMapViewer({ title, subject, color, nodes }: MindMapViewerPro
             'bg-white/80 dark:bg-white/10 shadow-sm flex-shrink-0',
           )}
         >
-          <Brain className={cn('w-5 h-5', brainColor)} />
+          <Network className={cn('w-5 h-5', brainColor)} />
         </div>
 
         <div className="flex-1 min-w-0">

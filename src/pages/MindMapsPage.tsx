@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Brain, Search, Sparkles } from 'lucide-react'
+import { Network, Search, Sparkles, BookOpen } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -96,7 +96,7 @@ export default function MindMapsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
-            <Brain className="h-6 w-6 text-primary" />
+            <Network className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Mapas Mentais</h1>
@@ -157,7 +157,7 @@ export default function MindMapsPage() {
       {/* ── Grid ── */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground space-y-3">
-          <Brain className="h-12 w-12 opacity-30" />
+          <Network className="h-12 w-12 opacity-30" />
           <p className="text-base font-medium">Nenhum mapa mental disponível ainda</p>
           {(selectedSubject || searchText) && (
             <Button
@@ -187,7 +187,7 @@ export default function MindMapsPage() {
                       className="p-2 rounded-lg shrink-0"
                       style={{ backgroundColor: `${colour}22` }}
                     >
-                      <span className="text-xl leading-none">{map.icon ?? '🧠'}</span>
+                      <Network className="h-5 w-5" style={{ color: colour }} />
                     </div>
                     <Badge
                       variant="outline"
@@ -203,7 +203,7 @@ export default function MindMapsPage() {
 
                   {/* Node count */}
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Brain className="h-3 w-3" />
+                    <BookOpen className="h-3 w-3" />
                     {nodeCount} {nodeCount === 1 ? 'conceito' : 'conceitos'}
                   </p>
                 </CardContent>
@@ -218,7 +218,7 @@ export default function MindMapsPage() {
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <Brain className="h-5 w-5 text-primary" />
+              <Network className="h-5 w-5 text-primary" />
               {openMap?.title}
             </DialogTitle>
           </DialogHeader>
