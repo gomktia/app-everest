@@ -323,7 +323,7 @@ export default function AdminClassPermissionsPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <div className="p-3 rounded-xl bg-blue-100 border border-blue-300">
                   <Lock className="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
@@ -333,7 +333,7 @@ export default function AdminClassPermissionsPage() {
                   </p>
                 </div>
               </div>
-              <Badge variant="outline" className="bg-blue-500/10 border-blue-500/20 text-blue-600">
+              <Badge variant="outline" className="bg-blue-100 border-blue-300 text-blue-600">
                 <Users className="h-3 w-3 mr-1" />
                 {classes.length} Turmas
               </Badge>
@@ -409,7 +409,7 @@ export default function AdminClassPermissionsPage() {
                     <Card className="border-border shadow-sm text-center py-12">
                       <CardContent className="p-5">
                         <div className="max-w-md mx-auto">
-                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-100 flex items-center justify-center">
                             <GraduationCap className="w-8 h-8 text-blue-600" />
                           </div>
                           <h3 className="text-xl font-bold text-foreground mb-2">Selecione uma Turma</h3>
@@ -456,7 +456,7 @@ export default function AdminClassPermissionsPage() {
                           </div>
 
                           {/* Info Box - Recursos Padrao */}
-                          <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                          <div className="p-4 rounded-xl bg-green-100 border border-green-300">
                             <div className="flex items-start gap-3">
                               <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
@@ -465,28 +465,28 @@ export default function AdminClassPermissionsPage() {
                                   Todos os alunos tem acesso automatico aos seguintes recursos, independente da turma:
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Dashboard
                                   </Badge>
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Calendario
                                   </Badge>
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Ranking
                                   </Badge>
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Forum
                                   </Badge>
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Conquistas
                                   </Badge>
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Progresso
                                   </Badge>
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Notificacoes
                                   </Badge>
-                                  <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-700">
+                                  <Badge variant="outline" className="bg-green-100 border-green-300 text-green-700">
                                     Configuracoes
                                   </Badge>
                                 </div>
@@ -543,7 +543,7 @@ export default function AdminClassPermissionsPage() {
                           ))}
 
                           {/* Info Box */}
-                          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                          <div className="p-4 rounded-xl bg-blue-100 border border-blue-300">
                             <div className="flex items-start gap-3">
                               <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
                               <div className="flex-1 text-sm">
@@ -564,7 +564,7 @@ export default function AdminClassPermissionsPage() {
                     <Card className="border-border shadow-sm text-center py-12">
                       <CardContent className="p-5">
                         <div className="max-w-md mx-auto">
-                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-100 flex items-center justify-center">
                             <GraduationCap className="w-8 h-8 text-blue-600" />
                           </div>
                           <h3 className="text-xl font-bold text-foreground mb-2">Nenhuma Turma Selecionada</h3>

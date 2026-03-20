@@ -230,17 +230,17 @@ export default function CourseDetailsPage() {
 
                 {/* Course Stats */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                  <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300">
                     <Clock className="h-6 w-6 text-blue-500 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-blue-600">{durationLabel}</div>
                     <div className="text-sm text-muted-foreground">Duração</div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <div className="text-center p-4 rounded-xl bg-green-100 border border-green-300">
                     <PlayCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-green-600">{totalLessons}</div>
                     <div className="text-sm text-muted-foreground">Aulas</div>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                  <div className="text-center p-4 rounded-xl bg-purple-100 border border-purple-300">
                     <BookOpen className="h-6 w-6 text-purple-500 mx-auto mb-2" />
                     <div className="text-2xl font-bold text-purple-600">{totalModules}</div>
                     <div className="text-sm text-muted-foreground">Módulos</div>
@@ -325,7 +325,7 @@ export default function CourseDetailsPage() {
                                     <div className={cn(
                                       "p-2 rounded-lg transition-colors",
                                       isCompleted
-                                        ? "bg-green-500/20 text-green-600"
+                                        ? "bg-green-100 text-green-600"
                                         : "bg-muted/50 text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary"
                                     )}>
                                       {isCompleted ? (

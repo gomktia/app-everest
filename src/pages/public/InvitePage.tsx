@@ -168,7 +168,7 @@ export default function InvitePage() {
                   Vagas esgotadas
                 </Badge>
               ) : (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 animate-pulse">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-100 border border-amber-300 animate-pulse">
                   <span className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums">
                     {slotsAvailable}
                   </span>

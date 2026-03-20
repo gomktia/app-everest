@@ -165,7 +165,7 @@ export function AchievementNotification({
           </p>
 
           {/* XP ganho */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-yellow-600/5 border border-yellow-300">
             <div className="flex items-center gap-2">
               <Star className="h-4 w-4 text-yellow-500" />
               <span className="text-sm font-medium text-foreground">XP Ganho</span>

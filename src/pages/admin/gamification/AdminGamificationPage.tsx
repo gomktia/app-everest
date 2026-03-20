@@ -169,10 +169,10 @@ export default function AdminGamificationPage() {
   const getCategoryBadge = (category: string) => {
     const categories: Record<string, { label: string; className: string }> = {
       general: { label: 'Geral', className: 'bg-muted/50 border-border text-muted-foreground' },
-      study: { label: 'Estudos', className: 'bg-blue-500/10 border-blue-500/20 text-blue-600' },
-      quiz: { label: 'Quiz', className: 'bg-purple-500/10 border-purple-500/20 text-purple-600' },
-      essay: { label: 'Redação', className: 'bg-green-500/10 border-green-500/20 text-green-600' },
-      social: { label: 'Social', className: 'bg-orange-500/10 border-orange-500/20 text-orange-600' }
+      study: { label: 'Estudos', className: 'bg-blue-100 border-blue-300 text-blue-600' },
+      quiz: { label: 'Quiz', className: 'bg-purple-100 border-purple-300 text-purple-600' },
+      essay: { label: 'Redação', className: 'bg-green-100 border-green-300 text-green-600' },
+      social: { label: 'Social', className: 'bg-orange-100 border-orange-300 text-orange-600' }
     }
 
     const cat = categories[category] || categories.general
@@ -241,7 +241,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-yellow-500/10">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-yellow-100">
                   <Trophy className="h-5 w-5 md:h-6 md:w-6 text-yellow-600" />
                 </div>
                 <div>
@@ -255,7 +255,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-green-500/10">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-green-100">
                   <Award className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                 </div>
                 <div>
@@ -269,7 +269,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-blue-500/10">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-blue-100">
                   <Zap className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                 </div>
                 <div>
@@ -283,7 +283,7 @@ export default function AdminGamificationPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="p-3 md:p-6">
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-purple-500/10">
+                <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-purple-100">
                   <Users className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
                 </div>
                 <div>

@@ -244,7 +244,7 @@ function RankingWidget({ className }: RankingWidgetProps) {
 
             <div className="space-y-2">
               {recentAchievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20">
+                <div key={achievement.id} className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-yellow-600/5 border border-yellow-300">
                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-xs">
                     🏆
                   </div>

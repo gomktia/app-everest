@@ -289,7 +289,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.users.trend,
           icon: Users,
           color: 'text-blue-600',
-          bg: 'bg-blue-500/10',
+          bg: 'bg-blue-100',
         },
         {
           label: 'Redacoes Pendentes',
@@ -298,7 +298,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.activeUsers.trend,
           icon: FileText,
           color: 'text-emerald-600',
-          bg: 'bg-emerald-500/10',
+          bg: 'bg-emerald-100',
         },
         {
           label: 'Minhas Turmas',
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.classes.trend,
           icon: GraduationCap,
           color: 'text-violet-600',
-          bg: 'bg-violet-500/10',
+          bg: 'bg-violet-100',
         },
         {
           label: 'Taxa de Conclusao',
@@ -316,7 +316,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.completionRate.trend,
           icon: CheckCircle,
           color: 'text-amber-600',
-          bg: 'bg-amber-500/10',
+          bg: 'bg-amber-100',
         },
       ]
     : [
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.users.trend,
           icon: Users,
           color: 'text-blue-600',
-          bg: 'bg-blue-500/10',
+          bg: 'bg-blue-100',
         },
         {
           label: 'Usuarios Ativos',
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.activeUsers.trend,
           icon: Activity,
           color: 'text-emerald-600',
-          bg: 'bg-emerald-500/10',
+          bg: 'bg-emerald-100',
         },
         {
           label: 'Turmas Ativas',
@@ -345,7 +345,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.classes.trend,
           icon: GraduationCap,
           color: 'text-violet-600',
-          bg: 'bg-violet-500/10',
+          bg: 'bg-violet-100',
         },
         {
           label: 'Taxa de Conclusao',
@@ -354,7 +354,7 @@ export default function AdminDashboard() {
           trend: kpiChanges.completionRate.trend,
           icon: CheckCircle,
           color: 'text-amber-600',
-          bg: 'bg-amber-500/10',
+          bg: 'bg-amber-100',
         },
       ]
 
@@ -384,7 +384,7 @@ export default function AdminDashboard() {
   if (teacherError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-100 flex items-center justify-center">
           <AlertCircle className="w-8 h-8 text-amber-500" />
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">Perfil de Professor Incompleto</h3>
@@ -405,7 +405,7 @@ export default function AdminDashboard() {
             {isTeacher ? 'Visao geral das suas turmas' : 'Visao geral da plataforma'}
           </p>
         </div>
-        <Badge variant="outline" className="bg-emerald-500/10 border-emerald-500/20 text-emerald-700 w-fit">
+        <Badge variant="outline" className="bg-emerald-100 border-emerald-300 text-emerald-700 w-fit">
           <Activity className="h-3 w-3 mr-1.5" />
           Sistema Online
         </Badge>
@@ -595,7 +595,7 @@ export default function AdminDashboard() {
                 <span className="text-sm font-medium text-foreground/80">Total de Redacoes</span>
                 <span className="text-lg font-bold text-foreground">{stats.totalEssays}</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-amber-100">
                 <span className="text-sm font-medium text-amber-800">Aguardando Correcao</span>
                 <span className="text-lg font-bold text-amber-800">{kpiChanges.activeUsers.current}</span>
               </div>

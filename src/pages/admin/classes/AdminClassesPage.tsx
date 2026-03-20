@@ -145,13 +145,13 @@ export default function AdminClassesPage() {
     switch (status) {
       case 'active':
         return (
-          <Badge className="bg-green-500/10 border-green-500/20 text-green-600">
+          <Badge className="bg-green-100 border-green-300 text-green-600">
             Ativa
           </Badge>
         )
       case 'inactive':
         return (
-          <Badge className="bg-orange-500/10 border-orange-500/20 text-orange-600">
+          <Badge className="bg-orange-100 border-orange-300 text-orange-600">
             Inativa
           </Badge>
         )

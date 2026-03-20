@@ -37,7 +37,7 @@ export const LockedContentOverlay = ({
     return (
       <div
         className={cn(
-          'flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20',
+          'flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-300',
           className
         )}
       >
@@ -72,7 +72,7 @@ export const LockedContentOverlay = ({
           <div className="flex justify-center">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-2xl opacity-20 animate-pulse" />
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/30 flex items-center justify-center">
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-300 flex items-center justify-center">
                 <Lock className="h-12 w-12 text-yellow-600" />
               </div>
             </div>
@@ -81,7 +81,7 @@ export const LockedContentOverlay = ({
           {/* Conteúdo */}
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-2">
-              <Badge variant="outline" className="bg-yellow-500/10 border-yellow-500/20 text-yellow-600">
+              <Badge variant="outline" className="bg-yellow-100 border-yellow-300 text-yellow-600">
                 <Crown className="h-3 w-3 mr-1" />
                 Conteúdo Premium
               </Badge>
@@ -151,7 +151,7 @@ export const LockedContentOverlay = ({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-xl border border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 p-6',
+        'relative overflow-hidden rounded-xl border border-yellow-300 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 p-6',
         className
       )}
     >
@@ -161,13 +161,13 @@ export const LockedContentOverlay = ({
       {/* Content */}
       <div className="relative z-10 space-y-4 text-center">
         <div className="flex justify-center">
-          <div className="p-3 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+          <div className="p-3 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-300">
             <Lock className="h-8 w-8 text-yellow-600" />
           </div>
         </div>
 
         <div>
-          <Badge variant="outline" className="bg-yellow-500/10 border-yellow-500/20 text-yellow-600 mb-2">
+          <Badge variant="outline" className="bg-yellow-100 border-yellow-300 text-yellow-600 mb-2">
             <Crown className="h-3 w-3 mr-1" />
             Premium
           </Badge>
@@ -194,7 +194,7 @@ export const LockedContentOverlay = ({
  */
 export const LockedBadge = () => {
   return (
-    <Badge variant="outline" className="bg-yellow-500/10 border-yellow-500/20 text-yellow-600">
+    <Badge variant="outline" className="bg-yellow-100 border-yellow-300 text-yellow-600">
       <Lock className="h-3 w-3 mr-1" />
       Premium
     </Badge>

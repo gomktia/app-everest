@@ -242,7 +242,7 @@ export default function ProgressPage() {
                   className={cn(
                     "p-3 rounded-lg border transition-all duration-200",
                     achievement.earned
-                      ? "border-green-500/20 bg-green-500/5 hover:bg-green-500/10"
+                      ? "border-green-300 bg-green-500/5 hover:bg-green-500/10"
                       : "border-border/50 bg-muted/20 hover:bg-muted/30"
                   )}
                 >

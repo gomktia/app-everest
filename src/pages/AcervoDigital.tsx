@@ -35,17 +35,17 @@ import { TourButton } from '@/components/TourButton'
 import type { DriveStep } from 'driver.js'
 
 const CONCURSO_COLORS: Record<string, { bg: string; text: string; badge: string; border: string; btn: string; hoverBorder: string }> = {
-  livros: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-500', border: 'border-emerald-500/20', btn: 'bg-emerald-600 hover:bg-green-600', hoverBorder: 'hover:border-emerald-500/40' },
-  apostilas: { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', badge: 'bg-amber-500', border: 'border-amber-500/20', btn: 'bg-amber-600 hover:bg-green-600', hoverBorder: 'hover:border-amber-500/40' },
-  exercicios: { bg: 'bg-violet-500/10', text: 'text-violet-600 dark:text-violet-400', badge: 'bg-violet-500', border: 'border-violet-500/20', btn: 'bg-violet-600 hover:bg-green-600', hoverBorder: 'hover:border-violet-500/40' },
-  regulamentos: { bg: 'bg-red-500/10', text: 'text-red-600 dark:text-red-400', badge: 'bg-red-500', border: 'border-red-500/20', btn: 'bg-red-600 hover:bg-green-600', hoverBorder: 'hover:border-red-500/40' },
-  mapas_mentais: { bg: 'bg-teal-500/10', text: 'text-teal-600 dark:text-teal-400', badge: 'bg-teal-500', border: 'border-teal-500/20', btn: 'bg-teal-600 hover:bg-green-600', hoverBorder: 'hover:border-teal-500/40' },
-  EAOF: { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', badge: 'bg-blue-500', border: 'border-blue-500/20', btn: 'bg-blue-600 hover:bg-green-600', hoverBorder: 'hover:border-blue-500/40' },
-  EAOP: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-500', border: 'border-emerald-500/20', btn: 'bg-emerald-600 hover:bg-green-600', hoverBorder: 'hover:border-emerald-500/40' },
-  CAMAR: { bg: 'bg-purple-500/10', text: 'text-purple-600 dark:text-purple-400', badge: 'bg-purple-500', border: 'border-purple-500/20', btn: 'bg-purple-600 hover:bg-green-600', hoverBorder: 'hover:border-purple-500/40' },
-  CADAR: { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', badge: 'bg-orange-500', border: 'border-orange-500/20', btn: 'bg-orange-600 hover:bg-green-600', hoverBorder: 'hover:border-orange-500/40' },
-  CAFAR: { bg: 'bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400', badge: 'bg-rose-500', border: 'border-rose-500/20', btn: 'bg-rose-600 hover:bg-green-600', hoverBorder: 'hover:border-rose-500/40' },
-  CFOE: { bg: 'bg-cyan-500/10', text: 'text-cyan-600 dark:text-cyan-400', badge: 'bg-cyan-500', border: 'border-cyan-500/20', btn: 'bg-cyan-600 hover:bg-green-600', hoverBorder: 'hover:border-cyan-500/40' },
+  livros: { bg: 'bg-emerald-100', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-500', border: 'border-emerald-300', btn: 'bg-emerald-600 hover:bg-green-600', hoverBorder: 'hover:border-emerald-500/40' },
+  apostilas: { bg: 'bg-amber-100', text: 'text-amber-600 dark:text-amber-400', badge: 'bg-amber-500', border: 'border-amber-300', btn: 'bg-amber-600 hover:bg-green-600', hoverBorder: 'hover:border-amber-500/40' },
+  exercicios: { bg: 'bg-violet-100', text: 'text-violet-600 dark:text-violet-400', badge: 'bg-violet-500', border: 'border-violet-300', btn: 'bg-violet-600 hover:bg-green-600', hoverBorder: 'hover:border-violet-500/40' },
+  regulamentos: { bg: 'bg-red-100', text: 'text-red-600 dark:text-red-400', badge: 'bg-red-500', border: 'border-red-300', btn: 'bg-red-600 hover:bg-green-600', hoverBorder: 'hover:border-red-500/40' },
+  mapas_mentais: { bg: 'bg-teal-100', text: 'text-teal-600 dark:text-teal-400', badge: 'bg-teal-500', border: 'border-teal-300', btn: 'bg-teal-600 hover:bg-green-600', hoverBorder: 'hover:border-teal-500/40' },
+  EAOF: { bg: 'bg-blue-100', text: 'text-blue-600 dark:text-blue-400', badge: 'bg-blue-500', border: 'border-blue-300', btn: 'bg-blue-600 hover:bg-green-600', hoverBorder: 'hover:border-blue-500/40' },
+  EAOP: { bg: 'bg-emerald-100', text: 'text-emerald-600 dark:text-emerald-400', badge: 'bg-emerald-500', border: 'border-emerald-300', btn: 'bg-emerald-600 hover:bg-green-600', hoverBorder: 'hover:border-emerald-500/40' },
+  CAMAR: { bg: 'bg-purple-100', text: 'text-purple-600 dark:text-purple-400', badge: 'bg-purple-500', border: 'border-purple-300', btn: 'bg-purple-600 hover:bg-green-600', hoverBorder: 'hover:border-purple-500/40' },
+  CADAR: { bg: 'bg-orange-100', text: 'text-orange-600 dark:text-orange-400', badge: 'bg-orange-500', border: 'border-orange-300', btn: 'bg-orange-600 hover:bg-green-600', hoverBorder: 'hover:border-orange-500/40' },
+  CAFAR: { bg: 'bg-rose-100', text: 'text-rose-600 dark:text-rose-400', badge: 'bg-rose-500', border: 'border-rose-300', btn: 'bg-rose-600 hover:bg-green-600', hoverBorder: 'hover:border-rose-500/40' },
+  CFOE: { bg: 'bg-cyan-100', text: 'text-cyan-600 dark:text-cyan-400', badge: 'bg-cyan-500', border: 'border-cyan-300', btn: 'bg-cyan-600 hover:bg-green-600', hoverBorder: 'hover:border-cyan-500/40' },
 }
 
 function formatFileSize(bytes: number): string {
@@ -560,7 +560,7 @@ export default function AcervoDigitalPage() {
       <div className="grid grid-cols-3 gap-4" data-tour="acervo-stats">
         <Card className="border-border shadow-sm">
           <CardContent className="p-4">
-            <div className="p-2 rounded-lg w-fit mb-3 bg-blue-500/10">
+            <div className="p-2 rounded-lg w-fit mb-3 bg-blue-100">
               <Archive className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="text-2xl font-bold text-foreground">{totalItems}</div>
@@ -569,7 +569,7 @@ export default function AcervoDigitalPage() {
         </Card>
         <Card className="border-border shadow-sm">
           <CardContent className="p-4">
-            <div className="p-2 rounded-lg w-fit mb-3 bg-emerald-500/10">
+            <div className="p-2 rounded-lg w-fit mb-3 bg-emerald-100">
               <BookOpen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="text-2xl font-bold text-foreground">{livros.length}</div>
@@ -578,7 +578,7 @@ export default function AcervoDigitalPage() {
         </Card>
         <Card className="border-border shadow-sm">
           <CardContent className="p-4">
-            <div className="p-2 rounded-lg w-fit mb-3 bg-purple-500/10">
+            <div className="p-2 rounded-lg w-fit mb-3 bg-purple-100">
               <ClipboardList className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="text-2xl font-bold text-foreground">{provas.length}</div>

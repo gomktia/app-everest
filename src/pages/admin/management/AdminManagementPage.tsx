@@ -113,7 +113,7 @@ export default function AdminManagementPage() {
               {/* Stats Grid */}
               {isTeacher ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                  <div className="text-center p-3 md:p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <div className="text-center p-3 md:p-4 rounded-xl bg-green-100 border border-green-300">
                     <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-green-500 mx-auto mb-2" />
                     {stats.loading ? (
                       <Skeleton className="h-6 md:h-8 w-12 md:w-16 mx-auto" />
@@ -125,7 +125,7 @@ export default function AdminManagementPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                  <div className="text-center p-3 md:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                  <div className="text-center p-3 md:p-4 rounded-xl bg-blue-100 border border-blue-300">
                     <Users className="h-5 w-5 md:h-6 md:w-6 text-blue-500 mx-auto mb-2" />
                     {stats.loading ? (
                       <Skeleton className="h-6 md:h-8 w-12 md:w-16 mx-auto" />
@@ -134,7 +134,7 @@ export default function AdminManagementPage() {
                     )}
                     <div className="text-xs md:text-sm text-muted-foreground">Usuarios</div>
                   </div>
-                  <div className="text-center p-3 md:p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <div className="text-center p-3 md:p-4 rounded-xl bg-green-100 border border-green-300">
                     <GraduationCap className="h-5 w-5 md:h-6 md:w-6 text-green-500 mx-auto mb-2" />
                     {stats.loading ? (
                       <Skeleton className="h-6 md:h-8 w-12 md:w-16 mx-auto" />
@@ -143,7 +143,7 @@ export default function AdminManagementPage() {
                     )}
                     <div className="text-xs md:text-sm text-muted-foreground">Alunos</div>
                   </div>
-                  <div className="text-center p-3 md:p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                  <div className="text-center p-3 md:p-4 rounded-xl bg-purple-100 border border-purple-300">
                     <UserCheck className="h-5 w-5 md:h-6 md:w-6 text-purple-500 mx-auto mb-2" />
                     {stats.loading ? (
                       <Skeleton className="h-6 md:h-8 w-12 md:w-16 mx-auto" />
@@ -152,7 +152,7 @@ export default function AdminManagementPage() {
                     )}
                     <div className="text-xs md:text-sm text-muted-foreground">Professores</div>
                   </div>
-                  <div className="text-center p-3 md:p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                  <div className="text-center p-3 md:p-4 rounded-xl bg-orange-100 border border-orange-300">
                     <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-orange-500 mx-auto mb-2" />
                     {stats.loading ? (
                       <Skeleton className="h-6 md:h-8 w-12 md:w-16 mx-auto" />

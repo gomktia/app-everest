@@ -67,10 +67,10 @@ export function TrialCountdown({
         className={cn(
           'gap-1 font-mono text-xs cursor-pointer hover:opacity-80 transition-opacity',
           isCritical
-            ? 'bg-red-500/10 text-red-600 border-red-300 dark:text-red-400 dark:border-red-700 animate-pulse'
+            ? 'bg-red-100 text-red-600 border-red-300 dark:text-red-400 dark:border-red-700 animate-pulse'
             : isUrgent
-              ? 'bg-orange-500/10 text-orange-600 border-orange-300 dark:text-orange-400 dark:border-orange-700'
-              : 'bg-amber-500/10 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700',
+              ? 'bg-orange-100 text-orange-600 border-orange-300 dark:text-orange-400 dark:border-orange-700'
+              : 'bg-amber-100 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700',
           className
         )}
         onClick={handleUpgrade}

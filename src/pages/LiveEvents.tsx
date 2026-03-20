@@ -19,7 +19,7 @@ const providerConfig: Record<LiveEventProvider, { label: string; icon: typeof Ra
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   live: { label: 'Ao Vivo', className: 'bg-red-500 text-white animate-pulse' },
-  scheduled: { label: 'Agendada', className: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
+  scheduled: { label: 'Agendada', className: 'bg-blue-100 text-blue-500 border-blue-300' },
   ended: { label: 'Encerrada', className: 'bg-muted text-muted-foreground' },
 }
 
@@ -76,7 +76,7 @@ export default function LiveEventsPage() {
             return (
               <Card key={live.id} className={cn(
                 'border-border shadow-sm transition-all hover:shadow-md',
-                live.status === 'live' && 'border-red-500/30 ring-1 ring-red-500/20'
+                live.status === 'live' && 'border-red-300 ring-1 ring-red-500/20'
               )}>
                 <CardContent className="p-5 space-y-4">
                   <div className="flex items-start justify-between">

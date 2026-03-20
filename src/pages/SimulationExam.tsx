@@ -183,7 +183,7 @@ export default function SimulationExamPage() {
           <div className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-mono text-lg font-bold transition-all duration-300',
             timeLeft < 300
-              ? 'bg-red-500/10 border-red-500/30 text-red-600'
+              ? 'bg-red-100 border-red-300 text-red-600'
               : 'bg-muted/50 border-border text-foreground'
           )}>
             <Timer className="h-5 w-5" />
@@ -231,7 +231,7 @@ export default function SimulationExamPage() {
                       isCurrent
                         ? 'bg-primary text-primary-foreground ring-2 ring-primary/30 shadow-sm'
                         : isAnswered
-                          ? 'bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400 hover:bg-green-500/20'
+                          ? 'bg-green-100 border border-green-300 text-green-700 dark:text-green-400 hover:bg-green-500/20'
                           : 'bg-muted/50 border border-border text-muted-foreground hover:bg-muted hover:border-primary/30'
                     )}
                   >

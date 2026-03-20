@@ -16,15 +16,15 @@ import { useAuth } from '@/hooks/use-auth'
 const getModeDetails = (mode: string) => {
   switch (mode) {
     case 'full':
-      return { name: 'Sessão Completa', icon: BookOpen, color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' }
+      return { name: 'Sessão Completa', icon: BookOpen, color: 'bg-blue-100 text-blue-600 border-blue-300' }
     case 'difficult_review':
-      return { name: 'Revisão Difíceis', icon: Target, color: 'bg-red-500/10 text-red-600 border-red-500/20' }
+      return { name: 'Revisão Difíceis', icon: Target, color: 'bg-red-100 text-red-600 border-red-300' }
     case 'lightning':
-      return { name: 'Relâmpago', icon: Zap, color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20' }
+      return { name: 'Relâmpago', icon: Zap, color: 'bg-yellow-100 text-yellow-600 border-yellow-300' }
     case 'test':
-      return { name: 'Modo Teste', icon: Clock, color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' }
+      return { name: 'Modo Teste', icon: Clock, color: 'bg-purple-100 text-purple-600 border-purple-300' }
     case 'free':
-      return { name: 'Estudo Livre', icon: Star, color: 'bg-green-500/10 text-green-600 border-green-500/20' }
+      return { name: 'Estudo Livre', icon: Star, color: 'bg-green-100 text-green-600 border-green-300' }
     default:
       return { name: mode, icon: BookOpen, color: 'bg-muted/50 text-muted-foreground border-border' }
   }

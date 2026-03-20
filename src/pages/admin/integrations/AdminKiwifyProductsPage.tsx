@@ -315,7 +315,7 @@ export default function AdminKiwifyProductsPage() {
       <Card className="border-border shadow-sm">
         <CardContent className="p-5">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10">
+            <div className="p-2 rounded-lg bg-green-100">
               <Webhook className="h-5 w-5 text-green-600" />
             </div>
             <div className="flex-1 min-w-0">
@@ -435,7 +435,7 @@ export default function AdminKiwifyProductsPage() {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {product.is_active ? (
-                          <Badge className="bg-green-500/10 border-green-500/20 text-green-600">
+                          <Badge className="bg-green-100 border-green-300 text-green-600">
                             Ativo
                           </Badge>
                         ) : (

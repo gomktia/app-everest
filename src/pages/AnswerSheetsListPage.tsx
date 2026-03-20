@@ -161,13 +161,13 @@ export default function AnswerSheetsListPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
-        return 'bg-green-500/10 border-green-500/20 text-green-600'
+        return 'bg-green-100 border-green-300 text-green-600'
       case 'submitted':
-        return 'bg-blue-500/10 border-blue-500/20 text-blue-600'
+        return 'bg-blue-100 border-blue-300 text-blue-600'
       case 'expired':
         return 'bg-muted/50 border-border text-muted-foreground'
       case 'scheduled':
-        return 'bg-purple-500/10 border-purple-500/20 text-purple-600'
+        return 'bg-purple-100 border-purple-300 text-purple-600'
       default:
         return 'bg-muted/10 border-muted/20 text-muted-foreground'
     }
@@ -224,22 +224,22 @@ export default function AnswerSheetsListPage() {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                <div className="text-center p-3 md:p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-green-100 border border-green-300">
                   <Send className="h-5 w-5 md:h-6 md:w-6 text-green-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-green-600">{stats.available}</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Disponíveis</div>
                 </div>
-                <div className="text-center p-3 md:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-blue-100 border border-blue-300">
                   <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-blue-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-blue-600">{stats.submitted}</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Enviados</div>
                 </div>
-                <div className="text-center p-3 md:p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-purple-100 border border-purple-300">
                   <BarChart2 className="h-5 w-5 md:h-6 md:w-6 text-purple-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-purple-600">{stats.average}</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Média</div>
                 </div>
-                <div className="text-center p-3 md:p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                <div className="text-center p-3 md:p-4 rounded-xl bg-orange-100 border border-orange-300">
                   <Trophy className="h-5 w-5 md:h-6 md:w-6 text-orange-500 mx-auto mb-2" />
                   <div className="text-xl md:text-2xl font-bold text-orange-600">{stats.best}</div>
                   <div className="text-xs md:text-sm text-muted-foreground">Melhor</div>

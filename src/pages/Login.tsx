@@ -85,7 +85,7 @@ export default function LoginPage() {
         <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-sidebar text-sidebar-foreground">
           <div className="w-full max-w-sm space-y-8">
             <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
                 <MailCheck className="h-8 w-8 text-emerald-500" />
               </div>
               <div>

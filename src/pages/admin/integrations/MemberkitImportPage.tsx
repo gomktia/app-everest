@@ -351,7 +351,7 @@ export default function MemberkitImportPage() {
             step === 1
               ? 'bg-primary text-primary-foreground font-medium'
               : step > 1
-                ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20 cursor-pointer'
+                ? 'bg-green-100 text-green-600 hover:bg-green-500/20 cursor-pointer'
                 : 'bg-muted text-muted-foreground'
           )}
         >
@@ -366,7 +366,7 @@ export default function MemberkitImportPage() {
             step === 2
               ? 'bg-primary text-primary-foreground font-medium'
               : step > 2
-                ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20 cursor-pointer'
+                ? 'bg-green-100 text-green-600 hover:bg-green-500/20 cursor-pointer'
                 : 'bg-muted text-muted-foreground'
           )}
         >
@@ -496,7 +496,7 @@ export default function MemberkitImportPage() {
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/10">
+                    <div className="p-2 rounded-lg bg-blue-100">
                       <BookOpen className="h-5 w-5 text-blue-500" />
                     </div>
                     <div>
@@ -541,7 +541,7 @@ export default function MemberkitImportPage() {
                               className="w-12 h-12 rounded-lg object-cover shrink-0"
                             />
                           ) : (
-                            <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
                               <BookOpen className="h-6 w-6 text-blue-500" />
                             </div>
                           )}
@@ -590,7 +590,7 @@ export default function MemberkitImportPage() {
                       className="w-16 h-16 rounded-xl object-cover"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-blue-100 flex items-center justify-center">
                       <BookOpen className="h-8 w-8 text-blue-500" />
                     </div>
                   )}
@@ -632,7 +632,7 @@ export default function MemberkitImportPage() {
               <CardContent className="p-5">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/10">
+                    <div className="p-2 rounded-lg bg-blue-100">
                       <Upload className="h-5 w-5 text-blue-500" />
                     </div>
                     <div>
@@ -669,19 +669,19 @@ export default function MemberkitImportPage() {
                         Curso &quot;{courseResult.courseName}&quot; importado
                       </div>
                       <div className="grid grid-cols-3 gap-3 text-sm">
-                        <div className="text-center p-3 rounded-lg bg-blue-500/10">
+                        <div className="text-center p-3 rounded-lg bg-blue-100">
                           <div className="text-lg font-bold text-blue-500">
                             {courseResult.modulesCreated}
                           </div>
                           <div className="text-muted-foreground">Modulos</div>
                         </div>
-                        <div className="text-center p-3 rounded-lg bg-green-500/10">
+                        <div className="text-center p-3 rounded-lg bg-green-100">
                           <div className="text-lg font-bold text-green-500">
                             {courseResult.lessonsCreated}
                           </div>
                           <div className="text-muted-foreground">Aulas</div>
                         </div>
-                        <div className="text-center p-3 rounded-lg bg-purple-500/10">
+                        <div className="text-center p-3 rounded-lg bg-purple-100">
                           <div className="text-lg font-bold text-purple-500">
                             {courseResult.attachmentsCreated}
                           </div>
@@ -711,7 +711,7 @@ export default function MemberkitImportPage() {
               <CardContent className="p-5">
                 <div className="space-y-5">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-green-500/10">
+                    <div className="p-2 rounded-lg bg-green-100">
                       <Users className="h-5 w-5 text-green-500" />
                     </div>
                     <div>
@@ -833,19 +833,19 @@ export default function MemberkitImportPage() {
                             Importacao de alunos concluida
                           </div>
                           <div className="grid grid-cols-3 gap-3 text-sm">
-                            <div className="text-center p-3 rounded-lg bg-green-500/10">
+                            <div className="text-center p-3 rounded-lg bg-green-100">
                               <div className="text-lg font-bold text-green-500">
                                 {usersResult.usersCreated}
                               </div>
                               <div className="text-muted-foreground">Criados</div>
                             </div>
-                            <div className="text-center p-3 rounded-lg bg-yellow-500/10">
+                            <div className="text-center p-3 rounded-lg bg-yellow-100">
                               <div className="text-lg font-bold text-yellow-500">
                                 {usersResult.usersAlreadyExisted}
                               </div>
                               <div className="text-muted-foreground">Ja existiam</div>
                             </div>
-                            <div className="text-center p-3 rounded-lg bg-blue-500/10">
+                            <div className="text-center p-3 rounded-lg bg-blue-100">
                               <div className="text-lg font-bold text-blue-500">
                                 {usersResult.enrollmentsCreated}
                               </div>
@@ -874,7 +874,7 @@ export default function MemberkitImportPage() {
             <CardContent className="p-5">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-orange-500/10">
+                  <div className="p-2 rounded-lg bg-orange-100">
                     <ScrollText className="h-5 w-5 text-orange-500" />
                   </div>
                   <h2 className="text-xl font-semibold text-foreground">Log de Progresso</h2>

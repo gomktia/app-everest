@@ -438,7 +438,7 @@ export default function AdminUserProfilePage() {
         <Card className="border-border shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/10">
+              <div className="p-2 rounded-lg bg-blue-100">
                 <User className="h-5 w-5 text-blue-500" />
               </div>
               <div>
@@ -524,7 +524,7 @@ export default function AdminUserProfilePage() {
         <Card className="border-border shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10">
+              <div className="p-2 rounded-lg bg-purple-100">
                 <Shield className="h-5 w-5 text-purple-500" />
               </div>
               <div>
@@ -595,7 +595,7 @@ export default function AdminUserProfilePage() {
         <Card className="border-border shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/10">
+              <div className="p-2 rounded-lg bg-green-100">
                 <GraduationCap className="h-5 w-5 text-green-500" />
               </div>
               <div>
@@ -666,12 +666,12 @@ export default function AdminUserProfilePage() {
                         </td>
                         <td className="py-3 px-2">
                           {status === 'active' && (
-                            <Badge variant="default" className="bg-green-500/10 text-green-700 border-green-500/20">
+                            <Badge variant="default" className="bg-green-100 text-green-700 border-green-300">
                               Ativo
                             </Badge>
                           )}
                           {status === 'expired' && (
-                            <Badge variant="default" className="bg-red-500/10 text-red-700 border-red-500/20">
+                            <Badge variant="default" className="bg-red-100 text-red-700 border-red-300">
                               Expirado
                             </Badge>
                           )}
@@ -701,7 +701,7 @@ export default function AdminUserProfilePage() {
         <Card className="border-border shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-500/10">
+              <div className="p-2 rounded-lg bg-orange-100">
                 <Clock className="h-5 w-5 text-orange-500" />
               </div>
               <div>

@@ -47,9 +47,9 @@ import { createNotification } from '@/services/notificationService'
 import { logger } from '@/lib/logger'
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline'; color: string }> = {
-  submitted: { label: 'Pendente', variant: 'secondary', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/30' },
-  correcting: { label: 'Em Correção', variant: 'outline', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30' },
-  corrected: { label: 'Corrigida', variant: 'default', color: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30' },
+  submitted: { label: 'Pendente', variant: 'secondary', color: 'bg-orange-100 text-orange-700 dark:text-orange-400 border-orange-300' },
+  correcting: { label: 'Em Correção', variant: 'outline', color: 'bg-blue-100 text-blue-700 dark:text-blue-400 border-blue-300' },
+  corrected: { label: 'Corrigida', variant: 'default', color: 'bg-green-100 text-green-700 dark:text-green-400 border-green-300' },
 }
 
 interface EssaySubmission {

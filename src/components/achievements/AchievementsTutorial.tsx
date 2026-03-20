@@ -152,34 +152,34 @@ export function AchievementsTutorial({ open, onOpenChange, onComplete }: Achieve
   const getColorClasses = (color: string) => {
     const colors: Record<string, { bg: string; text: string; border: string }> = {
       blue: {
-        bg: 'bg-blue-500/10',
+        bg: 'bg-blue-100',
         text: 'text-blue-600',
-        border: 'border-blue-500/20'
+        border: 'border-blue-300'
       },
       yellow: {
-        bg: 'bg-yellow-500/10',
+        bg: 'bg-yellow-100',
         text: 'text-yellow-600',
-        border: 'border-yellow-500/20'
+        border: 'border-yellow-300'
       },
       orange: {
-        bg: 'bg-orange-500/10',
+        bg: 'bg-orange-100',
         text: 'text-orange-600',
-        border: 'border-orange-500/20'
+        border: 'border-orange-300'
       },
       purple: {
-        bg: 'bg-purple-500/10',
+        bg: 'bg-purple-100',
         text: 'text-purple-600',
-        border: 'border-purple-500/20'
+        border: 'border-purple-300'
       },
       green: {
-        bg: 'bg-green-500/10',
+        bg: 'bg-green-100',
         text: 'text-green-600',
-        border: 'border-green-500/20'
+        border: 'border-green-300'
       },
       red: {
-        bg: 'bg-red-500/10',
+        bg: 'bg-red-100',
         text: 'text-red-600',
-        border: 'border-red-500/20'
+        border: 'border-red-300'
       }
     }
     return colors[color] || colors.blue

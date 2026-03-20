@@ -73,15 +73,15 @@ export function AnswerSheet({
 
     if (showResults) {
       if (question.isCorrect === true) {
-        return 'border-green-500/50 bg-green-500/10 text-green-600 hover:bg-green-500/20'
+        return 'border-green-500/50 bg-green-100 text-green-600 hover:bg-green-500/20'
       }
       if (question.isCorrect === false) {
-        return 'border-red-500/50 bg-red-500/10 text-red-600 hover:bg-red-500/20'
+        return 'border-red-500/50 bg-red-100 text-red-600 hover:bg-red-500/20'
       }
     }
 
     if (question.isAnswered) {
-      return 'border-blue-500/50 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'
+      return 'border-blue-500/50 bg-blue-100 text-blue-600 hover:bg-blue-500/20'
     }
 
     return 'border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50'

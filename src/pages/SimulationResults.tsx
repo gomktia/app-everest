@@ -191,11 +191,11 @@ export default function SimulationResultsPage() {
             <div
               className={cn(
                 'inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 font-semibold text-sm',
-                performance.color === 'green' && 'bg-green-500/10 border-green-500/30 text-green-600',
-                performance.color === 'blue' && 'bg-blue-500/10 border-blue-500/30 text-blue-600',
-                performance.color === 'yellow' && 'bg-yellow-500/10 border-yellow-500/30 text-yellow-600',
-                performance.color === 'orange' && 'bg-orange-500/10 border-orange-500/30 text-orange-600',
-                performance.color === 'red' && 'bg-red-500/10 border-red-500/30 text-red-600',
+                performance.color === 'green' && 'bg-green-100 border-green-300 text-green-600',
+                performance.color === 'blue' && 'bg-blue-100 border-blue-300 text-blue-600',
+                performance.color === 'yellow' && 'bg-yellow-100 border-yellow-300 text-yellow-600',
+                performance.color === 'orange' && 'bg-orange-100 border-orange-300 text-orange-600',
+                performance.color === 'red' && 'bg-red-100 border-red-300 text-red-600',
               )}
             >
               <PerformanceIcon className="h-4 w-4" />

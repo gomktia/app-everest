@@ -100,7 +100,7 @@ export default function LivePlayerPage() {
               </Badge>
             )}
             {isScheduled && (
-              <Badge variant="outline" className="text-blue-500 border-blue-500/30 shrink-0">Agendada</Badge>
+              <Badge variant="outline" className="text-blue-500 border-blue-300 shrink-0">Agendada</Badge>
             )}
             {live.status === 'ended' && (
               <Badge variant="outline" className="shrink-0">Encerrada</Badge>
@@ -133,7 +133,7 @@ export default function LivePlayerPage() {
       ) : isScheduled ? (
         <Card className="border-border shadow-sm">
           <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
               <Clock className="h-8 w-8 text-blue-500" />
             </div>
             <div className="text-center">

@@ -163,11 +163,11 @@ export default function FlashcardSessionResultPage() {
             <Progress value={percentage} className="h-2.5" />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="text-center p-3 rounded-lg bg-green-100 border border-green-300">
               <p className="text-xl font-bold text-green-600">{((session.correct / session.totalCards) * 100).toFixed(1)}%</p>
               <p className="text-xs text-muted-foreground">Taxa de Acerto</p>
             </div>
-            <div className="text-center p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <div className="text-center p-3 rounded-lg bg-blue-100 border border-blue-300">
               <p className="text-xl font-bold text-blue-600">{session.totalCards - session.incorrect}</p>
               <p className="text-xs text-muted-foreground">Cards Dominados</p>
             </div>
@@ -199,7 +199,7 @@ export default function FlashcardSessionResultPage() {
                     <div className="flex items-center gap-3 text-left">
                       <div className={cn(
                         'w-8 h-8 rounded-full flex items-center justify-center',
-                        card.userAnswer === 'correct' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500',
+                        card.userAnswer === 'correct' ? 'bg-green-100 text-green-500' : 'bg-red-100 text-red-500',
                       )}>
                         {card.userAnswer === 'correct' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                       </div>
@@ -210,8 +210,8 @@ export default function FlashcardSessionResultPage() {
                           className={cn(
                             'mt-1 text-xs',
                             card.userAnswer === 'correct'
-                              ? 'bg-green-500/10 text-green-600 border-green-500/20'
-                              : 'bg-red-500/10 text-red-600 border-red-500/20',
+                              ? 'bg-green-100 text-green-600 border-green-300'
+                              : 'bg-red-100 text-red-600 border-red-300',
                           )}
                         >
                           {card.userAnswer === 'correct' ? 'Acerto' : 'Erro'}

@@ -93,10 +93,10 @@ const providerConfig: Record<LiveEventProvider, { label: string; icon: typeof Ra
 }
 
 const statusConfig: Record<LiveEventStatus, { label: string; className: string }> = {
-  scheduled: { label: 'Agendada', className: 'bg-blue-500/10 text-blue-600 border-blue-500/30' },
+  scheduled: { label: 'Agendada', className: 'bg-blue-100 text-blue-600 border-blue-300' },
   live: { label: 'Ao Vivo', className: 'bg-red-500 text-white' },
   ended: { label: 'Encerrada', className: 'bg-muted text-muted-foreground' },
-  cancelled: { label: 'Cancelada', className: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30' },
+  cancelled: { label: 'Cancelada', className: 'bg-yellow-100 text-yellow-600 border-yellow-300' },
 }
 
 interface FormData {
@@ -565,7 +565,7 @@ export default function AdminLiveEventsPage() {
               </div>
             </div>
             {form.provider === 'panda' && !editingId ? (
-              <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
+              <div className="rounded-lg bg-blue-100 border border-blue-300 p-3">
                 <p className="text-sm text-blue-600 dark:text-blue-400 flex items-center gap-2">
                   <Settings2 className="h-4 w-4 shrink-0" />
                   A URL do player e credenciais OBS serão geradas automaticamente pelo Panda Video.
@@ -702,7 +702,7 @@ export default function AdminLiveEventsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-xs text-amber-600 dark:text-amber-400 space-y-1">
+              <div className="rounded-lg bg-amber-100 border border-amber-300 p-3 text-xs text-amber-600 dark:text-amber-400 space-y-1">
                 <p className="font-semibold">Como configurar no OBS Studio:</p>
                 <ol className="list-decimal ml-4 space-y-0.5">
                   <li>Abra Configurações → Transmissão</li>

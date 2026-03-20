@@ -358,8 +358,8 @@ export default function AnswerSheetFillPage() {
                 <div className={cn(
                   "p-3 rounded-xl",
                   answeredCount === answerSheet.questions.length
-                    ? "bg-green-500/10"
-                    : "bg-orange-500/10"
+                    ? "bg-green-100"
+                    : "bg-orange-100"
                 )}>
                   {answeredCount === answerSheet.questions.length ? (
                     <CheckCircle className="h-6 w-6 text-green-500" />

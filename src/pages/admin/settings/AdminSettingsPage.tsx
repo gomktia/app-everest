@@ -568,7 +568,7 @@ export default function AdminSettingsPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-green-500/10">
+                <div className="p-3 rounded-2xl bg-green-100">
                   <Database className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
@@ -578,7 +578,7 @@ export default function AdminSettingsPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 border border-green-300">
                 <Zap className="h-4 w-4 text-green-500" />
                 <span className="text-sm font-medium text-green-500">Online</span>
               </div>

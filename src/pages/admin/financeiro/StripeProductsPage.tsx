@@ -471,7 +471,7 @@ export default function StripeProductsPage() {
                       </TableCell>
                       <TableCell>
                         {product.is_active ? (
-                          <Badge className="bg-green-500/10 border-green-500/20 text-green-600">
+                          <Badge className="bg-green-100 border-green-300 text-green-600">
                             Ativo
                           </Badge>
                         ) : (

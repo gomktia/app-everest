@@ -85,7 +85,7 @@ export function CourseSidebarContent({ courseId, modules, currentLessonId }: Cou
                 <div className={cn(
                   "flex items-center justify-center h-7 w-7 rounded-lg text-xs font-bold shrink-0 transition-colors",
                   moduleProgress === 100
-                    ? "bg-green-500/15 text-green-600 dark:text-green-400"
+                    ? "bg-green-100 text-green-600 dark:text-green-400"
                     : "bg-primary/10 text-primary"
                 )}>
                   {moduleProgress === 100 ? (

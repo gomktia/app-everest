@@ -168,8 +168,8 @@ export default function AnswerSheetResultPage() {
               <div className={cn(
                 "p-6 rounded-full",
                 isPassed
-                  ? "bg-green-500/10"
-                  : "bg-red-500/10"
+                  ? "bg-green-100"
+                  : "bg-red-100"
               )}>
                 {isPassed ? (
                   <Trophy className="h-16 w-16 text-green-500" />
@@ -205,7 +205,7 @@ export default function AnswerSheetResultPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-green-500/10">
+                <div className="p-3 rounded-lg bg-green-100">
                   <CheckCircle2 className="h-6 w-6 text-green-500" />
                 </div>
                 <div>
@@ -219,7 +219,7 @@ export default function AnswerSheetResultPage() {
           <Card className="border-border shadow-sm">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-red-500/10">
+                <div className="p-3 rounded-lg bg-red-100">
                   <XCircle className="h-6 w-6 text-red-500" />
                 </div>
                 <div>
@@ -328,9 +328,9 @@ export default function AnswerSheetResultPage() {
                       className={cn(
                         "p-3 rounded-lg border-2 flex items-center justify-between",
                         isCorrect
-                          ? "border-green-500/30 bg-green-500/10"
+                          ? "border-green-300 bg-green-100"
                           : answer
-                          ? "border-red-500/30 bg-red-500/10"
+                          ? "border-red-300 bg-red-100"
                           : "border-muted/30 bg-muted/10"
                       )}
                     >

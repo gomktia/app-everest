@@ -256,7 +256,7 @@ export default function AffiliatesPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-lg bg-blue-500/10 p-3">
+            <div className="rounded-lg bg-blue-100 p-3">
               <Users className="h-5 w-5 text-blue-500" />
             </div>
             <div>
@@ -267,7 +267,7 @@ export default function AffiliatesPage() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-lg bg-green-500/10 p-3">
+            <div className="rounded-lg bg-green-100 p-3">
               <DollarSign className="h-5 w-5 text-green-500" />
             </div>
             <div>
@@ -278,7 +278,7 @@ export default function AffiliatesPage() {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-4 p-4">
-            <div className="rounded-lg bg-yellow-500/10 p-3">
+            <div className="rounded-lg bg-yellow-100 p-3">
               <DollarSign className="h-5 w-5 text-yellow-500" />
             </div>
             <div>

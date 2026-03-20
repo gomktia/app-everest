@@ -86,12 +86,12 @@ const PERIOD_OPTIONS = [
 
 const statusBadge = (status: string) => {
   const map: Record<string, string> = {
-    paid: 'bg-green-500/10 border-green-500/20 text-green-600',
-    pending: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-600',
-    failed: 'bg-red-500/10 border-red-500/20 text-red-600',
-    refunded: 'bg-orange-500/10 border-orange-500/20 text-orange-600',
-    expired: 'bg-gray-500/10 border-gray-500/20 text-gray-500',
-    succeeded: 'bg-green-500/10 border-green-500/20 text-green-600',
+    paid: 'bg-green-100 border-green-300 text-green-600',
+    pending: 'bg-yellow-100 border-yellow-300 text-yellow-600',
+    failed: 'bg-red-100 border-red-300 text-red-600',
+    refunded: 'bg-orange-100 border-orange-300 text-orange-600',
+    expired: 'bg-gray-100 border-gray-300 text-gray-500',
+    succeeded: 'bg-green-100 border-green-300 text-green-600',
   }
   const labelMap: Record<string, string> = {
     paid: 'Pago',
@@ -102,7 +102,7 @@ const statusBadge = (status: string) => {
     succeeded: 'Concluido',
   }
   return (
-    <Badge className={map[status] || 'bg-gray-500/10 text-gray-500'}>
+    <Badge className={map[status] || 'bg-gray-100 text-gray-500'}>
       {labelMap[status] || status}
     </Badge>
   )
@@ -111,9 +111,9 @@ const statusBadge = (status: string) => {
 const methodBadge = (method: string | null) => {
   if (!method) return <span className="text-muted-foreground">-</span>
   const map: Record<string, string> = {
-    card: 'bg-blue-500/10 border-blue-500/20 text-blue-600',
-    pix: 'bg-green-500/10 border-green-500/20 text-green-600',
-    split_card: 'bg-purple-500/10 border-purple-500/20 text-purple-600',
+    card: 'bg-blue-100 border-blue-300 text-blue-600',
+    pix: 'bg-green-100 border-green-300 text-green-600',
+    split_card: 'bg-purple-100 border-purple-300 text-purple-600',
   }
   const labelMap: Record<string, string> = {
     card: 'Cartao',
@@ -121,7 +121,7 @@ const methodBadge = (method: string | null) => {
     split_card: '2 Cartoes',
   }
   return (
-    <Badge className={map[method] || 'bg-gray-500/10 text-gray-500'}>
+    <Badge className={map[method] || 'bg-gray-100 text-gray-500'}>
       {labelMap[method] || method}
     </Badge>
   )

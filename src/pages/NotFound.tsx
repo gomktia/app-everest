@@ -37,10 +37,10 @@ const NotFound = () => {
                     <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center">
                       <AlertTriangle className="h-16 w-16 text-primary" />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
+                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                       <span className="text-2xl font-bold text-orange-600">4</span>
                     </div>
-                    <div className="absolute -bottom-2 -left-2 w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
+                    <div className="absolute -bottom-2 -left-2 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                       <span className="text-2xl font-bold text-orange-600">4</span>
                     </div>
                   </div>
@@ -95,21 +95,21 @@ const NotFound = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                  <div className="text-center p-4 rounded-xl bg-blue-100 border border-blue-300">
                     <Search className="h-8 w-8 text-blue-500 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Buscar</h4>
                     <p className="text-sm text-muted-foreground">
                       Use a busca para encontrar conteúdo
                     </p>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <div className="text-center p-4 rounded-xl bg-green-100 border border-green-300">
                     <Compass className="h-8 w-8 text-green-500 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Navegar</h4>
                     <p className="text-sm text-muted-foreground">
                       Explore as categorias principais
                     </p>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                  <div className="text-center p-4 rounded-xl bg-purple-100 border border-purple-300">
                     <Sparkles className="h-8 w-8 text-purple-500 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Descobrir</h4>
                     <p className="text-sm text-muted-foreground">
