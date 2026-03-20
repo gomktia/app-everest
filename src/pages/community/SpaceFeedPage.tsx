@@ -86,7 +86,7 @@ export default function SpaceFeedPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/comunidade')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/comunidade')} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <span
@@ -107,7 +107,7 @@ export default function SpaceFeedPage() {
         {/* Mobile sidebar trigger */}
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="lg:hidden">
+            <Button variant="outline" size="icon" className="lg:hidden" aria-label="Abrir menu">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>

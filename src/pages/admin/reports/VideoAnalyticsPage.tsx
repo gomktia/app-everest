@@ -389,7 +389,7 @@ export default function VideoAnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/reports')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/reports')} aria-label="Voltar">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>

@@ -255,7 +255,7 @@ export default function AdminQuestionFormPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/questions')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/questions')} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>

@@ -272,6 +272,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Set Sentry user context for error tracking
         if (userProfile) {
           Sentry.setUser({ id: userProfile.id, email: userProfile.email, username: `${userProfile.first_name} ${userProfile.last_name}`.trim() })
+          Sentry.setTag('user_role', userProfile.role)
           // Track last seen (5-min debounce in DB)
           supabase.rpc('update_last_seen', { p_user_id: userProfile.id }).then(() => {}, () => {})
         }
@@ -587,6 +588,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfileFetchAttempted(false)
       setCachedProfile(null)
       Sentry.setUser(null)
+      Sentry.setTag('user_role', null)
 
       return { error }
     } finally {

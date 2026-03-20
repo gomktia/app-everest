@@ -110,6 +110,7 @@ export const StudyModeDialog = ({
                 variant="outline"
                 size="icon"
                 onClick={() => setStep('mode')}
+                aria-label="Voltar"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>

@@ -513,10 +513,10 @@ function SpacesTab() {
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(space)}>
+                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(space)} aria-label="Editar">
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleArchive(space)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleArchive(space)} aria-label="Arquivar">
                       <Archive className="h-4 w-4" />
                     </Button>
                     <Button
@@ -524,6 +524,7 @@ function SpacesTab() {
                       size="icon"
                       className="text-destructive hover:text-destructive"
                       onClick={() => handleDelete(space)}
+                      aria-label="Excluir"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -813,7 +814,7 @@ export default function ModerationPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/comunidade')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/comunidade')} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>

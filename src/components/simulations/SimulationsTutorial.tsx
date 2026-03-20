@@ -105,7 +105,7 @@ export function SimulationsTutorial({ onClose }: SimulationsTutorialProps) {
                 <p className="text-sm text-muted-foreground">Passo {currentStep + 1} de {tutorialSteps.length}</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full" aria-label="Fechar tutorial">
               <X className="h-5 w-5" />
             </Button>
           </div>

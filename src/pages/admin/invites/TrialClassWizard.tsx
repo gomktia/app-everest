@@ -1416,7 +1416,7 @@ export default function TrialClassWizard() {
             {state.inviteId && (
               <div className="flex items-center justify-center gap-2 p-4 border rounded-lg bg-muted/30 max-w-lg mx-auto">
                 <p className="font-mono text-sm break-all">{getInviteUrl()}</p>
-                <Button variant="outline" size="icon" onClick={copyInviteUrl}>
+                <Button variant="outline" size="icon" onClick={copyInviteUrl} aria-label="Copiar link">
                   <Copy className="w-4 h-4" />
                 </Button>
               </div>
@@ -1607,7 +1607,7 @@ export default function TrialClassWizard() {
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/invites')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/invites')} aria-label="Voltar">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>

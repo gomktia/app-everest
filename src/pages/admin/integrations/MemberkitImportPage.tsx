@@ -537,7 +537,7 @@ export default function MemberkitImportPage() {
                           {(course.image_url || course.image) ? (
                             <img
                               src={(course.image_url || course.image)}
-                              alt=""
+                              alt={`Capa do curso ${course.name}`}
                               className="w-12 h-12 rounded-lg object-cover shrink-0"
                             />
                           ) : (
@@ -586,7 +586,7 @@ export default function MemberkitImportPage() {
                   {(selectedCourse.image_url || selectedCourse.image) ? (
                     <img
                       src={(selectedCourse.image_url || selectedCourse.image)}
-                      alt=""
+                      alt={`Capa do curso ${selectedCourse.name}`}
                       className="w-16 h-16 rounded-xl object-cover"
                     />
                   ) : (

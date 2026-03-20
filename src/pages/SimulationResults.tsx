@@ -100,7 +100,7 @@ export default function SimulationResultsPage() {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/simulados')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/simulados')} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -154,7 +154,7 @@ export default function SimulationResultsPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/simulados')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/simulados')} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>

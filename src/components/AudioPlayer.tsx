@@ -217,7 +217,7 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                 <div className="fixed inset-0 z-[60] bg-background flex flex-col md:hidden">
                     {/* Close */}
                     <div className="flex items-center justify-between p-4">
-                        <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
+                        <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)} aria-label="Minimizar player">
                             <ChevronDown className="h-5 w-5" />
                         </Button>
                         <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Tocando agora</span>
@@ -266,11 +266,12 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                                 size="icon"
                                 onClick={cycleRepeat}
                                 className={cn("h-10 w-10", repeatMode !== 'off' ? "text-green-500" : "text-muted-foreground")}
+                                aria-label="Repetir"
                             >
                                 {repeatMode === 'one' ? <Repeat1 className="h-5 w-5" /> : <Repeat className="h-5 w-5" />}
                             </Button>
 
-                            <Button variant="ghost" size="icon" onClick={playPrevious} disabled={!hasPrev} className="h-12 w-12">
+                            <Button variant="ghost" size="icon" onClick={playPrevious} disabled={!hasPrev} className="h-12 w-12" aria-label="Faixa anterior">
                                 <SkipBack className="h-6 w-6 fill-current" />
                             </Button>
 
@@ -278,15 +279,16 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                                 size="icon"
                                 onClick={togglePlayPause}
                                 className="h-16 w-16 rounded-full bg-white text-black hover:bg-white/90 hover:scale-105 transition-transform shadow-lg"
+                                aria-label={isPlaying ? "Pausar" : "Reproduzir"}
                             >
                                 {isPlaying ? <Pause className="h-7 w-7 fill-current" /> : <Play className="h-7 w-7 ml-0.5 fill-current" />}
                             </Button>
 
-                            <Button variant="ghost" size="icon" onClick={playNext} disabled={!hasNext} className="h-12 w-12">
+                            <Button variant="ghost" size="icon" onClick={playNext} disabled={!hasNext} className="h-12 w-12" aria-label="Proxima faixa">
                                 <SkipForward className="h-6 w-6 fill-current" />
                             </Button>
 
-                            <Button variant="ghost" size="icon" onClick={toggleMute} className="h-10 w-10 text-muted-foreground">
+                            <Button variant="ghost" size="icon" onClick={toggleMute} className="h-10 w-10 text-muted-foreground" aria-label={isMuted ? "Ativar som" : "Silenciar"}>
                                 {isMuted || volume === 0 ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
                             </Button>
                         </div>
@@ -336,7 +338,7 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                             <span className="text-xs text-muted-foreground truncate">{currentTrack.series || 'Evercast'}</span>
                         </div>
                         {/* Mobile expand hint */}
-                        <Button variant="ghost" size="icon" className="md:hidden shrink-0 h-8 w-8" onClick={(e) => { e.stopPropagation(); setIsExpanded(true) }}>
+                        <Button variant="ghost" size="icon" className="md:hidden shrink-0 h-8 w-8" onClick={(e) => { e.stopPropagation(); setIsExpanded(true) }} aria-label="Expandir player">
                             <ChevronUp className="h-4 w-4" />
                         </Button>
                     </div>
@@ -350,6 +352,7 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                                 onClick={cycleRepeat}
                                 className={cn("h-8 w-8", repeatMode !== 'off' ? "text-green-500" : "text-muted-foreground hover:text-foreground")}
                                 title={repeatMode === 'off' ? 'Repetir desativado' : repeatMode === 'all' ? 'Repetir tudo' : 'Repetir uma'}
+                                aria-label="Repetir"
                             >
                                 {repeatMode === 'one' ? <Repeat1 className="h-4 w-4" /> : <Repeat className="h-4 w-4" />}
                             </Button>
@@ -360,6 +363,7 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                                 onClick={playPrevious}
                                 disabled={!hasPrev}
                                 className="h-9 w-9 hover:text-foreground disabled:opacity-30"
+                                aria-label="Faixa anterior"
                             >
                                 <SkipBack className="h-4 w-4 fill-current" />
                             </Button>
@@ -368,6 +372,7 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                                 size="icon"
                                 onClick={togglePlayPause}
                                 className="h-9 w-9 rounded-full bg-white text-black hover:bg-white/90 hover:scale-110 transition-all"
+                                aria-label={isPlaying ? "Pausar" : "Reproduzir"}
                             >
                                 {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 ml-0.5 fill-current" />}
                             </Button>
@@ -378,6 +383,7 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                                 onClick={playNext}
                                 disabled={!hasNext}
                                 className="h-9 w-9 hover:text-foreground disabled:opacity-30"
+                                aria-label="Proxima faixa"
                             >
                                 <SkipForward className="h-4 w-4 fill-current" />
                             </Button>
@@ -400,13 +406,14 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                         size="icon"
                         onClick={togglePlayPause}
                         className="md:hidden h-10 w-10 rounded-full bg-white text-black hover:bg-white/90 shrink-0"
+                        aria-label={isPlaying ? "Pausar" : "Reproduzir"}
                     >
                         {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 ml-0.5 fill-current" />}
                     </Button>
 
                     {/* Desktop Volume + Close */}
                     <div className="hidden md:flex items-center justify-end gap-2 w-1/3">
-                        <Button variant="ghost" size="icon" onClick={toggleMute} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                        <Button variant="ghost" size="icon" onClick={toggleMute} className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label={isMuted ? "Ativar som" : "Silenciar"}>
                             {isMuted || volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                         </Button>
                         <Slider
@@ -417,7 +424,7 @@ export function AudioPlayer({ currentTrack, playlist, onTrackChange, onClose }: 
                             className="w-24"
                         />
                         {onClose && (
-                            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-muted-foreground hover:text-foreground ml-2">
+                            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-muted-foreground hover:text-foreground ml-2" aria-label="Fechar player">
                                 <X className="h-4 w-4" />
                             </Button>
                         )}

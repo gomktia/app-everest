@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import DOMPurify from 'dompurify'
 import { StudentNotebook } from '@/components/StudentNotebook'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,13 +23,14 @@ import {
 } from '@/services/lessonInteractionService'
 import { logger } from '@/lib/logger'
 import { LessonTourButton } from '@/components/courses/LessonTour'
+import { LessonSidebar } from '@/components/courses/LessonSidebar'
+import { LessonComments } from '@/components/courses/LessonComments'
+import { LessonResources } from '@/components/courses/LessonResources'
 import { LessonAIChat } from '@/components/lessons/LessonAIChat'
 import {
   ArrowLeft,
   CheckCircle,
-  Lock,
   Play,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -43,14 +43,7 @@ import {
   Sun,
   PanelRightOpen,
   PanelRightClose,
-  Eye,
-  ListVideo,
   MessageSquare,
-  Star,
-  Send,
-  Trash2,
-  Reply,
-  Search,
   BookOpen,
   SkipForward,
   ShoppingCart,
@@ -150,7 +143,6 @@ export default function LessonPlayerPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null)
-  const [showModuleSelector, setShowModuleSelector] = useState(false)
   // Theater mode
   const [theaterMode, setTheaterMode] = useState(false)
 
@@ -216,10 +208,6 @@ export default function LessonPlayerPage() {
   const [blockedLessonIds, setBlockedLessonIds] = useState<Set<string>>(new Set())
   const [freeLessonIds, setFreeLessonIds] = useState<Set<string>>(new Set())
 
-  // Search in sidebar
-  const [lessonSearch, setLessonSearch] = useState('')
-
-  const currentLessonRef = useRef<HTMLAnchorElement>(null)
   const mainContentRef = useRef<HTMLDivElement>(null)
 
   /* ---- flat lesson list for prev / next (respects access rules) ---- */
@@ -465,13 +453,6 @@ export default function LessonPlayerPage() {
   useEffect(() => {
     if (!isLoading && mainContentRef.current) {
       mainContentRef.current.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, [isLoading, lessonId])
-
-  /* ---- auto-scroll sidebar to current lesson ---- */
-  useEffect(() => {
-    if (!isLoading && currentLessonRef.current) {
-      currentLessonRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }, [isLoading, lessonId])
 
@@ -730,12 +711,6 @@ export default function LessonPlayerPage() {
     () => sortedModules.find((m) => m.id === selectedModuleId) || sortedModules[0] || null,
     [sortedModules, selectedModuleId],
   )
-  const isCurrentModuleBlocked = currentModule ? blockedModuleIds.has(currentModule.id) : false
-
-  const currentModuleLessons = useMemo(() => {
-    if (!currentModule) return []
-    return [...currentModule.lessons].sort((a, b) => a.order_index - b.order_index)
-  }, [currentModule])
   const currentModuleIndex = useMemo(
     () => sortedModules.findIndex((m) => m.id === currentModule?.id),
     [sortedModules, currentModule],
@@ -748,13 +723,6 @@ export default function LessonPlayerPage() {
     if (blockedModuleIds.has(moduleId)) return false
     return true
   }, [freeLessonIds, blockedLessonIds, blockedModuleIds])
-
-  /* ---- filtered lessons for search ---- */
-  const filteredLessons = useMemo(() => {
-    if (!lessonSearch.trim()) return currentModuleLessons
-    const q = lessonSearch.toLowerCase()
-    return currentModuleLessons.filter(l => l.title.toLowerCase().includes(q))
-  }, [currentModuleLessons, lessonSearch])
 
   const openPdfViewer = async (url: string, type: 'pdf' | 'office' = 'pdf') => {
     // Revoke previous blob URL to prevent memory leaks
@@ -836,235 +804,6 @@ export default function LessonPlayerPage() {
 
   const modCompleted = currentModule?.lessons.filter((l) => l.completed).length || 0
   const modTotal = currentModule?.lessons.length || 0
-
-  /* ---------------------------------------------------------------- */
-  /*  Sidebar content (shared between desktop and mobile)              */
-  /* ---------------------------------------------------------------- */
-
-  const renderModuleSelector = (isMobile: boolean) => (
-    <div className="shrink-0 relative">
-      <button onClick={() => setShowModuleSelector((v) => !v)}
-        className={cn(
-          "w-full px-3 flex items-center gap-2 transition-colors border-b border-border",
-          "py-1.5",
-          showModuleSelector ? "bg-muted/30" : "hover:bg-muted/20"
-        )}>
-        <div className={cn(
-          "rounded-md flex items-center justify-center shrink-0 font-bold w-6 h-6 text-[10px]",
-          modCompleted === modTotal && modTotal > 0
-            ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600"
-            : "bg-primary/10 text-primary"
-        )}>
-          {modCompleted === modTotal && modTotal > 0 ? (
-            <CheckCircle className="h-3 w-3" />
-          ) : (
-            <span>{currentModuleIndex + 1}</span>
-          )}
-        </div>
-        <div className="flex-1 text-left min-w-0">
-          <div className="text-xs font-semibold text-foreground truncate">
-            {currentModule?.name}
-          </div>
-          <span className="text-[10px] text-muted-foreground tabular-nums">{modCompleted}/{modTotal} concluídas</span>
-        </div>
-        <ChevronDown className={cn(
-          "text-muted-foreground shrink-0 transition-transform duration-200 h-3 w-3",
-          showModuleSelector ? "rotate-180" : ""
-        )} />
-      </button>
-      {showModuleSelector && (
-        <div className="absolute left-0 right-0 top-full z-20 bg-card border-b border-border shadow-md max-h-[400px] overflow-y-auto">
-          <div className="p-2 space-y-0.5">
-            {sortedModules.map((mod, idx) => {
-              const modBlocked = blockedModuleIds.has(mod.id)
-              const mc = mod.lessons.filter((l) => l.completed).length
-              const mt = mod.lessons.length
-              const modProgress = mt > 0 ? Math.round((mc / mt) * 100) : 0
-              const isSel = mod.id === currentModule?.id
-              return (
-                <button key={mod.id}
-                  onClick={() => { setSelectedModuleId(mod.id); setShowModuleSelector(false) }}
-                  className={cn(
-                    "w-full px-3 py-3 flex items-center gap-3 text-left rounded-lg transition-all group/mod",
-                    modBlocked && "opacity-50",
-                    isSel ? "bg-primary/5 border border-primary/15" : "border border-transparent hover:bg-muted/40"
-                  )}>
-                  <div className={cn(
-                    "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold transition-all",
-                    modBlocked
-                      ? "bg-muted text-muted-foreground border border-transparent"
-                      : modProgress === 100
-                        ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 border border-emerald-300 dark:border-emerald-800"
-                        : isSel
-                          ? "bg-primary/10 text-primary border border-primary/20"
-                          : "bg-muted text-muted-foreground group-hover/mod:bg-primary/10 group-hover/mod:text-primary group-hover/mod:border-primary/20 border border-transparent"
-                  )}>
-                    {modBlocked ? <Lock className="h-3.5 w-3.5" /> : modProgress === 100 ? <CheckCircle className="h-4 w-4" /> : idx + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className={cn(
-                      "text-[13px] truncate block tracking-tight transition-colors",
-                      isSel ? "text-foreground font-semibold" : "text-foreground/80 group-hover/mod:text-foreground font-medium"
-                    )}>{mod.name}</span>
-                    <div className="flex items-center gap-2.5 mt-1.5">
-                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden max-w-[140px]">
-                        <div className={cn(
-                          "h-full rounded-full transition-all duration-500",
-                          modProgress === 100 ? "bg-gradient-to-r from-emerald-500 to-emerald-400" : isSel ? "bg-gradient-to-r from-primary to-primary/70" : "bg-muted-foreground/30 group-hover/mod:bg-primary"
-                        )} style={{ width: `${modProgress}%` }} />
-                      </div>
-                      <span className={cn(
-                        "text-[10px] font-medium tabular-nums shrink-0",
-                        modProgress === 100 ? "text-emerald-500" : "text-muted-foreground"
-                      )}>{modProgress}%</span>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-
-  const renderLessonList = (isMobile: boolean) => (
-    <>
-      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-        {/* Search */}
-        <div className="px-3 py-2 shrink-0 border-b border-border/50">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-            <input
-              type="text"
-              value={lessonSearch}
-              onChange={(e) => setLessonSearch(e.target.value)}
-              placeholder="Buscar aula..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-muted/40 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:bg-muted/60 text-foreground placeholder:text-muted-foreground/50 transition-all"
-            />
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {filteredLessons.map((lesson, idx) => {
-            const isCurrent = lesson.id === lessonId
-            const isLast = idx === filteredLessons.length - 1
-            const prevCompleted = idx > 0 && filteredLessons[idx - 1]?.completed
-            const lessonLocked = currentModule ? !isLessonAccessible(lesson.id, currentModule.id) : false
-            return (
-              <Link key={lesson.id}
-                ref={isCurrent ? currentLessonRef : undefined}
-                to={lessonLocked ? '#' : `/courses/${courseId}/lessons/${lesson.id}`}
-                onClick={(e) => {
-                  if (lessonLocked) { e.preventDefault(); return }
-                  if (isMobile) setIsSidebarOpen(false)
-                }}
-                className={cn(
-                  "group/lesson relative flex items-start gap-3 pl-4 pr-4 py-0 transition-all",
-                  lessonLocked && "opacity-40 cursor-not-allowed",
-                  isCurrent
-                    ? "bg-primary/10"
-                    : "hover:bg-muted/40"
-                )}>
-                {/* Timeline node + lines */}
-                <div className="relative shrink-0 w-6 flex flex-col items-center self-stretch">
-                  {/* Line above */}
-                  {idx > 0 ? (
-                    <div className={cn(
-                      "w-0.5 h-3",
-                      prevCompleted && lesson.completed ? "bg-emerald-500"
-                        : prevCompleted || (idx > 0 && filteredLessons[idx - 1]?.completed) ? "bg-emerald-500/30"
-                        : "bg-border"
-                    )} />
-                  ) : (
-                    <div className="h-3" />
-                  )}
-                  {/* Node */}
-                  <div className={cn(
-                    "relative z-10 flex items-center justify-center rounded-full shrink-0 transition-all duration-200",
-                    isMobile ? "w-5 h-5" : "w-7 h-7",
-                    lessonLocked
-                      ? "border-2 border-muted-foreground/10 bg-muted text-muted-foreground"
-                      : lesson.completed
-                        ? "bg-emerald-500 text-white border-2 border-emerald-500"
-                        : isCurrent
-                          ? "bg-primary text-white border-2 border-primary"
-                          : "border-2 border-muted-foreground/20 bg-card group-hover/lesson:border-primary/40"
-                  )}>
-                    {lessonLocked ? (
-                      <Lock className={cn(isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
-                    ) : lesson.completed ? (
-                      <CheckCircle className={cn(isMobile ? "h-3 w-3" : "h-3.5 w-3.5")} />
-                    ) : isCurrent ? (
-                      <Play className={cn(isMobile ? "h-2.5 w-2.5" : "h-3 w-3", "ml-px")} />
-                    ) : (
-                      <span className="text-[9px] font-bold text-muted-foreground tabular-nums">{idx + 1}</span>
-                    )}
-                  </div>
-                  {/* Line below */}
-                  {!isLast ? (
-                    <div className={cn(
-                      "w-0.5 flex-1 min-h-[12px]",
-                      lesson.completed ? "bg-emerald-500" : "bg-border"
-                    )} />
-                  ) : (
-                    <div className="h-3" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 py-2">
-                  <div className={cn(
-                    "truncate leading-tight",
-                    isMobile ? "text-xs" : "text-[13px]",
-                    isCurrent ? "text-primary font-semibold" : lesson.completed ? "text-foreground/60" : "text-foreground/80 group-hover/lesson:text-foreground"
-                  )}>
-                    {cleanTitle(lesson.title)}
-                  </div>
-                  {lesson.duration_seconds != null && lesson.duration_seconds > 0 && (
-                    <div className="text-[11px] text-muted-foreground/70 mt-0.5 tabular-nums">
-                      {formatDuration(lesson.duration_seconds)}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            )
-          })}
-          {filteredLessons.length === 0 && (
-            <div className="px-4 py-6 text-center text-xs text-muted-foreground/60">Nenhuma aula encontrada</div>
-          )}
-        </div>
-      </div>
-      {/* Sidebar footer - always visible */}
-      <div data-tour="rating" className="shrink-0 border-t border-border bg-muted/20 px-4 py-2.5">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-foreground font-medium">Avalie esta aula</span>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                onClick={() => handleRate(star)}
-                onMouseEnter={() => setHoverRating(star)}
-                onMouseLeave={() => setHoverRating(0)}
-                className="p-0.5 transition-transform hover:scale-110"
-              >
-                <Star className={cn(
-                  "h-5 w-5 transition-colors",
-                  (hoverRating || ratingStats.userRating || 0) >= star
-                    ? "text-amber-500 fill-amber-500"
-                    : "text-muted-foreground/25"
-                )} />
-              </button>
-            ))}
-          </div>
-        </div>
-        {ratingStats.total > 0 && (
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground">
-            <span>{ratingStats.average.toFixed(1)} média</span>
-            <span>·</span>
-            <span>{ratingStats.total} {ratingStats.total === 1 ? 'voto' : 'votos'}</span>
-          </div>
-        )}
-      </div>
-    </>
-  )
 
   /* ---------------------------------------------------------------- */
   /*  Render                                                           */
@@ -1594,156 +1333,20 @@ export default function LessonPlayerPage() {
                   <div className="flex-1 overflow-y-auto px-6 py-5 bg-[#f5f5f7] dark:bg-background">
                     {/* Comments */}
                     {activeTab === 'comments' && (
-                      <div className="space-y-5 max-w-3xl mx-auto">
-                        {/* Comment input */}
-                        <div className="flex gap-3 bg-white dark:bg-card rounded-2xl p-4 border border-border/40 shadow">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
-                            <span className="text-sm font-bold text-white">
-                              {user?.email?.[0]?.toUpperCase() || 'A'}
-                            </span>
-                          </div>
-                          <div className="flex-1">
-                            <textarea
-                              value={commentText}
-                              onChange={(e) => setCommentText(e.target.value)}
-                              placeholder="Compartilhe sua dúvida ou comentário sobre esta aula..."
-                              rows={2}
-                              maxLength={2000}
-                              className="w-full px-4 py-3 text-sm bg-muted/30 border-0 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-muted/50 text-foreground placeholder:text-muted-foreground/50 transition-all"
-                            />
-                            {commentText.trim() && (
-                              <div className="flex items-center justify-between mt-2">
-                                <span className="text-[11px] text-muted-foreground tabular-nums">{commentText.length}/2000</span>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleSubmitComment()}
-                                  disabled={submittingComment || !commentText.trim()}
-                                  className="h-9 px-4 text-xs gap-2 bg-primary hover:bg-primary/90"
-                                >
-                                  <Send className="h-3.5 w-3.5" />
-                                  Enviar
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Comments list */}
-                        {comments.length === 0 ? (
-                          <div className="text-center py-14 bg-white dark:bg-card rounded-2xl border border-border/40 shadow">
-                            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                              <MessageSquare className="h-7 w-7 text-primary/60" />
-                            </div>
-                            <h3 className="text-base font-semibold text-foreground mb-1.5">Nenhum comentário ainda</h3>
-                            <p className="text-sm text-muted-foreground max-w-[300px] mx-auto leading-relaxed">Seja o primeiro a comentar! Compartilhe suas dúvidas ou insights sobre esta aula.</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            {comments.map((comment) => (
-                              <div key={comment.id} className="bg-white dark:bg-card rounded-xl border border-border/40 shadow overflow-hidden">
-                                {/* Main comment */}
-                                <div className="flex gap-3 p-4 group">
-                                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shrink-0 shadow-sm">
-                                    {comment.user_avatar ? (
-                                      <img src={comment.user_avatar} alt="" className="w-9 h-9 rounded-full object-cover" loading="lazy" />
-                                    ) : (
-                                      <span className="text-xs font-bold text-white">
-                                        {(comment.user_name || 'A')[0].toUpperCase()}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-sm font-semibold text-foreground">{comment.user_name || 'Aluno'}</span>
-                                      <span className="text-[11px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
-                                        {new Date(comment.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                      </span>
-                                    </div>
-                                    <p className="text-sm text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">{DOMPurify.sanitize(comment.content, { ALLOWED_TAGS: [] })}</p>
-                                    <div className="flex items-center gap-3 mt-2.5">
-                                      <button
-                                        onClick={() => { setReplyingTo(replyingTo === comment.id ? null : comment.id); setReplyText('') }}
-                                        className="flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary transition-colors font-semibold"
-                                      >
-                                        <Reply className="h-3.5 w-3.5" />
-                                        Responder
-                                      </button>
-                                      {comment.user_id === user?.id && (
-                                        <button
-                                          onClick={() => handleDeleteComment(comment.id)}
-                                          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 font-medium"
-                                        >
-                                          <Trash2 className="h-3.5 w-3.5" />
-                                          Excluir
-                                        </button>
-                                      )}
-                                    </div>
-
-                                    {/* Reply input */}
-                                    {replyingTo === comment.id && (
-                                      <div className="flex gap-2 mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
-                                        <input
-                                          value={replyText}
-                                          onChange={(e) => setReplyText(e.target.value)}
-                                          placeholder="Escreva uma resposta..."
-                                          maxLength={2000}
-                                          className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground/50"
-                                          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(comment.id) } }}
-                                        />
-                                        <Button
-                                          size="sm"
-                                          onClick={() => handleSubmitComment(comment.id)}
-                                          disabled={submittingComment || !replyText.trim()}
-                                          className="h-9 px-3 text-xs"
-                                        >
-                                          <Send className="h-3.5 w-3.5" />
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Replies */}
-                                {comment.replies && comment.replies.length > 0 && (
-                                  <div className="ml-12 mr-4 mb-3 border-l-2 border-primary/15 pl-4 space-y-1 bg-muted/20 rounded-r-lg py-2">
-                                    {comment.replies.map((reply) => (
-                                      <div key={reply.id} className="flex gap-3 p-3 rounded-lg hover:bg-background/60 transition-colors group">
-                                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shrink-0">
-                                          {reply.user_avatar ? (
-                                            <img src={reply.user_avatar} alt="" className="w-7 h-7 rounded-full object-cover" loading="lazy" />
-                                          ) : (
-                                            <span className="text-[10px] font-bold text-white">
-                                              {(reply.user_name || 'A')[0].toUpperCase()}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2 mb-0.5">
-                                            <span className="text-xs font-semibold text-foreground">{reply.user_name || 'Aluno'}</span>
-                                            <span className="text-[10px] text-muted-foreground">
-                                              {new Date(reply.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                          </div>
-                                          <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">{DOMPurify.sanitize(reply.content, { ALLOWED_TAGS: [] })}</p>
-                                          {reply.user_id === user?.id && (
-                                            <button
-                                              onClick={() => handleDeleteComment(reply.id)}
-                                              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 mt-1 font-medium"
-                                            >
-                                              <Trash2 className="h-3 w-3" />
-                                              Excluir
-                                            </button>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <LessonComments
+                        comments={comments}
+                        commentText={commentText}
+                        onCommentTextChange={setCommentText}
+                        replyingTo={replyingTo}
+                        onReplyingToChange={(id) => { setReplyingTo(id); if (id !== null) setReplyText('') }}
+                        replyText={replyText}
+                        onReplyTextChange={setReplyText}
+                        submittingComment={submittingComment}
+                        onSubmitComment={handleSubmitComment}
+                        onDeleteComment={handleDeleteComment}
+                        userEmail={user?.email}
+                        userId={user?.id}
+                      />
                     )}
 
                     {/* AI Chat */}
@@ -1761,66 +1364,11 @@ export default function LessonPlayerPage() {
 
                     {/* Resources */}
                     {activeTab === 'resources' && attachments.length > 0 && (
-                      <div className="max-w-3xl mx-auto">
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {attachments.map((att) => {
-                            const isPdf = att.file_type?.includes('pdf') || att.file_name?.endsWith('.pdf')
-                            const ext = att.file_name?.split('.').pop()?.toLowerCase() || ''
-                            const isOffice = ['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'].includes(ext)
-                            const isViewable = isPdf || isOffice
-                            const fileLabel = isPdf ? 'PDF' : isOffice ? ext.toUpperCase() : 'Arquivo'
-                            const accentColor = isPdf ? 'red' : isOffice ? 'orange' : 'primary'
-                            return (
-                              <div key={att.id} className={cn(
-                                "flex flex-col p-4 rounded-xl border bg-white dark:bg-card transition-all group hover:shadow-lg shadow",
-                                isViewable ? `border-border/60 hover:border-${accentColor}-500/30` : "border-border/60 hover:border-primary/20"
-                              )}>
-                                <div className="flex items-start gap-3">
-                                  <div className={cn(
-                                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                                    isPdf ? "bg-red-100 dark:bg-red-950/50 text-red-500" : isOffice ? "bg-orange-100 dark:bg-orange-950/50 text-orange-500" : "bg-primary/10 text-primary"
-                                  )}>
-                                    <FileText className="h-6 w-6" />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <span className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">{att.file_name}</span>
-                                    <span className={cn(
-                                      "text-[11px] font-medium mt-1 block",
-                                      isPdf ? "text-red-500/70" : isOffice ? "text-orange-500/70" : "text-muted-foreground"
-                                    )}>{fileLabel}</span>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
-                                  {isPdf && (
-                                    <button onClick={() => { openPdfViewer(att.file_url); setDrawerOpen(false) }}
-                                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold text-white bg-primary hover:bg-primary/90 transition-all shadow-sm">
-                                      <Eye className="h-3.5 w-3.5" />
-                                      Visualizar
-                                    </button>
-                                  )}
-                                  {isOffice && (
-                                    <button onClick={() => { openPdfViewer(att.file_url, 'office'); setDrawerOpen(false) }}
-                                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-sm">
-                                      <Eye className="h-3.5 w-3.5" />
-                                      Visualizar
-                                    </button>
-                                  )}
-                                  <a href={att.file_url} download target="_blank" rel="noopener noreferrer"
-                                    className={cn(
-                                      "flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all",
-                                      isPdf
-                                        ? "flex-1 text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-border/60"
-                                        : "flex-1 text-white bg-primary hover:bg-primary/90 shadow-sm"
-                                    )}>
-                                    <Download className="h-3.5 w-3.5" />
-                                    Baixar
-                                  </a>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
+                      <LessonResources
+                        attachments={attachments}
+                        onOpenViewer={openPdfViewer}
+                        onCloseDrawer={() => setDrawerOpen(false)}
+                      />
                     )}
 
                   </div>
@@ -1839,11 +1387,24 @@ export default function LessonPlayerPage() {
               desktopSidebarVisible ? "w-[320px] min-w-[320px]" : "w-0 min-w-0 border-l-0"
           )}>
             {desktopSidebarVisible && (
-              <div className="sticky top-16 flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
-                {renderModuleSelector(false)}
-                {renderLessonList(false)}
-                <div className="shrink-0 h-[0.80rem]" />
-              </div>
+              <LessonSidebar
+                courseId={courseId!}
+                lessonId={lessonId!}
+                sortedModules={sortedModules}
+                currentModule={currentModule}
+                currentModuleIndex={currentModuleIndex}
+                selectedModuleId={selectedModuleId}
+                onSelectModule={setSelectedModuleId}
+                blockedModuleIds={blockedModuleIds}
+                isLessonAccessible={isLessonAccessible}
+                ratingStats={ratingStats}
+                hoverRating={hoverRating}
+                onHoverRating={setHoverRating}
+                onRate={handleRate}
+                isMobile={false}
+                cleanTitle={cleanTitle}
+                formatDuration={formatDuration}
+              />
             )}
           </aside>
 
@@ -1854,28 +1415,25 @@ export default function LessonPlayerPage() {
       {/* Mobile sidebar (outside overflow-hidden container)            */}
       {/* ============================================================ */}
       {isSidebarOpen && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/60 lg:hidden"
-            onClick={() => setIsSidebarOpen(false)} />
-          <aside
-            className="fixed inset-y-0 right-0 z-50 w-[85%] max-w-[360px] lg:hidden bg-card border-l border-border shadow-lg flex flex-col"
-            style={{ animation: 'lp-slide-in 0.2s ease-out' }}
-          >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-              <div className="flex items-center gap-2">
-                <ListVideo className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Aulas</span>
-              </div>
-              <button onClick={() => setIsSidebarOpen(false)}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {renderModuleSelector(true)}
-            {renderLessonList(true)}
-          </aside>
-        </>
+        <LessonSidebar
+          courseId={courseId!}
+          lessonId={lessonId!}
+          sortedModules={sortedModules}
+          currentModule={currentModule}
+          currentModuleIndex={currentModuleIndex}
+          selectedModuleId={selectedModuleId}
+          onSelectModule={setSelectedModuleId}
+          blockedModuleIds={blockedModuleIds}
+          isLessonAccessible={isLessonAccessible}
+          ratingStats={ratingStats}
+          hoverRating={hoverRating}
+          onHoverRating={setHoverRating}
+          onRate={handleRate}
+          isMobile={true}
+          onCloseMobile={() => setIsSidebarOpen(false)}
+          cleanTitle={cleanTitle}
+          formatDuration={formatDuration}
+        />
       )}
 
       {/* ============================================================ */}

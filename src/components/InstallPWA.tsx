@@ -114,6 +114,7 @@ export function InstallPWA() {
             size="icon"
             variant="ghost"
             className="h-8 w-8 text-white hover:bg-white/10"
+            aria-label="Fechar"
           >
             <X className="h-4 w-4" />
           </Button>

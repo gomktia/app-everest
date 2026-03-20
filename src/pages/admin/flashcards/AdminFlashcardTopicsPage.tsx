@@ -105,6 +105,7 @@ export default function AdminFlashcardTopicsPage() {
             variant="outline"
             size="icon"
             onClick={() => navigate('/admin/flashcards')}
+            aria-label="Voltar"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -128,6 +129,7 @@ export default function AdminFlashcardTopicsPage() {
             variant="outline"
             size="icon"
             onClick={() => navigate('/admin/flashcards')}
+            aria-label="Voltar"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -165,6 +167,7 @@ export default function AdminFlashcardTopicsPage() {
             size="icon"
             onClick={() => navigate('/admin/flashcards')}
             className="shadow-sm"
+            aria-label="Voltar"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

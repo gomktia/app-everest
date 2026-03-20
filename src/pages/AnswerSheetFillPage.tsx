@@ -232,7 +232,7 @@ export default function AnswerSheetFillPage() {
     <div className="space-y-6">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Back button */}
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Voltar">
           <ArrowLeft className="h-5 w-5" />
         </Button>
 

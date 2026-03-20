@@ -286,6 +286,7 @@ export default function AdminStudentClassesPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => navigate('/admin/management')}
+                  aria-label="Voltar"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>

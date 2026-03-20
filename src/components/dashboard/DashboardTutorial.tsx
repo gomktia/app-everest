@@ -117,6 +117,7 @@ export function DashboardTutorial({ onClose }: DashboardTutorialProps) {
               size="icon"
               onClick={handleSkip}
               className="rounded-full hover:bg-destructive/10 hover:text-destructive"
+              aria-label="Fechar tutorial"
             >
               <X className="h-5 w-5" />
             </Button>

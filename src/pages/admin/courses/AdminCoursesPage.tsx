@@ -254,7 +254,7 @@ export default function AdminCoursesPage() {
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-3">
                               {(course as any).thumbnail_url ? (
-                                <img src={(course as any).thumbnail_url} alt="" className="w-12 h-8 rounded object-cover" loading="lazy" />
+                                <img src={(course as any).thumbnail_url} alt={`Capa do curso ${course.name}`} className="w-12 h-8 rounded object-cover" loading="lazy" />
                               ) : (
                                 <div className="w-12 h-8 rounded bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                                   {(course as any).acronym || course.name?.substring(0, 2).toUpperCase()}

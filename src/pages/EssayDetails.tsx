@@ -454,7 +454,7 @@ export default function EssayDetailsPage() {
           </CardHeader>
           <CardContent className="px-5 pb-5">
             {/\.(jpg|jpeg|png)$/i.test(correctedFileUrl) ? (
-              <img src={correctedFileUrl} alt="Correção do professor" className="max-w-full h-auto rounded-lg border" />
+              <img src={correctedFileUrl} alt="Correção do professor" className="max-w-full h-auto rounded-lg border" loading="lazy" />
             ) : (
               <iframe src={correctedFileUrl} className="w-full h-[600px] rounded-lg border" title="Correção PDF" />
             )}
@@ -568,7 +568,7 @@ export default function EssayDetailsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-5 pb-5">
-            <img src={annotationImageUrl} alt="Documento com anotações do professor" className="max-w-full h-auto rounded-lg border" />
+            <img src={annotationImageUrl} alt="Documento com anotações do professor" className="max-w-full h-auto rounded-lg border" loading="lazy" />
           </CardContent>
         </Card>
       )}

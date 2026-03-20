@@ -924,7 +924,7 @@ export default function AdminEssayCorrectionPage() {
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Correção do professor (escaneada)</span>
                     </div>
                     {/\.(jpg|jpeg|png)$/i.test(correctedFileUrl) ? (
-                      <img src={correctedFileUrl} alt="Correção escaneada" className="max-w-full h-auto rounded-lg border" />
+                      <img src={correctedFileUrl} alt="Correção escaneada" className="max-w-full h-auto rounded-lg border" loading="lazy" />
                     ) : (
                       <iframe src={correctedFileUrl} className="w-full h-[500px] rounded-lg border" title="Correção PDF" />
                     )}

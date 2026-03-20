@@ -290,6 +290,7 @@ export default function AdminCourseFormPage() {
             variant="outline"
             size="icon"
             onClick={() => navigate('/admin/courses')}
+            aria-label="Voltar"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>

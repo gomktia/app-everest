@@ -158,6 +158,7 @@ export default function AdminSubjectFormPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/admin/flashcards')}
+                aria-label="Voltar"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>

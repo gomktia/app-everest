@@ -334,6 +334,7 @@ export default function AudioLessonPlayerPage() {
                   size="icon"
                   onClick={skipBackward}
                   className="h-12 w-12 rounded-full"
+                  aria-label="Retroceder"
                 >
                   <SkipBack className="h-6 w-6" />
                 </Button>
@@ -342,6 +343,7 @@ export default function AudioLessonPlayerPage() {
                   onClick={togglePlayPause}
                   size="icon"
                   className="h-16 w-16 rounded-full"
+                  aria-label={isPlaying ? "Pausar" : "Reproduzir"}
                 >
                   {isPlaying ? (
                     <Pause className="h-8 w-8" />
@@ -355,6 +357,7 @@ export default function AudioLessonPlayerPage() {
                   size="icon"
                   onClick={skipForward}
                   className="h-12 w-12 rounded-full"
+                  aria-label="Avancar"
                 >
                   <SkipForward className="h-6 w-6" />
                 </Button>
@@ -367,6 +370,7 @@ export default function AudioLessonPlayerPage() {
                   size="icon"
                   onClick={toggleMute}
                   className="h-10 w-10 rounded-full"
+                  aria-label={isMuted ? "Ativar som" : "Silenciar"}
                 >
                   {isMuted ? (
                     <VolumeX className="h-5 w-5" />

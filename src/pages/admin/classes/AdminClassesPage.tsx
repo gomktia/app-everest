@@ -303,7 +303,7 @@ export default function AdminClassesPage() {
                           {linkedCourse?.thumbnail_url ? (
                             <img
                               src={linkedCourse.thumbnail_url}
-                              alt=""
+                              alt={`Capa do curso ${linkedCourse.name}`}
                               className="w-16 h-10 rounded object-cover flex-shrink-0"
                             />
                           ) : (

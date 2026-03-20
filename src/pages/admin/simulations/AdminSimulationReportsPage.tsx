@@ -315,6 +315,7 @@ export default function AdminSimulationReportsPage() {
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate('/admin/simulations')}
+                    aria-label="Voltar"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>

@@ -1399,7 +1399,7 @@ export default function AdminCourseEditorPage() {
                 >
                   {course.thumbnail_url ? (
                     <>
-                      <img src={course.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      <img src={course.thumbnail_url} alt="Capa do curso" className="w-full h-full object-cover" loading="lazy" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <ImageIcon className="h-6 w-6 text-white" />
                       </div>

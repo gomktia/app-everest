@@ -394,7 +394,7 @@ export default function FlashcardStudyPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Button variant="outline" size="icon" onClick={() => navigate(returnTo || `/flashcards/${subjectId}`)}>
+            <Button variant="outline" size="icon" onClick={() => navigate(returnTo || `/flashcards/${subjectId}`)} aria-label="Voltar">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <div className="min-w-0">
@@ -411,7 +411,7 @@ export default function FlashcardStudyPage() {
               <span className="text-foreground font-medium">{timer.formatted}</span>
             </div>
             <LevelBadge variant="compact" />
-            <Button variant="outline" size="icon" onClick={toggleFullscreen} title="Tela Cheia">
+            <Button variant="outline" size="icon" onClick={toggleFullscreen} title="Tela Cheia" aria-label="Tela cheia">
               <Expand className="h-4 w-4" />
             </Button>
           </div>

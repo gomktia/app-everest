@@ -244,7 +244,7 @@ export default function MyCoursesPage() {
                   className="hover:border-primary/50 transition-colors relative overflow-hidden flex flex-col"
                 >
                   {course.thumbnail_url ? (
-                    <img src={course.thumbnail_url} alt="" className="w-full h-40 object-cover" loading="lazy" />
+                    <img src={course.thumbnail_url} alt={`Capa do curso ${course.name}`} className="w-full h-40 object-cover" loading="lazy" />
                   ) : (
                     <div className="w-full h-40 bg-muted flex items-center justify-center">
                       <Lock className="h-8 w-8 text-muted-foreground" />
