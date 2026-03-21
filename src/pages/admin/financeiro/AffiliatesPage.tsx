@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useToast } from '@/hooks/use-toast'
@@ -320,8 +320,8 @@ export default function AffiliatesPage() {
                   const pendingCents = affiliate.total_earned_cents - affiliate.total_paid_cents
 
                   return (
-                    <>
-                      <TableRow key={affiliate.id}>
+                    <Fragment key={affiliate.id}>
+                      <TableRow>
                         <TableCell>
                           <Button
                             variant="ghost"
@@ -344,7 +344,7 @@ export default function AffiliatesPage() {
                         </TableCell>
                         <TableCell className="font-mono font-semibold">{affiliate.affiliate_code}</TableCell>
                         <TableCell>{affiliate.commission_percent}%</TableCell>
-                        <TableCell>-</TableCell>
+                        <TableCell>{affiliate.sales_count ?? 0}</TableCell>
                         <TableCell>{formatBRL(affiliate.total_earned_cents)}</TableCell>
                         <TableCell>{formatBRL(pendingCents > 0 ? pendingCents : 0)}</TableCell>
                         <TableCell>
@@ -435,7 +435,7 @@ export default function AffiliatesPage() {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </Fragment>
                   )
                 })
               )}

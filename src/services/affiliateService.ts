@@ -15,6 +15,7 @@ export interface Affiliate {
   total_paid_cents: number
   is_active: boolean
   created_at: string
+  sales_count: number
   user?: { first_name: string; last_name: string; email: string }
 }
 
@@ -33,13 +34,18 @@ export interface AffiliateCommission {
 export const getAffiliates = async () => {
   const { data, error } = await supabase
     .from('affiliates')
-    .select('*, user:users(first_name, last_name, email)')
+    .select('*, user:users(first_name, last_name, email), affiliate_commissions(id)')
     .order('created_at', { ascending: false })
   if (error) {
     if (isTableMissing(error)) return [] as Affiliate[]
     logger.error('getAffiliates error:', error); throw error
   }
-  return (data || []) as Affiliate[]
+  // Map sales_count from joined commissions
+  return (data || []).map(a => ({
+    ...a,
+    sales_count: Array.isArray(a.affiliate_commissions) ? a.affiliate_commissions.length : 0,
+    affiliate_commissions: undefined,
+  })) as Affiliate[]
 }
 
 export const createAffiliate = async (userId: string, affiliateCode: string, commissionPercent: number) => {

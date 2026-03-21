@@ -87,7 +87,9 @@ export default function ReportsPage() {
       setLoading(true)
       try {
         const [statsRes, revenueRes, ordersRes] = await Promise.all([
-          getFinancialStats(periodDates.month),
+          periodDates.month
+            ? getFinancialStats(periodDates.month)
+            : getFinancialStats(undefined, { startDate: periodDates.startDate, endDate: periodDates.endDate }),
           getRevenueByMonth(),
           getOrders({ startDate: periodDates.startDate, endDate: periodDates.endDate, limit: 1000 }),
         ])
@@ -267,12 +269,12 @@ export default function ReportsPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">MRR</CardTitle>
+                <CardTitle className="text-sm font-medium">Receita do Periodo</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats ? formatBRL(stats.totalRevenue) : '-'}</div>
-                <p className="text-xs text-muted-foreground">Receita recorrente mensal</p>
+                <p className="text-xs text-muted-foreground">Total de receita no periodo selecionado</p>
               </CardContent>
             </Card>
             <Card>
@@ -297,12 +299,12 @@ export default function ReportsPage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">LTV Estimado</CardTitle>
+                <CardTitle className="text-sm font-medium">Ticket Medio</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{ltv}</div>
-                <p className="text-xs text-muted-foreground">Ticket médio x 1 (acesso anual)</p>
+                <p className="text-xs text-muted-foreground">Valor medio por pedido</p>
               </CardContent>
             </Card>
           </div>

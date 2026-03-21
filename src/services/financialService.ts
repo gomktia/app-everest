@@ -60,7 +60,7 @@ export const getOrders = async (filters?: {
   if (filters?.paymentMethod) query = query.eq('payment_method', filters.paymentMethod)
   if (filters?.startDate) query = query.gte('created_at', filters.startDate)
   if (filters?.endDate) query = query.lte('created_at', filters.endDate)
-  if (filters?.search) query = query.or(`metadata->>email.ilike.%${filters.search}%`)
+  if (filters?.search) query = query.or(`metadata->>email.ilike.%${filters.search}%,user.email.ilike.%${filters.search}%`)
 
   const page = filters?.page || 1
   const limit = filters?.limit || 20
@@ -98,7 +98,7 @@ export const getOrderById = async (orderId: string) => {
 }
 
 // Get financial stats for dashboard
-export const getFinancialStats = async (month?: string): Promise<FinancialStats> => {
+export const getFinancialStats = async (month?: string, dateRange?: { startDate: string; endDate: string }): Promise<FinancialStats> => {
   const emptyStats: FinancialStats = {
     totalRevenue: 0, salesCount: 0, avgTicket: 0,
     refundsCount: 0, refundsTotal: 0, conversionRate: 0,
@@ -106,15 +106,24 @@ export const getFinancialStats = async (month?: string): Promise<FinancialStats>
   }
 
   try {
-    const startOfMonth = month ? `${month}-01` : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-    const endOfMonth = month
-      ? new Date(new Date(startOfMonth).getFullYear(), new Date(startOfMonth).getMonth() + 1, 0).toISOString()
-      : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString()
+    let startDate: string
+    let endDate: string
+
+    if (dateRange) {
+      startDate = dateRange.startDate
+      endDate = dateRange.endDate
+    } else {
+      const startOfMonth = month ? `${month}-01` : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+      startDate = startOfMonth
+      endDate = month
+        ? new Date(new Date(startOfMonth).getFullYear(), new Date(startOfMonth).getMonth() + 1, 0).toISOString()
+        : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString()
+    }
 
     const [ordersRes, refundsRes, cartsRes, commissionsRes] = await Promise.all([
-      supabase.from('orders').select('total_cents, status').gte('created_at', startOfMonth).lte('created_at', endOfMonth),
-      supabase.from('refunds').select('amount_cents').eq('status', 'succeeded').gte('created_at', startOfMonth).lte('created_at', endOfMonth),
-      supabase.from('abandoned_carts').select('id', { count: 'exact', head: true }).gte('created_at', startOfMonth).lte('created_at', endOfMonth),
+      supabase.from('orders').select('total_cents, status').gte('created_at', startDate).lte('created_at', endDate),
+      supabase.from('refunds').select('amount_cents').eq('status', 'succeeded').gte('created_at', startDate).lte('created_at', endDate),
+      supabase.from('abandoned_carts').select('id', { count: 'exact', head: true }).gte('created_at', startDate).lte('created_at', endDate),
       supabase.from('affiliate_commissions').select('commission_cents').eq('status', 'pending'),
     ])
 
@@ -194,7 +203,7 @@ export const getRefunds = async () => {
     .from('refunds')
     .select(`
       *,
-      order:orders(total_cents, user:users(first_name, last_name, email)),
+      order:orders(total_cents, user:users(first_name, last_name, email), order_items(stripe_products:stripe_products(product_name))),
       admin:users!refunds_admin_user_id_fkey(first_name, last_name)
     `)
     .order('created_at', { ascending: false })

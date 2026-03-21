@@ -67,6 +67,19 @@ export const adminCreateCoupon = async (params: {
   return data
 }
 
+export const adminUpdateCoupon = async (params: {
+  coupon_id: string; discount_type: 'percent'|'fixed'; discount_value: number;
+  max_uses?: number; valid_until?: string; applicable_products?: string[]
+}) => {
+  const { data: { session } } = await supabase.auth.getSession()
+  const { data, error } = await supabase.functions.invoke('stripe-admin', {
+    body: { action: 'update-coupon', ...params },
+    headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+  })
+  if (error) throw new Error(error.message || 'Erro ao atualizar cupom')
+  return data
+}
+
 export const adminDeactivateCoupon = async (couponId: string) => {
   const { data: { session } } = await supabase.auth.getSession()
   const { data, error } = await supabase.functions.invoke('stripe-admin', {

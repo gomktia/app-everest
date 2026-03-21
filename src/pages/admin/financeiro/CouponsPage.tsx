@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase/client'
 import {
   getCoupons,
   adminCreateCoupon,
+  adminUpdateCoupon,
   adminDeactivateCoupon,
   type Coupon,
 } from '@/services/couponService'
@@ -40,7 +41,7 @@ const formatBRL = (cents: number) =>
 interface StripeProduct {
   id: string
   product_name: string
-  slug: string
+  landing_page_slug: string
 }
 
 function getCouponStatus(coupon: Coupon): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } {
@@ -75,7 +76,7 @@ export default function CouponsPage() {
       setLoading(true)
       const [couponsData, productsRes] = await Promise.all([
         getCoupons(),
-        supabase.from('stripe_products').select('id, product_name, slug').order('product_name'),
+        supabase.from('stripe_products').select('id, product_name, landing_page_slug').order('product_name'),
       ])
       setCoupons(couponsData as Coupon[])
       setProducts(productsRes.data || [])
@@ -108,7 +109,10 @@ export default function CouponsPage() {
     setEditingCoupon(coupon)
     setFormCode(coupon.code)
     setFormType(coupon.discount_type)
-    setFormValue(String(coupon.discount_value))
+    // Convert centavos back to reais for display when editing fixed discounts
+    setFormValue(coupon.discount_type === 'fixed'
+      ? String(coupon.discount_value / 100)
+      : String(coupon.discount_value))
     setFormMaxUses(coupon.max_uses ? String(coupon.max_uses) : '')
     setFormValidUntil(coupon.valid_until ? coupon.valid_until.split('T')[0] : '')
     setFormProducts(coupon.applicable_products || [])
@@ -122,14 +126,30 @@ export default function CouponsPage() {
     }
     try {
       setSaving(true)
-      await adminCreateCoupon({
-        code: formCode.toUpperCase().replace(/\s/g, ''),
-        discount_type: formType,
-        discount_value: Number(formValue),
-        max_uses: formMaxUses ? Number(formMaxUses) : undefined,
-        valid_until: formValidUntil || undefined,
-        applicable_products: formProducts.length > 0 ? formProducts : undefined,
-      })
+      // Convert reais to centavos for fixed discounts
+      const discountValue = formType === 'fixed'
+        ? Math.round(Number(formValue) * 100)
+        : Number(formValue)
+
+      if (editingCoupon) {
+        await adminUpdateCoupon({
+          coupon_id: editingCoupon.id,
+          discount_type: formType,
+          discount_value: discountValue,
+          max_uses: formMaxUses ? Number(formMaxUses) : undefined,
+          valid_until: formValidUntil || undefined,
+          applicable_products: formProducts.length > 0 ? formProducts : undefined,
+        })
+      } else {
+        await adminCreateCoupon({
+          code: formCode.toUpperCase().replace(/\s/g, ''),
+          discount_type: formType,
+          discount_value: discountValue,
+          max_uses: formMaxUses ? Number(formMaxUses) : undefined,
+          valid_until: formValidUntil || undefined,
+          applicable_products: formProducts.length > 0 ? formProducts : undefined,
+        })
+      }
       toast({ title: editingCoupon ? 'Cupom atualizado' : 'Cupom criado com sucesso' })
       setDialogOpen(false)
       resetForm()
@@ -359,14 +379,15 @@ export default function CouponsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="coupon-value">
-                Valor do Desconto {formType === 'percent' ? '(%)' : '(centavos)'}
+                Valor do Desconto {formType === 'percent' ? '(%)' : '(R$)'}
               </Label>
               <Input
                 id="coupon-value"
                 type="number"
-                min={1}
+                min={formType === 'percent' ? 1 : 0.01}
                 max={formType === 'percent' ? 100 : undefined}
-                placeholder={formType === 'percent' ? '20' : '5000'}
+                step={formType === 'fixed' ? '0.01' : '1'}
+                placeholder={formType === 'percent' ? '20' : '50.00'}
                 value={formValue}
                 onChange={(e) => setFormValue(e.target.value)}
               />

@@ -259,6 +259,59 @@ async function handleCreateCoupon(
   })
 }
 
+async function handleUpdateCoupon(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  params: {
+    coupon_id: string
+    discount_type: 'percent' | 'fixed'
+    discount_value: number
+    max_uses?: number
+    valid_until?: string
+    applicable_products?: string[]
+  },
+) {
+  const { coupon_id, discount_type, discount_value, max_uses, valid_until, applicable_products } = params
+
+  if (!coupon_id) {
+    return jsonResponse({ error: 'coupon_id is required' }, 400)
+  }
+
+  const { data: coupon, error: couponErr } = await supabase
+    .from('coupons')
+    .select('id, code, stripe_coupon_id')
+    .eq('id', coupon_id)
+    .single()
+
+  if (couponErr || !coupon) {
+    return jsonResponse({ error: 'Coupon not found' }, 404)
+  }
+
+  // Update locally
+  const updates: Record<string, unknown> = {
+    discount_type,
+    discount_value,
+    max_uses: max_uses || null,
+    valid_until: valid_until || null,
+    applicable_products: applicable_products || null,
+  }
+
+  const { error: updateErr } = await supabase
+    .from('coupons')
+    .update(updates)
+    .eq('id', coupon_id)
+
+  if (updateErr) {
+    return jsonResponse({ error: 'Failed to update coupon', detail: updateErr.message }, 500)
+  }
+
+  return jsonResponse({
+    success: true,
+    action: 'update-coupon',
+    coupon_id,
+    code: coupon.code,
+  })
+}
+
 async function handleDeactivateCoupon(
   supabase: ReturnType<typeof getSupabaseAdmin>,
   params: { coupon_id: string },
@@ -464,6 +517,9 @@ serve(async (req) => {
 
       case 'create-coupon':
         return await handleCreateCoupon(supabaseAdmin, params)
+
+      case 'update-coupon':
+        return await handleUpdateCoupon(supabaseAdmin, params)
 
       case 'deactivate-coupon':
         return await handleDeactivateCoupon(supabaseAdmin, params)

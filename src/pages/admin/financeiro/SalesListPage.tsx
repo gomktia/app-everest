@@ -624,7 +624,9 @@ export default function SalesListPage() {
                               {r.order?.user?.email || '-'}
                             </div>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell text-sm">-</TableCell>
+                          <TableCell className="hidden md:table-cell text-sm">
+                            {r.order?.order_items?.[0]?.stripe_products?.product_name || '-'}
+                          </TableCell>
                           <TableCell className="font-medium text-sm whitespace-nowrap">
                             {formatBRL(r.amount_cents)}
                           </TableCell>
@@ -681,16 +683,18 @@ export default function SalesListPage() {
                       </TableRow>
                     ) : (
                       abandonedCarts.map((cart) => {
+                        const productsData = cart.products
                         const product =
-                          typeof cart.cart_data === 'object' && cart.cart_data
-                            ? (cart.cart_data as Record<string, unknown>).product_name ||
-                              (cart.cart_data as Record<string, unknown>).name ||
-                              '-'
+                          typeof productsData === 'object' && productsData
+                            ? Array.isArray(productsData)
+                              ? (productsData[0] as Record<string, unknown>)?.product_name ||
+                                (productsData[0] as Record<string, unknown>)?.name ||
+                                '-'
+                              : (productsData as Record<string, unknown>).product_name ||
+                                (productsData as Record<string, unknown>).name ||
+                                '-'
                             : '-'
-                        const value =
-                          typeof cart.cart_data === 'object' && cart.cart_data
-                            ? (cart.cart_data as Record<string, unknown>).total_cents
-                            : null
+                        const value = cart.total_cents
                         return (
                           <TableRow key={cart.id} className="hover:bg-primary/5">
                             <TableCell className="text-sm">{cart.email || '-'}</TableCell>
@@ -709,7 +713,7 @@ export default function SalesListPage() {
                               )}
                             </TableCell>
                             <TableCell className="text-center">
-                              {cart.recovered ? (
+                              {cart.recovered_order_id ? (
                                 <CheckCircle className="h-4 w-4 text-green-600 mx-auto" />
                               ) : (
                                 <XCircle className="h-4 w-4 text-muted-foreground mx-auto" />

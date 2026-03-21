@@ -32,6 +32,7 @@ import {
   LayoutDashboard,
   Tag,
   FileText,
+  Package,
 } from 'lucide-react'
 
 const formatCents = (cents: number) => {
@@ -124,6 +125,12 @@ export default function FinancialDashboardPage() {
       value: 'cupons',
       label: 'Cupons',
       icon: <Tag className="h-4 w-4" />,
+      content: null,
+    },
+    {
+      value: 'produtos',
+      label: 'Produtos',
+      icon: <Package className="h-4 w-4" />,
       content: null,
     },
     {
