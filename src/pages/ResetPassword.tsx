@@ -39,19 +39,39 @@ type FormValues = z.infer<typeof resetPasswordSchema>
 
 export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
+  const [exchangeError, setExchangeError] = useState(false)
   const navigate = useNavigate()
   const { toast } = useToast()
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        // This event is triggered when the user clicks the reset link.
-        // The session is now active, allowing password update.
-      }
-    })
-    return () => subscription.unsubscribe()
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get('code')
+
+    if (code) {
+      // Exchange the code from the email link for a valid session
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          setExchangeError(true)
+        } else {
+          setSessionReady(true)
+        }
+      })
+    } else {
+      // Fallback: listen for PASSWORD_RECOVERY event (legacy flow)
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setSessionReady(true)
+        }
+      })
+      // Check if already has session
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) setSessionReady(true)
+      })
+      return () => subscription.unsubscribe()
+    }
   }, [])
 
   const form = useForm<FormValues>({
@@ -76,6 +96,52 @@ export default function ResetPasswordPage() {
       navigate('/login')
     }
     setIsLoading(false)
+  }
+
+  if (exchangeError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <div className="flex justify-center items-center gap-2 mb-4">
+              <Mountain className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold">Everest</span>
+            </div>
+            <CardTitle>Link Expirado</CardTitle>
+            <CardDescription>
+              Este link de redefinição de senha expirou ou já foi utilizado.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full" onClick={() => navigate('/login')}>
+              Voltar ao Login
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Solicite um novo link de redefinição na tela de login.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!sessionReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <div className="flex justify-center items-center gap-2 mb-4">
+              <Mountain className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold">Everest</span>
+            </div>
+            <CardTitle>Verificando link...</CardTitle>
+          </CardHeader>
+          <CardContent className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
