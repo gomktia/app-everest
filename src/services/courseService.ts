@@ -14,7 +14,9 @@ export interface CourseModule {
   name: string
   description: string
   order_index: number
+  parent_module_id?: string | null
   lessons: CourseLesson[]
+  children?: CourseModule[]
 }
 
 export interface CourseLesson {
@@ -418,13 +420,26 @@ export const courseService = {
 
       if (courseError) throw courseError
 
-      // 2. Collect all lesson IDs
+      // 2. Collect all lesson IDs (including submodule lessons)
       const allLessonIds: string[] = []
-      const activeModules = (course.video_modules || [])
+      const allModulesFlat = (course.video_modules || [])
         .filter((m: any) => m.is_active)
         .sort((a: any, b: any) => a.order_index - b.order_index)
 
-      for (const mod of activeModules) {
+      // Build tree: separate root and child modules
+      const rootModules = allModulesFlat.filter((m: any) => !m.parent_module_id)
+      const childMap = new Map<string, any[]>()
+      for (const mod of allModulesFlat) {
+        if ((mod as any).parent_module_id) {
+          const arr = childMap.get((mod as any).parent_module_id) || []
+          arr.push(mod)
+          childMap.set((mod as any).parent_module_id, arr)
+        }
+      }
+
+      const activeModules = rootModules
+
+      for (const mod of allModulesFlat) {
         for (const lesson of (mod as any).video_lessons || []) {
           if (lesson.is_active) allLessonIds.push(lesson.id)
         }
@@ -444,9 +459,9 @@ export const courseService = {
         }
       }
 
-      // 4. Assemble result from cached data
-      const modulesWithLessons = activeModules.map((module: any) => {
-        const activeLessons = ((module as any).video_lessons || [])
+      // 4. Assemble result from cached data (with submodule tree)
+      const buildLessons = (mod: any) =>
+        ((mod as any).video_lessons || [])
           .filter((l: any) => l.is_active)
           .sort((a: any, b: any) => a.order_index - b.order_index)
           .map((lesson: any) => {
@@ -459,7 +474,17 @@ export const courseService = {
             }
           })
 
-        return { ...module, video_lessons: undefined, lessons: activeLessons }
+      const modulesWithLessons = activeModules.map((module: any) => {
+        const children = (childMap.get(module.id) || [])
+          .sort((a: any, b: any) => a.order_index - b.order_index)
+          .map((child: any) => ({
+            ...child,
+            video_lessons: undefined,
+            lessons: buildLessons(child),
+            children: [],
+          }))
+
+        return { ...module, video_lessons: undefined, lessons: buildLessons(module), children }
       })
 
       return {

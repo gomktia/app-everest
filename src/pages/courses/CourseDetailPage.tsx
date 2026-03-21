@@ -60,6 +60,7 @@ interface ModuleWithLessons {
   description: string | null
   order_index: number
   lessons: LessonWithProgress[]
+  children?: ModuleWithLessons[]
 }
 
 interface CourseData {
@@ -230,25 +231,39 @@ export default function CourseDetailPage() {
             sales_url: data.sales_url || null,
             modules: (data.modules || [])
               .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
-              .map((m: ModuleWithLessons) => ({
-              id: m.id,
-              name: m.name,
-              description: m.description,
-              order_index: m.order_index,
-              lessons: (m.lessons || [])
-                .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
-                .map((l: LessonWithProgress) => ({
-                id: l.id,
-                title: l.title,
-                description: l.description,
-                order_index: l.order_index,
-                duration_seconds: l.duration_seconds,
-                is_preview: l.is_preview,
-                progress: l.progress || 0,
-                completed: l.completed || false,
-                last_position: l.last_position || 0,
-              })),
-            })),
+              .map((m: any) => {
+                const mapLesson = (l: LessonWithProgress) => ({
+                  id: l.id,
+                  title: l.title,
+                  description: l.description,
+                  order_index: l.order_index,
+                  duration_seconds: l.duration_seconds,
+                  is_preview: l.is_preview,
+                  progress: l.progress || 0,
+                  completed: l.completed || false,
+                  last_position: l.last_position || 0,
+                })
+                return {
+                  id: m.id,
+                  name: m.name,
+                  description: m.description,
+                  order_index: m.order_index,
+                  lessons: (m.lessons || [])
+                    .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                    .map(mapLesson),
+                  children: (m.children || [])
+                    .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                    .map((c: any) => ({
+                      id: c.id,
+                      name: c.name,
+                      description: c.description,
+                      order_index: c.order_index,
+                      lessons: (c.lessons || [])
+                        .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                        .map(mapLesson),
+                    })),
+                }
+              }),
           })
         }
       } catch (error) {
@@ -664,8 +679,10 @@ function ModuleCardView({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {course.modules.map((module, idx) => {
-        const completedInModule = module.lessons.filter((l) => l.completed).length
-        const totalInModule = module.lessons.length
+        const childLessonsCard = (module.children || []).flatMap(c => c.lessons)
+        const allLessonsCard = [...module.lessons, ...childLessonsCard]
+        const completedInModule = allLessonsCard.filter((l) => l.completed).length
+        const totalInModule = allLessonsCard.length
         const allCompleted = totalInModule > 0 && completedInModule === totalInModule
         const moduleProgress =
           totalInModule > 0 ? Math.round((completedInModule / totalInModule) * 100) : 0
@@ -835,15 +852,17 @@ function ModuleListView({
   // When not enrolled, check which modules have any preview lessons
   const modulesWithPreview = new Set(
     course.modules
-      .filter(m => m.lessons.some(l => l.is_preview))
+      .filter(m => m.lessons.some(l => l.is_preview) || (m.children || []).some(c => c.lessons.some(l => l.is_preview)))
       .map(m => m.id)
   )
 
   return (
     <Accordion type="multiple" defaultValue={isEnrolled ? defaultOpenModule : []} className="space-y-3">
       {course.modules.map((module, idx) => {
-        const completedInModule = module.lessons.filter((l) => l.completed).length
-        const totalInModule = module.lessons.length
+        const childLessons = (module.children || []).flatMap(c => c.lessons)
+        const allLessons = [...module.lessons, ...childLessons]
+        const completedInModule = allLessons.filter((l) => l.completed).length
+        const totalInModule = allLessons.length
         const allCompleted = totalInModule > 0 && completedInModule === totalInModule
         const moduleProgress =
           totalInModule > 0 ? Math.round((completedInModule / totalInModule) * 100) : 0
@@ -1007,6 +1026,66 @@ function ModuleListView({
                     </Link>
                   )
                 })}
+
+                {/* Submodules */}
+                {(module.children || []).length > 0 && (
+                  <Accordion type="multiple" className="mt-2 ml-3 border-l-2 border-primary/20 pl-3 space-y-2">
+                    {(module.children || []).map((sub, subIdx) => {
+                      const subCompleted = sub.lessons.filter(l => l.completed).length
+                      const subTotal = sub.lessons.length
+                      const subAllDone = subTotal > 0 && subCompleted === subTotal
+                      const subProgress = subTotal > 0 ? Math.round((subCompleted / subTotal) * 100) : 0
+
+                      return (
+                        <AccordionItem key={sub.id} value={sub.id} className="border border-border/50 rounded-lg overflow-hidden bg-muted/10">
+                          <AccordionTrigger className="px-4 py-3 hover:bg-muted/30 hover:no-underline text-sm">
+                            <div className="flex items-center justify-between w-full pr-3">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className={cn(
+                                  'flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold',
+                                  subAllDone ? 'bg-green-100 dark:bg-green-950/50 text-green-500' : 'bg-primary/10 text-primary'
+                                )}>
+                                  {subIdx + 1}
+                                </span>
+                                <span className="font-medium text-left truncate">{sub.name}</span>
+                              </div>
+                              <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                                <span className="text-xs text-muted-foreground">{subCompleted}/{subTotal} aula{subTotal !== 1 ? 's' : ''}</span>
+                                {subAllDone && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+                              </div>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-2 pb-2">
+                            <div className="space-y-0.5">
+                              {sub.lessons.map((lesson) => {
+                                const isFirst = lesson.id === firstIncompleteLessonId
+                                const dur = formatDuration(lesson.duration_seconds)
+                                const locked = (lesson as any)._locked || (!isEnrolled && !lesson.is_preview)
+
+                                return locked ? (
+                                  <div key={lesson.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg opacity-60 cursor-pointer" onClick={onLockedClick}>
+                                    <Lock className="h-4 w-4 text-muted-foreground/40 flex-shrink-0" />
+                                    <span className="flex-1 text-sm text-muted-foreground">{lesson.title}</span>
+                                    {dur && <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{dur}</span>}
+                                  </div>
+                                ) : (
+                                  <Link key={lesson.id} to={`/courses/${courseId}/lessons/${lesson.id}`} className={cn(
+                                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all hover:bg-muted/50',
+                                    isFirst && 'bg-primary/5 border border-primary/20'
+                                  )}>
+                                    {lesson.completed ? <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" /> : isFirst ? <PlayCircle className="h-4 w-4 text-primary flex-shrink-0" /> : <Circle className="h-4 w-4 text-muted-foreground/40 flex-shrink-0" />}
+                                    <span className={cn('flex-1 text-sm', lesson.completed ? 'text-muted-foreground line-through' : isFirst ? 'font-medium' : '')}>{lesson.title}</span>
+                                    {dur && <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{dur}</span>}
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      )
+                    })}
+                  </Accordion>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>

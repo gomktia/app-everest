@@ -89,7 +89,9 @@ interface ModuleData {
   name: string
   is_active: boolean
   order_index: number
+  parent_module_id: string | null
   lessons: LessonData[]
+  children: ModuleData[]
   isNew?: boolean
   isModified?: boolean
 }
@@ -124,29 +126,14 @@ function formatDuration(seconds: number): string {
 /* Sortable Module Item                                                 */
 /* ------------------------------------------------------------------ */
 
-function SortableModuleItem({
-  module,
-  moduleIndex,
-  isExpanded,
-  onToggle,
-  onUpdate,
-  onDelete,
-  onAddLesson,
-  onUpdateLesson,
-  onDeleteLesson,
-  onReorderLessons,
-  onUploadAttachment,
-  onDeleteAttachment,
-  onSetAccompanyingPdf,
-  onOpenVideoPicker,
-  allSubjects,
-  allTopics,
-  allQuizzes,
-}: {
+interface SortableModuleItemProps {
   module: ModuleData
   moduleIndex: number
   isExpanded: boolean
+  isSubmodule?: boolean
+  expandedModules: Set<string>
   onToggle: () => void
+  onToggleChild: (id: string) => void
   onUpdate: (field: string, value: any) => void
   onDelete: () => void
   onAddLesson: () => void
@@ -157,10 +144,41 @@ function SortableModuleItem({
   onDeleteAttachment: (lessonIndex: number, attId: string) => void
   onSetAccompanyingPdf: (lessonIndex: number, attId: string | null) => void
   onOpenVideoPicker: (lessonIndex: number) => void
+  onAddSubmodule?: () => void
+  onPromoteToModule?: () => void
+  // Child module handlers (for parent modules)
+  onUpdateChild?: (childIndex: number, field: string, value: any) => void
+  onDeleteChild?: (childIndex: number) => void
+  onAddChildLesson?: (childIndex: number) => void
+  onUpdateChildLesson?: (childIndex: number, lessonIndex: number, field: string, value: any) => void
+  onDeleteChildLesson?: (childIndex: number, lessonIndex: number) => void
+  onReorderChildLessons?: (childIndex: number, event: DragEndEvent) => void
+  onUploadChildAttachment?: (childIndex: number, lessonIndex: number, file: File) => void
+  onDeleteChildAttachment?: (childIndex: number, lessonIndex: number, attId: string) => void
+  onSetChildAccompanyingPdf?: (childIndex: number, lessonIndex: number, attId: string | null) => void
+  onOpenChildVideoPicker?: (childIndex: number, lessonIndex: number) => void
+  onPromoteChild?: (childIndex: number) => void
+  onReorderChildren?: (event: DragEndEvent) => void
   allSubjects: { id: string; name: string }[]
   allTopics: { id: string; name: string; subject_id: string }[]
   allQuizzes: { id: string; title: string; topic_id: string }[]
-}) {
+}
+
+function SortableModuleItem(props: SortableModuleItemProps) {
+  const {
+    module, moduleIndex, isExpanded, isSubmodule, expandedModules,
+    onToggle, onToggleChild, onUpdate, onDelete, onAddLesson,
+    onUpdateLesson, onDeleteLesson, onReorderLessons,
+    onUploadAttachment, onDeleteAttachment, onSetAccompanyingPdf,
+    onOpenVideoPicker, onAddSubmodule, onPromoteToModule,
+    onUpdateChild, onDeleteChild, onAddChildLesson,
+    onUpdateChildLesson, onDeleteChildLesson, onReorderChildLessons,
+    onUploadChildAttachment, onDeleteChildAttachment,
+    onSetChildAccompanyingPdf, onOpenChildVideoPicker,
+    onPromoteChild, onReorderChildren,
+    allSubjects, allTopics, allQuizzes,
+  } = props
+
   const {
     attributes,
     listeners,
@@ -180,14 +198,15 @@ function SortableModuleItem({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-
+  const totalLessonsCount = module.lessons.length + module.children.reduce((sum, c) => sum + c.lessons.length, 0)
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        'border border-border rounded-xl bg-card overflow-hidden transition-shadow',
+        'border rounded-xl bg-card overflow-hidden transition-shadow',
+        isSubmodule ? 'border-primary/20 bg-primary/[0.02]' : 'border-border',
         isDragging ? 'shadow-2xl shadow-primary/10 opacity-90 z-50' : 'shadow-sm',
       )}
     >
@@ -208,8 +227,13 @@ function SortableModuleItem({
           <GripVertical className="h-4 w-4" />
         </button>
 
-        <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-bold text-primary-foreground">{moduleIndex + 1}</span>
+        <div className={cn(
+          'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
+          isSubmodule ? 'bg-primary/20' : 'bg-primary',
+        )}>
+          <span className={cn('text-[11px] font-bold', isSubmodule ? 'text-primary' : 'text-primary-foreground')}>
+            {moduleIndex + 1}
+          </span>
         </div>
 
         <div className="flex-1 min-w-0">
@@ -217,24 +241,43 @@ function SortableModuleItem({
             value={module.name}
             onChange={(e) => onUpdate('name', e.target.value)}
             onClick={(e) => e.stopPropagation()}
-            placeholder="Nome do módulo..."
+            placeholder={isSubmodule ? 'Nome do submódulo...' : 'Nome do módulo...'}
             className="w-full bg-transparent text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
           />
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {isSubmodule && (
+            <Badge variant="outline" className="text-[10px] font-medium text-primary border-primary/30">
+              Sub
+            </Badge>
+          )}
           <Badge variant="outline" className="text-[10px] font-medium">
-            {module.lessons.length} {module.lessons.length === 1 ? 'aula' : 'aulas'}
+            {isSubmodule ? module.lessons.length : totalLessonsCount} {(isSubmodule ? module.lessons.length : totalLessonsCount) === 1 ? 'aula' : 'aulas'}
           </Badge>
+          {!isSubmodule && module.children.length > 0 && (
+            <Badge variant="outline" className="text-[10px] font-medium text-blue-600 border-blue-300 dark:border-blue-800">
+              {module.children.length} sub
+            </Badge>
+          )}
           {module.is_active ? (
             <Badge className="text-[10px] bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 border-emerald-300 dark:border-emerald-800">Ativo</Badge>
           ) : (
             <Badge variant="outline" className="text-[10px] text-muted-foreground">Inativo</Badge>
           )}
+          {isSubmodule && onPromoteToModule && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onPromoteToModule() }}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 transition-colors"
+              title="Promover a módulo"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 rotate-90" />
+            </button>
+          )}
           <button
             onClick={(e) => { e.stopPropagation(); onDelete() }}
             className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
-            title="Excluir módulo"
+            title={isSubmodule ? 'Excluir submódulo' : 'Excluir módulo'}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -252,7 +295,7 @@ function SortableModuleItem({
                 checked={module.is_active}
                 onCheckedChange={(v) => onUpdate('is_active', v)}
               />
-              Módulo ativo
+              {isSubmodule ? 'Submódulo ativo' : 'Módulo ativo'}
             </label>
           </div>
 
@@ -278,10 +321,10 @@ function SortableModuleItem({
             </SortableContext>
           </DndContext>
 
-          {module.lessons.length === 0 && (
+          {module.lessons.length === 0 && module.children.length === 0 && (
             <div className="text-center py-6 border-2 border-dashed border-border/50 rounded-xl">
               <Video className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">Nenhuma aula neste módulo</p>
+              <p className="text-xs text-muted-foreground">Nenhuma aula neste {isSubmodule ? 'submódulo' : 'módulo'}</p>
             </div>
           )}
 
@@ -293,6 +336,57 @@ function SortableModuleItem({
             <Plus className="h-3.5 w-3.5" />
             Adicionar aula
           </button>
+
+          {/* Submodules (only for root modules) */}
+          {!isSubmodule && (
+            <>
+              {module.children.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Submódulos</h4>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onReorderChildren!}>
+                    <SortableContext items={module.children.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                      {module.children.map((child, childIndex) => (
+                        <div key={child.id} className="ml-4 border-l-2 border-primary/20 pl-3">
+                          <SortableModuleItem
+                            module={child}
+                            moduleIndex={childIndex}
+                            isExpanded={expandedModules.has(child.id)}
+                            isSubmodule
+                            expandedModules={expandedModules}
+                            onToggle={() => onToggleChild(child.id)}
+                            onToggleChild={onToggleChild}
+                            onUpdate={(field, value) => onUpdateChild?.(childIndex, field, value)}
+                            onDelete={() => onDeleteChild?.(childIndex)}
+                            onAddLesson={() => onAddChildLesson?.(childIndex)}
+                            onUpdateLesson={(li, field, value) => onUpdateChildLesson?.(childIndex, li, field, value)}
+                            onDeleteLesson={(li) => onDeleteChildLesson?.(childIndex, li)}
+                            onReorderLessons={(event) => onReorderChildLessons?.(childIndex, event)}
+                            onUploadAttachment={(li, file) => onUploadChildAttachment?.(childIndex, li, file)}
+                            onDeleteAttachment={(li, attId) => onDeleteChildAttachment?.(childIndex, li, attId)}
+                            onSetAccompanyingPdf={(li, attId) => onSetChildAccompanyingPdf?.(childIndex, li, attId)}
+                            onOpenVideoPicker={(li) => onOpenChildVideoPicker?.(childIndex, li)}
+                            onPromoteToModule={() => onPromoteChild?.(childIndex)}
+                            allSubjects={allSubjects}
+                            allTopics={allTopics}
+                            allQuizzes={allQuizzes}
+                          />
+                        </div>
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              )}
+
+              {/* Add submodule button */}
+              <button
+                onClick={onAddSubmodule}
+                className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-primary/20 rounded-xl text-xs text-primary/60 hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-all"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Adicionar submódulo
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -769,13 +863,13 @@ export default function AdminCourseEditorPage() {
         // Fetch modules with lessons and attachments
         const { data: modulesData, error: modulesError } = await supabase
           .from('video_modules')
-          .select('id, name, is_active, order_index')
+          .select('id, name, is_active, order_index, parent_module_id')
           .eq('course_id', courseId!)
           .order('order_index')
 
         if (modulesError) throw modulesError
 
-        const modulesWithLessons: ModuleData[] = await Promise.all(
+        const allModulesFlat: ModuleData[] = await Promise.all(
           (modulesData || []).map(async (mod) => {
             const { data: lessonsData } = await supabase
               .from('video_lessons')
@@ -800,12 +894,28 @@ export default function AdminCourseEditorPage() {
 
             return {
               ...mod,
+              parent_module_id: mod.parent_module_id || null,
               lessons,
+              children: [],
             }
           })
         )
 
-        setModules(modulesWithLessons)
+        // Build tree: root modules with children
+        const rootModules = allModulesFlat.filter(m => !m.parent_module_id)
+        const childMap = new Map<string, ModuleData[]>()
+        for (const mod of allModulesFlat) {
+          if (mod.parent_module_id) {
+            const arr = childMap.get(mod.parent_module_id) || []
+            arr.push(mod)
+            childMap.set(mod.parent_module_id, arr)
+          }
+        }
+        for (const root of rootModules) {
+          root.children = (childMap.get(root.id) || []).sort((a, b) => a.order_index - b.order_index)
+        }
+
+        setModules(rootModules)
       } catch (err) {
         logger.error('Error loading course:', err)
         toast({ title: 'Erro ao carregar curso', variant: 'destructive' })
@@ -855,13 +965,163 @@ export default function AdminCourseEditorPage() {
       name: '',
       is_active: true,
       order_index: modules.length,
+      parent_module_id: null,
       lessons: [],
+      children: [],
       isNew: true,
     }
     setModules(prev => [...prev, newModule])
     setExpandedModules(prev => new Set([...prev, newModule.id]))
     markChanged()
   }, [modules.length, markChanged])
+
+  const addSubmodule = useCallback((parentIndex: number) => {
+    const newSub: ModuleData = {
+      id: generateTempId(),
+      name: '',
+      is_active: true,
+      order_index: 0,
+      parent_module_id: modules[parentIndex]?.id || null,
+      lessons: [],
+      children: [],
+      isNew: true,
+    }
+    setModules(prev => prev.map((m, i) => {
+      if (i !== parentIndex) return m
+      const children = [...m.children, { ...newSub, order_index: m.children.length }]
+      return { ...m, children, isModified: !m.isNew }
+    }))
+    setExpandedModules(prev => new Set([...prev, modules[parentIndex]?.id, newSub.id]))
+    markChanged()
+  }, [modules, markChanged])
+
+  const updateChildModule = useCallback((parentIndex: number, childIndex: number, field: string, value: any) => {
+    setModules(prev => prev.map((m, i) => {
+      if (i !== parentIndex) return m
+      const children = m.children.map((c, ci) => ci === childIndex ? { ...c, [field]: value, isModified: !c.isNew } : c)
+      return { ...m, children, isModified: !m.isNew }
+    }))
+    markChanged()
+  }, [markChanged])
+
+  const deleteChildModule = useCallback((parentIndex: number, childIndex: number) => {
+    const child = modules[parentIndex]?.children[childIndex]
+    if (!child) return
+    if (!child.isNew && !confirm(`Excluir submódulo "${child.name || 'sem nome'}" e todas as suas aulas?`)) return
+
+    if (!child.isNew) {
+      setDeletedModuleIds(prev => [...prev, child.id])
+      child.lessons.forEach(l => {
+        if (!l.isNew) setDeletedLessonIds(prev => [...prev, l.id])
+      })
+    }
+    setModules(prev => prev.map((m, i) => {
+      if (i !== parentIndex) return m
+      return { ...m, children: m.children.filter((_, ci) => ci !== childIndex), isModified: !m.isNew }
+    }))
+    markChanged()
+  }, [modules, markChanged])
+
+  const promoteChildToModule = useCallback((parentIndex: number, childIndex: number) => {
+    setModules(prev => {
+      const parent = prev[parentIndex]
+      if (!parent) return prev
+      const child = parent.children[childIndex]
+      if (!child) return prev
+      const promoted: ModuleData = { ...child, parent_module_id: null, order_index: prev.length, isModified: !child.isNew }
+      const updatedParent = { ...parent, children: parent.children.filter((_, ci) => ci !== childIndex), isModified: !parent.isNew }
+      return [...prev.map((m, i) => i === parentIndex ? updatedParent : m), promoted]
+    })
+    markChanged()
+  }, [markChanged])
+
+  const addChildLesson = useCallback((parentIndex: number, childIndex: number) => {
+    setModules(prev => prev.map((m, pi) => {
+      if (pi !== parentIndex) return m
+      return {
+        ...m,
+        children: m.children.map((c, ci) => {
+          if (ci !== childIndex) return c
+          const newLesson: LessonData = {
+            id: generateTempId(), title: '', description: '',
+            video_source_type: null, video_source_id: null, duration_seconds: null,
+            is_active: true, is_preview: false, order_index: c.lessons.length,
+            attachments: [], accompanying_pdf_attachment_id: null,
+            topic_id: null, quiz_id: null, quiz_required: false, quiz_min_percentage: 70,
+            isNew: true,
+          }
+          return { ...c, lessons: [...c.lessons, newLesson] }
+        }),
+      }
+    }))
+    markChanged()
+  }, [markChanged])
+
+  const updateChildLesson = useCallback((parentIndex: number, childIndex: number, lessonIndex: number, field: string, value: any) => {
+    setModules(prev => prev.map((m, pi) => {
+      if (pi !== parentIndex) return m
+      return {
+        ...m,
+        children: m.children.map((c, ci) => {
+          if (ci !== childIndex) return c
+          return {
+            ...c,
+            lessons: c.lessons.map((l, li) => li === lessonIndex ? { ...l, [field]: value, isModified: !l.isNew } : l),
+          }
+        }),
+      }
+    }))
+    markChanged()
+  }, [markChanged])
+
+  const deleteChildLesson = useCallback((parentIndex: number, childIndex: number, lessonIndex: number) => {
+    const lesson = modules[parentIndex]?.children[childIndex]?.lessons[lessonIndex]
+    if (!lesson) return
+    if (!lesson.isNew && !confirm(`Excluir aula "${lesson.title || 'sem título'}"?`)) return
+    if (!lesson.isNew) setDeletedLessonIds(prev => [...prev, lesson.id])
+
+    setModules(prev => prev.map((m, pi) => {
+      if (pi !== parentIndex) return m
+      return {
+        ...m,
+        children: m.children.map((c, ci) => {
+          if (ci !== childIndex) return c
+          return { ...c, lessons: c.lessons.filter((_, li) => li !== lessonIndex) }
+        }),
+      }
+    }))
+    markChanged()
+  }, [modules, markChanged])
+
+  const handleChildLessonReorder = useCallback((parentIndex: number, childIndex: number, event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setModules(prev => prev.map((m, pi) => {
+      if (pi !== parentIndex) return m
+      return {
+        ...m,
+        children: m.children.map((c, ci) => {
+          if (ci !== childIndex) return c
+          const oldIdx = c.lessons.findIndex(l => l.id === active.id)
+          const newIdx = c.lessons.findIndex(l => l.id === over.id)
+          return { ...c, lessons: arrayMove(c.lessons, oldIdx, newIdx).map((l, i) => ({ ...l, order_index: i, isModified: !l.isNew })) }
+        }),
+      }
+    }))
+    markChanged()
+  }, [markChanged])
+
+  const handleChildReorder = useCallback((parentIndex: number, event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setModules(prev => prev.map((m, pi) => {
+      if (pi !== parentIndex) return m
+      const oldIdx = m.children.findIndex(c => c.id === active.id)
+      const newIdx = m.children.findIndex(c => c.id === over.id)
+      return { ...m, children: arrayMove(m.children, oldIdx, newIdx).map((c, i) => ({ ...c, order_index: i, isModified: !c.isNew })) }
+    }))
+    markChanged()
+  }, [markChanged])
 
   const updateModule = useCallback((moduleIndex: number, field: string, value: any) => {
     setModules(prev => prev.map((m, i) => i === moduleIndex ? { ...m, [field]: value, isModified: !m.isNew } : m))
@@ -965,6 +1225,28 @@ export default function AdminCourseEditorPage() {
   }, [markChanged])
 
   /* ---- Attachment handlers ---- */
+  // Generic helper to add attachment to any lesson in the tree by moduleId
+  const addAttachmentToLesson = useCallback((moduleId: string, lessonIndex: number, newAtt: AttachmentData) => {
+    setModules(prev => prev.map(m => {
+      // Check root module
+      if (m.id === moduleId) {
+        return { ...m, lessons: m.lessons.map((l, li) => li === lessonIndex ? { ...l, attachments: [...l.attachments, newAtt] } : l) }
+      }
+      // Check children
+      const childIdx = m.children.findIndex(c => c.id === moduleId)
+      if (childIdx >= 0) {
+        return {
+          ...m,
+          children: m.children.map(c => {
+            if (c.id !== moduleId) return c
+            return { ...c, lessons: c.lessons.map((l, li) => li === lessonIndex ? { ...l, attachments: [...l.attachments, newAtt] } : l) }
+          }),
+        }
+      }
+      return m
+    }))
+  }, [])
+
   const uploadAttachment = useCallback(async (moduleIndex: number, lessonIndex: number, file: File) => {
     if (file.size > 50 * 1024 * 1024) {
       toast({ title: 'Arquivo muito grande', description: 'Maximo 50MB.', variant: 'destructive' })
@@ -1002,6 +1284,39 @@ export default function AdminCourseEditorPage() {
     }
   }, [toast, markChanged])
 
+  const uploadChildAttachment = useCallback(async (parentIndex: number, childIndex: number, lessonIndex: number, file: File) => {
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ title: 'Arquivo muito grande', description: 'Maximo 50MB.', variant: 'destructive' })
+      return
+    }
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `attachments/${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`
+      const { error } = await supabase.storage.from('course_materials').upload(path, file)
+      if (error) throw error
+      const { data: { publicUrl } } = supabase.storage.from('course_materials').getPublicUrl(path)
+      const newAtt: AttachmentData = {
+        id: generateTempId(), file_url: publicUrl, file_name: file.name,
+        file_type: file.type.includes('pdf') ? 'pdf' : file.name.split('.').pop() || 'file', isNew: true,
+      }
+      setModules(prev => prev.map((m, pi) => {
+        if (pi !== parentIndex) return m
+        return {
+          ...m,
+          children: m.children.map((c, ci) => {
+            if (ci !== childIndex) return c
+            return { ...c, lessons: c.lessons.map((l, li) => li === lessonIndex ? { ...l, attachments: [...l.attachments, newAtt] } : l) }
+          }),
+        }
+      }))
+      markChanged()
+      toast({ title: 'Arquivo enviado!' })
+    } catch (err) {
+      logger.error(err)
+      toast({ title: 'Erro no upload', variant: 'destructive' })
+    }
+  }, [toast, markChanged])
+
   const deleteAttachment = useCallback((moduleIndex: number, lessonIndex: number, attId: string) => {
     const att = modules[moduleIndex]?.lessons[lessonIndex]?.attachments.find(a => a.id === attId)
     if (att && !att.isNew) {
@@ -1024,38 +1339,97 @@ export default function AdminCourseEditorPage() {
     markChanged()
   }, [modules, markChanged])
 
+  const deleteChildAttachment = useCallback((parentIndex: number, childIndex: number, lessonIndex: number, attId: string) => {
+    const att = modules[parentIndex]?.children[childIndex]?.lessons[lessonIndex]?.attachments.find(a => a.id === attId)
+    if (att && !att.isNew) {
+      setDeletedAttachmentIds(prev => [...prev, attId])
+    }
+    setModules(prev => prev.map((m, pi) => {
+      if (pi !== parentIndex) return m
+      return {
+        ...m,
+        children: m.children.map((c, ci) => {
+          if (ci !== childIndex) return c
+          return {
+            ...c,
+            lessons: c.lessons.map((l, li) => {
+              if (li !== lessonIndex) return l
+              return { ...l, attachments: l.attachments.filter(a => a.id !== attId), accompanying_pdf_attachment_id: l.accompanying_pdf_attachment_id === attId ? null : l.accompanying_pdf_attachment_id }
+            }),
+          }
+        }),
+      }
+    }))
+    markChanged()
+  }, [modules, markChanged])
+
   const setAccompanyingPdf = useCallback((moduleIndex: number, lessonIndex: number, attId: string | null) => {
     updateLesson(moduleIndex, lessonIndex, 'accompanying_pdf_attachment_id', attId)
   }, [updateLesson])
 
+  const setChildAccompanyingPdf = useCallback((parentIndex: number, childIndex: number, lessonIndex: number, attId: string | null) => {
+    updateChildLesson(parentIndex, childIndex, lessonIndex, 'accompanying_pdf_attachment_id', attId)
+  }, [updateChildLesson])
+
   /* ---- Video picker ---- */
+  const [videoPickerContext, setVideoPickerContext] = useState<{ parentIndex?: number; childIndex?: number } | null>(null)
+
   const openVideoPicker = useCallback((moduleIndex: number, lessonIndex: number) => {
     setVideoPickerTarget({ moduleIndex, lessonIndex })
+    setVideoPickerContext(null)
+    setVideoPickerOpen(true)
+  }, [])
+
+  const openChildVideoPicker = useCallback((parentIndex: number, childIndex: number, lessonIndex: number) => {
+    setVideoPickerTarget({ moduleIndex: parentIndex, lessonIndex })
+    setVideoPickerContext({ parentIndex, childIndex })
     setVideoPickerOpen(true)
   }, [])
 
   const handleVideoSelect = useCallback((video: PandaVideo) => {
     if (!videoPickerTarget) return
     const { moduleIndex, lessonIndex } = videoPickerTarget
-    setModules(prev => prev.map((m, mi) => {
-      if (mi !== moduleIndex) return m
-      return {
-        ...m,
-        lessons: m.lessons.map((l, li) => {
-          if (li !== lessonIndex) return l
-          return {
-            ...l,
-            video_source_type: 'panda_video',
-            video_source_id: video.id,
-            duration_seconds: video.duration || l.duration_seconds,
-            title: l.title || video.title,
-            isModified: !l.isNew,
-          }
-        }),
-      }
-    }))
+    const videoData = {
+      video_source_type: 'panda_video' as const,
+      video_source_id: video.id,
+      duration_seconds: video.duration,
+      title: video.title,
+    }
+
+    if (videoPickerContext?.childIndex != null) {
+      // Child module lesson
+      const { parentIndex, childIndex } = videoPickerContext as { parentIndex: number; childIndex: number }
+      setModules(prev => prev.map((m, pi) => {
+        if (pi !== parentIndex) return m
+        return {
+          ...m,
+          children: m.children.map((c, ci) => {
+            if (ci !== childIndex) return c
+            return {
+              ...c,
+              lessons: c.lessons.map((l, li) => {
+                if (li !== lessonIndex) return l
+                return { ...l, ...videoData, duration_seconds: videoData.duration_seconds || l.duration_seconds, title: l.title || videoData.title, isModified: !l.isNew }
+              }),
+            }
+          }),
+        }
+      }))
+    } else {
+      // Root module lesson
+      setModules(prev => prev.map((m, mi) => {
+        if (mi !== moduleIndex) return m
+        return {
+          ...m,
+          lessons: m.lessons.map((l, li) => {
+            if (li !== lessonIndex) return l
+            return { ...l, ...videoData, duration_seconds: videoData.duration_seconds || l.duration_seconds, title: l.title || videoData.title, isModified: !l.isNew }
+          }),
+        }
+      }))
+    }
     markChanged()
-  }, [videoPickerTarget, markChanged])
+  }, [videoPickerTarget, videoPickerContext, markChanged])
 
   /* ---- Toggle module ---- */
   const toggleModule = useCallback((moduleId: string) => {
@@ -1083,6 +1457,18 @@ export default function AdminCourseEditorPage() {
         if (!lesson.title.trim()) {
           toast({ title: `Todas as aulas precisam ter título (módulo "${mod.name}")`, variant: 'destructive' })
           return
+        }
+      }
+      for (const child of mod.children) {
+        if (!child.name.trim()) {
+          toast({ title: 'Todos os submódulos precisam ter nome', variant: 'destructive' })
+          return
+        }
+        for (const lesson of child.lessons) {
+          if (!lesson.title.trim()) {
+            toast({ title: `Todas as aulas precisam ter título (submódulo "${child.name}")`, variant: 'destructive' })
+            return
+          }
         }
       }
     }
@@ -1121,7 +1507,73 @@ export default function AdminCourseEditorPage() {
         deletedModuleIds.length > 0 ? supabase.from('video_modules').delete().in('id', deletedModuleIds) : null,
       ].filter(Boolean))
 
-      // 3. Save modules and lessons
+      // 3. Save modules and lessons (helper)
+      const saveLesson = async (lesson: LessonData, li: number, moduleId: string) => {
+        let savedLessonId = lesson.id
+
+        if (lesson.isNew) {
+          const pdfId = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
+          const { data: newLesson, error } = await supabase
+            .from('video_lessons')
+            .insert({
+              module_id: moduleId,
+              title: lesson.title, description: lesson.description || null,
+              video_source_type: lesson.video_source_type || null, video_source_id: lesson.video_source_id || null,
+              duration_seconds: lesson.duration_seconds || null, is_active: lesson.is_active, is_preview: lesson.is_preview,
+              order_index: li, accompanying_pdf_attachment_id: pdfId || null,
+              topic_id: lesson.topic_id || null, quiz_id: lesson.quiz_id || null,
+              quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage,
+            }).select('id').single()
+          if (error) throw error
+          savedLessonId = newLesson.id
+        } else {
+          const pdfIdForUpdate = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
+          const { error } = await supabase.from('video_lessons').update({
+            title: lesson.title, description: lesson.description || null,
+            video_source_type: lesson.video_source_type || null, video_source_id: lesson.video_source_id || null,
+            duration_seconds: lesson.duration_seconds || null, is_active: lesson.is_active, is_preview: lesson.is_preview,
+            order_index: li, accompanying_pdf_attachment_id: pdfIdForUpdate || null,
+            topic_id: lesson.topic_id || null, quiz_id: lesson.quiz_id || null,
+            quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage,
+          }).eq('id', savedLessonId)
+          if (error) throw error
+        }
+
+        // Save new attachments (parallel)
+        const newAtts = lesson.attachments.filter(a => a.isNew)
+        const existingAtts = lesson.attachments.filter(a => !a.isNew)
+        const insertedAtts = newAtts.length > 0
+          ? await Promise.all(newAtts.map(att =>
+              supabase.from('lesson_attachments').insert({
+                lesson_id: savedLessonId, file_url: att.file_url, file_name: att.file_name, file_type: att.file_type,
+              }).select('id, file_url, file_name, file_type').single().then(r => { if (r.error) throw r.error; return r.data as AttachmentData })
+            ))
+          : []
+        const savedAttachments = [...existingAtts, ...insertedAtts]
+
+        // Update accompanying PDF if it was a new attachment
+        if (lesson.accompanying_pdf_attachment_id?.startsWith('temp_')) {
+          const origAtt = lesson.attachments.find(a => a.id === lesson.accompanying_pdf_attachment_id)
+          const savedAtt = savedAttachments.find(a => a.file_url === origAtt?.file_url)
+          if (savedAtt) {
+            await supabase.from('video_lessons').update({ accompanying_pdf_attachment_id: savedAtt.id }).eq('id', savedLessonId)
+          }
+        }
+
+        return { ...lesson, id: savedLessonId, order_index: li, attachments: savedAttachments, isNew: false, isModified: false } as LessonData
+      }
+
+      const saveLessonsForModule = async (mod: ModuleData, moduleId: string) => {
+        const existingLessons = mod.lessons.map((l, i) => ({ lesson: l, index: i })).filter(x => !x.lesson.isNew)
+        const newLessons = mod.lessons.map((l, i) => ({ lesson: l, index: i })).filter(x => x.lesson.isNew)
+        const savedExisting = await Promise.all(existingLessons.map(x => saveLesson(x.lesson, x.index, moduleId)))
+        const savedNew: LessonData[] = []
+        for (const x of newLessons) {
+          savedNew.push(await saveLesson(x.lesson, x.index, moduleId))
+        }
+        return [...savedExisting, ...savedNew].sort((a, b) => a.order_index - b.order_index)
+      }
+
       const savedModules: ModuleData[] = []
 
       for (let mi = 0; mi < modules.length; mi++) {
@@ -1136,98 +1588,80 @@ export default function AdminCourseEditorPage() {
               name: mod.name,
               is_active: mod.is_active,
               order_index: mi,
+              parent_module_id: null,
             })
             .select('id')
             .single()
           if (error) throw error
           savedModuleId = newMod.id
         } else {
-          // Always update order_index + any changes
           const { error } = await supabase
             .from('video_modules')
             .update({
               name: mod.name,
               is_active: mod.is_active,
               order_index: mi,
+              parent_module_id: null,
             })
             .eq('id', savedModuleId)
           if (error) throw error
         }
 
-        // Save lessons — parallel updates for existing, sequential for new (needs ID)
-        const saveLesson = async (lesson: LessonData, li: number) => {
-          let savedLessonId = lesson.id
+        const savedLessons = await saveLessonsForModule(mod, savedModuleId)
 
-          if (lesson.isNew) {
-            const pdfId = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
-            const { data: newLesson, error } = await supabase
-              .from('video_lessons')
+        // Save children (submodules)
+        const savedChildren: ModuleData[] = []
+        for (let ci = 0; ci < mod.children.length; ci++) {
+          const child = mod.children[ci]
+          let savedChildId = child.id
+
+          if (child.isNew) {
+            const { data: newChild, error } = await supabase
+              .from('video_modules')
               .insert({
-                module_id: savedModuleId,
-                title: lesson.title, description: lesson.description || null,
-                video_source_type: lesson.video_source_type || null, video_source_id: lesson.video_source_id || null,
-                duration_seconds: lesson.duration_seconds || null, is_active: lesson.is_active, is_preview: lesson.is_preview,
-                order_index: li, accompanying_pdf_attachment_id: pdfId || null,
-                topic_id: lesson.topic_id || null, quiz_id: lesson.quiz_id || null,
-                quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage,
-              }).select('id').single()
+                course_id: savedCourseId,
+                name: child.name,
+                is_active: child.is_active,
+                order_index: ci,
+                parent_module_id: savedModuleId,
+              })
+              .select('id')
+              .single()
             if (error) throw error
-            savedLessonId = newLesson.id
+            savedChildId = newChild.id
           } else {
-            const pdfIdForUpdate = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
-            const { error } = await supabase.from('video_lessons').update({
-              title: lesson.title, description: lesson.description || null,
-              video_source_type: lesson.video_source_type || null, video_source_id: lesson.video_source_id || null,
-              duration_seconds: lesson.duration_seconds || null, is_active: lesson.is_active, is_preview: lesson.is_preview,
-              order_index: li, accompanying_pdf_attachment_id: pdfIdForUpdate || null,
-              topic_id: lesson.topic_id || null, quiz_id: lesson.quiz_id || null,
-              quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage,
-            }).eq('id', savedLessonId)
+            const { error } = await supabase
+              .from('video_modules')
+              .update({
+                name: child.name,
+                is_active: child.is_active,
+                order_index: ci,
+                parent_module_id: savedModuleId,
+              })
+              .eq('id', savedChildId)
             if (error) throw error
           }
 
-          // Save new attachments (parallel)
-          const newAtts = lesson.attachments.filter(a => a.isNew)
-          const existingAtts = lesson.attachments.filter(a => !a.isNew)
-          const insertedAtts = newAtts.length > 0
-            ? await Promise.all(newAtts.map(att =>
-                supabase.from('lesson_attachments').insert({
-                  lesson_id: savedLessonId, file_url: att.file_url, file_name: att.file_name, file_type: att.file_type,
-                }).select('id, file_url, file_name, file_type').single().then(r => { if (r.error) throw r.error; return r.data as AttachmentData })
-              ))
-            : []
-          const savedAttachments = [...existingAtts, ...insertedAtts]
-
-          // Update accompanying PDF if it was a new attachment
-          if (lesson.accompanying_pdf_attachment_id?.startsWith('temp_')) {
-            const origAtt = lesson.attachments.find(a => a.id === lesson.accompanying_pdf_attachment_id)
-            const savedAtt = savedAttachments.find(a => a.file_url === origAtt?.file_url)
-            if (savedAtt) {
-              await supabase.from('video_lessons').update({ accompanying_pdf_attachment_id: savedAtt.id }).eq('id', savedLessonId)
-            }
-          }
-
-          return { ...lesson, id: savedLessonId, order_index: li, attachments: savedAttachments, isNew: false, isModified: false } as LessonData
+          const savedChildLessons = await saveLessonsForModule(child, savedChildId)
+          savedChildren.push({
+            ...child,
+            id: savedChildId,
+            parent_module_id: savedModuleId,
+            order_index: ci,
+            lessons: savedChildLessons,
+            children: [],
+            isNew: false,
+            isModified: false,
+          })
         }
-
-        // Existing lessons in parallel, new lessons sequentially (need IDs)
-        const existingLessons = mod.lessons.map((l, i) => ({ lesson: l, index: i })).filter(x => !x.lesson.isNew)
-        const newLessons = mod.lessons.map((l, i) => ({ lesson: l, index: i })).filter(x => x.lesson.isNew)
-
-        const savedExisting = await Promise.all(existingLessons.map(x => saveLesson(x.lesson, x.index)))
-        const savedNew: LessonData[] = []
-        for (const x of newLessons) {
-          savedNew.push(await saveLesson(x.lesson, x.index))
-        }
-
-        // Merge and sort by order_index
-        const savedLessons = [...savedExisting, ...savedNew].sort((a, b) => a.order_index - b.order_index)
 
         savedModules.push({
           ...mod,
           id: savedModuleId,
+          parent_module_id: null,
           order_index: mi,
           lessons: savedLessons,
+          children: savedChildren,
           isNew: false,
           isModified: false,
         })
@@ -1274,9 +1708,18 @@ export default function AdminCourseEditorPage() {
   }, [course, modules, deletedModuleIds, deletedLessonIds, deletedAttachmentIds, isNewCourse, user?.id, toast, navigate])
 
   /* ---- Stats ---- */
-  const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
-  const totalDuration = modules.reduce((sum, m) => sum + m.lessons.reduce((s, l) => s + (l.duration_seconds || 0), 0), 0)
-  const totalAttachments = modules.reduce((sum, m) => sum + m.lessons.reduce((s, l) => s + l.attachments.length, 0), 0)
+  const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length + m.children.reduce((cs, c) => cs + c.lessons.length, 0), 0)
+  const totalDuration = modules.reduce((sum, m) => {
+    const own = m.lessons.reduce((s, l) => s + (l.duration_seconds || 0), 0)
+    const childDur = m.children.reduce((cs, c) => cs + c.lessons.reduce((s, l) => s + (l.duration_seconds || 0), 0), 0)
+    return sum + own + childDur
+  }, 0)
+  const totalAttachments = modules.reduce((sum, m) => {
+    const own = m.lessons.reduce((s, l) => s + l.attachments.length, 0)
+    const childAtts = m.children.reduce((cs, c) => cs + c.lessons.reduce((s, l) => s + l.attachments.length, 0), 0)
+    return sum + own + childAtts
+  }, 0)
+  const totalSubmodules = modules.reduce((sum, m) => sum + m.children.length, 0)
 
   /* ---- Render ---- */
   if (loading) return <SectionLoader />
@@ -1435,6 +1878,12 @@ export default function AdminCourseEditorPage() {
           {/* Stats bar */}
           <div className="flex items-center gap-4 px-4 py-2.5 bg-muted/20 rounded-xl text-xs text-muted-foreground">
             <span>{modules.length} {modules.length === 1 ? 'módulo' : 'módulos'}</span>
+            {totalSubmodules > 0 && (
+              <>
+                <span className="text-border">|</span>
+                <span>{totalSubmodules} {totalSubmodules === 1 ? 'submódulo' : 'submódulos'}</span>
+              </>
+            )}
             <span className="text-border">|</span>
             <span>{totalLessons} {totalLessons === 1 ? 'aula' : 'aulas'}</span>
             <span className="text-border">|</span>
@@ -1468,7 +1917,9 @@ export default function AdminCourseEditorPage() {
                     module={mod}
                     moduleIndex={moduleIndex}
                     isExpanded={expandedModules.has(mod.id)}
+                    expandedModules={expandedModules}
                     onToggle={() => toggleModule(mod.id)}
+                    onToggleChild={(id) => toggleModule(id)}
                     onUpdate={(field, value) => updateModule(moduleIndex, field, value)}
                     onDelete={() => deleteModule(moduleIndex)}
                     onAddLesson={() => addLesson(moduleIndex)}
@@ -1479,6 +1930,19 @@ export default function AdminCourseEditorPage() {
                     onDeleteAttachment={(li, attId) => deleteAttachment(moduleIndex, li, attId)}
                     onSetAccompanyingPdf={(li, attId) => setAccompanyingPdf(moduleIndex, li, attId)}
                     onOpenVideoPicker={(li) => openVideoPicker(moduleIndex, li)}
+                    onAddSubmodule={() => addSubmodule(moduleIndex)}
+                    onUpdateChild={(ci, field, value) => updateChildModule(moduleIndex, ci, field, value)}
+                    onDeleteChild={(ci) => deleteChildModule(moduleIndex, ci)}
+                    onAddChildLesson={(ci) => addChildLesson(moduleIndex, ci)}
+                    onUpdateChildLesson={(ci, li, field, value) => updateChildLesson(moduleIndex, ci, li, field, value)}
+                    onDeleteChildLesson={(ci, li) => deleteChildLesson(moduleIndex, ci, li)}
+                    onReorderChildLessons={(ci, event) => handleChildLessonReorder(moduleIndex, ci, event)}
+                    onUploadChildAttachment={(ci, li, file) => uploadChildAttachment(moduleIndex, ci, li, file)}
+                    onDeleteChildAttachment={(ci, li, attId) => deleteChildAttachment(moduleIndex, ci, li, attId)}
+                    onSetChildAccompanyingPdf={(ci, li, attId) => setChildAccompanyingPdf(moduleIndex, ci, li, attId)}
+                    onOpenChildVideoPicker={(ci, li) => openChildVideoPicker(moduleIndex, ci, li)}
+                    onPromoteChild={(ci) => promoteChildToModule(moduleIndex, ci)}
+                    onReorderChildren={(event) => handleChildReorder(moduleIndex, event)}
                     allSubjects={allSubjects}
                     allTopics={allTopics}
                     allQuizzes={allQuizzes}
