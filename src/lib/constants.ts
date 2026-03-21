@@ -3,7 +3,6 @@
  * Centraliza valores que precisam ser fáceis de alterar
  */
 
-// TODO: Substituir pelo número real de suporte antes do lançamento
 export const SUPPORT_WHATSAPP_NUMBER = '5555996295455'
 
 export const SUPPORT_WHATSAPP_URL = `https://wa.me/${SUPPORT_WHATSAPP_NUMBER}`

@@ -27,7 +27,6 @@ const PrivacyPage = lazy(() => import('@/pages/Privacy'))
 
 const DashboardPage = lazy(() => import('@/pages/Dashboard'))
 
-const CoursesPage = lazy(() => import('@/pages/Courses'))
 const CalendarPage = lazy(() => import('@/pages/Calendar'))
 const ProgressPage = lazy(() => import('@/pages/Progress'))
 const EssaysPage = lazy(() => import('@/pages/Essays'))
