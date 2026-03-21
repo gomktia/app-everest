@@ -15,7 +15,7 @@ function jsonResponse(data: Record<string, unknown>, status = 200) {
 }
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-04-30.basil',
   httpClient: Stripe.createFetchHttpClient(),
 })
 

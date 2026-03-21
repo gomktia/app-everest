@@ -5,11 +5,32 @@ import { welcomeEmail, paymentFailedEmail, refundEmail } from '../_shared/email-
 import { sendEmail } from '../_shared/send-email.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-04-30.basil',
   httpClient: Stripe.createFetchHttpClient(),
 })
 
 const APP_URL = Deno.env.get('APP_URL') || 'https://app.everestpreparatorios.com.br'
+
+function generateTempPassword(): string {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+  const lower = 'abcdefghjkmnpqrstuvwxyz'
+  const digits = '23456789'
+  const special = '#@!&%'
+  const all = upper + lower + digits + special
+
+  const pick = (chars: string) => chars[Math.floor(Math.random() * chars.length)]
+
+  // Guarantee at least 1 of each type
+  const required = [pick(upper), pick(lower), pick(digits), pick(special)]
+  for (let i = 0; i < 4; i++) required.push(pick(all))
+
+  // Shuffle
+  for (let i = required.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [required[i], required[j]] = [required[j], required[i]]
+  }
+  return required.join('')
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -53,6 +74,7 @@ async function enrollFromOrder(
 
   // If user_id is NULL (landing page flow) — create user from metadata
   let userId = order.user_id
+  let tempPassword: string | null = null
   if (!userId) {
     const email = order.metadata?.email?.toLowerCase()?.trim()
     const firstName = order.metadata?.first_name || ''
@@ -73,11 +95,14 @@ async function enrollFromOrder(
     if (existingUser) {
       userId = existingUser.id
     } else {
-      // Create new auth user (magic link only, no password)
+      // Generate random temporary password (8 chars: upper + lower + digit + special)
+      tempPassword = generateTempPassword()
+
       const { data: newAuthUser, error: createAuthError } = await supabase.auth.admin.createUser({
         email,
+        password: tempPassword,
         email_confirm: true,
-        user_metadata: { first_name: firstName, last_name: lastName },
+        user_metadata: { first_name: firstName, last_name: lastName, temp_password: true },
       })
 
       if (createAuthError) {
@@ -107,12 +132,7 @@ async function enrollFromOrder(
         is_active: true,
       }, { onConflict: 'id' })
 
-      // Create student record
-      await supabase.from('students').upsert({
-        user_id: userId,
-        student_id_number: `STU-${userId!.substring(0, 8)}`,
-        enrollment_date: new Date().toISOString().split('T')[0],
-      }, { onConflict: 'user_id' })
+      // Note: students table removed — student data lives in users + student_classes
     }
 
     // Backfill user_id on the order
@@ -198,7 +218,7 @@ async function enrollFromOrder(
     : ''
 
   if (email) {
-    const tpl = welcomeEmail(firstName || 'Aluno', productName || 'Everest', APP_URL, expiresFormatted)
+    const tpl = welcomeEmail(firstName || 'Aluno', productName || 'Everest', APP_URL, expiresFormatted, tempPassword)
     await sendEmail(email, tpl.subject, tpl.html)
   }
 

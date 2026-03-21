@@ -5,7 +5,7 @@ import { welcomeEmail, refundEmail } from '../_shared/email-templates.ts'
 import { sendEmail } from '../_shared/send-email.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-04-30.basil',
   httpClient: Stripe.createFetchHttpClient(),
 })
 

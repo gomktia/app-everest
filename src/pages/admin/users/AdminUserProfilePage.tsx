@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SearchableCombobox } from '@/components/ui/searchable-combobox'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
@@ -40,6 +41,9 @@ import {
   Lock,
   MessageSquare,
   Eye,
+  KeyRound,
+  Mail,
+  Loader2,
 } from 'lucide-react'
 import { useViewMode } from '@/contexts/view-mode-context'
 import { useTeacherClasses } from '@/hooks/useTeacherClasses'
@@ -107,6 +111,10 @@ export default function AdminUserProfilePage() {
   const [createdAt, setCreatedAt] = useState('')
   const [totalXp, setTotalXp] = useState(0)
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null)
+  const [lastSignInAt, setLastSignInAt] = useState<string | null>(null)
+  const [resettingPassword, setResettingPassword] = useState(false)
+  const [updatingEmail, setUpdatingEmail] = useState(false)
+  const [originalEmail, setOriginalEmail] = useState('')
 
   const loadData = useCallback(async () => {
     if (!userId) return
@@ -124,6 +132,7 @@ export default function AdminUserProfilePage() {
       const fullNameValue = `${user.first_name || ''} ${user.last_name || ''}`.trim()
       setFullName(fullNameValue)
       setEmail(user.email)
+      setOriginalEmail(user.email)
       setPhone((user as any).phone || '')
       setCpfCnpj((user as any).cpf_cnpj || '')
       setIsBanned((user as any).is_banned || false)
@@ -140,6 +149,20 @@ export default function AdminUserProfilePage() {
         }
       } catch {
         // XP not critical
+      }
+
+      // Fetch last_sign_in_at from auth (via RPC or direct query)
+      try {
+        const { data: authData } = await supabase
+          .from('users')
+          .select('last_seen_at')
+          .eq('id', userId)
+          .single()
+        if (authData?.last_seen_at) {
+          setLastSignInAt(authData.last_seen_at)
+        }
+      } catch {
+        // Not critical
       }
 
       // Fetch all courses
@@ -462,12 +485,46 @@ export default function AdminUserProfilePage() {
 
               <div>
                 <label className="text-sm font-semibold">Email</label>
-                <Input
-                  value={email}
-                  disabled
-                  readOnly
-                  className="mt-1 bg-muted/50"
-                />
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="email@exemplo.com"
+                    className="flex-1"
+                  />
+                  {email !== originalEmail && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={updatingEmail}
+                      className="shrink-0 text-xs border-blue-500/50 text-blue-600 hover:bg-blue-500/10"
+                      onClick={async () => {
+                        if (!email.includes('@') || !userId) return
+                        setUpdatingEmail(true)
+                        try {
+                          // Update auth email
+                          const { error: authErr } = await supabase.functions.invoke('admin-create-user', {
+                            body: { action: 'update_email', user_id: userId, new_email: email },
+                          })
+                          if (authErr) throw authErr
+                          // Update public.users email
+                          await supabase.from('users').update({ email }).eq('id', userId)
+                          setOriginalEmail(email)
+                          toast({ title: 'Email atualizado!' })
+                        } catch (err) {
+                          logger.error('Erro ao atualizar email:', err)
+                          toast({ title: 'Erro ao atualizar email', variant: 'destructive' })
+                        } finally {
+                          setUpdatingEmail(false)
+                        }
+                      }}
+                    >
+                      {updatingEmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                      Salvar email
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -510,12 +567,40 @@ export default function AdminUserProfilePage() {
             </div>
 
             <div className="border-t border-border pt-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Lock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-semibold">Alterar Senha</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-semibold">Senha</span>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={resettingPassword}
+                  className="gap-1.5 text-xs"
+                  onClick={async () => {
+                    if (!originalEmail) return
+                    setResettingPassword(true)
+                    try {
+                      const { error } = await supabase.auth.resetPasswordForEmail(originalEmail, {
+                        redirectTo: `${window.location.origin}/reset-password`,
+                      })
+                      if (error) throw error
+                      toast({ title: 'Email de redefinição enviado!', description: `Enviado para ${originalEmail}` })
+                    } catch (err) {
+                      logger.error('Erro ao enviar reset:', err)
+                      toast({ title: 'Erro ao enviar email de redefinição', variant: 'destructive' })
+                    } finally {
+                      setResettingPassword(false)
+                    }
+                  }}
+                >
+                  {resettingPassword ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                  Enviar email de redefinição
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Para redefinir a senha de um usuário, use o painel do Supabase Authentication.
+              <p className="text-xs text-muted-foreground mt-2">
+                O aluno receberá um link por email para criar uma nova senha.
               </p>
             </div>
           </CardContent>
@@ -627,28 +712,23 @@ export default function AdminUserProfilePage() {
                         <td className="py-3 px-2 font-medium">{course.name}</td>
                         <td className="py-3 px-2">
                           {availableClasses.length > 0 ? (
-                            <Select
-                              value={state?.classId || 'none'}
+                            <SearchableCombobox
+                              options={[
+                                { value: '', label: '-- Nenhuma --' },
+                                ...availableClasses.map(cls => ({ value: cls.id, label: cls.name })),
+                              ]}
+                              value={state?.classId || ''}
                               onValueChange={val => {
-                                if (val === 'none') {
+                                if (!val) {
                                   handleClearEnrollment(course.id)
                                 } else {
                                   handleClassChange(course.id, val)
                                 }
                               }}
-                            >
-                              <SelectTrigger className="w-48 h-9">
-                                <SelectValue placeholder="--" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">--</SelectItem>
-                                {availableClasses.map(cls => (
-                                  <SelectItem key={cls.id} value={cls.id}>
-                                    {cls.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              placeholder="Selecionar turma..."
+                              searchPlaceholder="Buscar turma..."
+                              className="w-52 h-9"
+                            />
                           ) : (
                             <span className="text-muted-foreground">Nenhuma turma</span>
                           )}
@@ -723,7 +803,7 @@ export default function AdminUserProfilePage() {
               </div>
               <div className="p-4 rounded-xl bg-muted/50 border border-border">
                 <p className="text-xs text-muted-foreground mb-1">Último Acesso</p>
-                <p className="text-sm font-semibold">{formatDate(lastSeenAt)}</p>
+                <p className="text-sm font-semibold">{formatDate(lastSignInAt || lastSeenAt)}</p>
               </div>
             </div>
           </CardContent>

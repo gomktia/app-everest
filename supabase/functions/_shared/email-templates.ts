@@ -50,6 +50,7 @@ export function welcomeEmail(
   productName: string,
   appUrl: string,
   expiresAt: string,
+  tempPassword?: string | null,
 ): EmailTemplate {
   return {
     subject: `${firstName}, seu acesso ao Everest está pronto!`,
@@ -65,6 +66,10 @@ export function welcomeEmail(
 <li>Comunidade exclusiva de alunos</li>
 </ul>
 <p style="margin:0 0 4px;color:#4b5563;font-size:15px;line-height:1.6;">Seu acesso &#233; v&#225;lido at&#233;: <strong>${expiresAt}</strong></p>
+${tempPassword ? `<div style="margin:16px 0;padding:16px;background-color:#f3f4f6;border-radius:8px;border-left:4px solid #ff6b35;">
+<p style="margin:0 0 8px;color:#1a1a2e;font-size:15px;font-weight:700;">Seus dados de acesso:</p>
+<p style="margin:0;color:#4b5563;font-size:14px;line-height:1.8;"><strong>Senha tempor&#225;ria:</strong> ${tempPassword}<br/><em style="font-size:12px;color:#9ca3af;">Recomendamos trocar a senha no primeiro acesso.</em></p>
+</div>` : ''}
 ${ctaButton('Acessar a Plataforma', appUrl)}
 <p style="margin:0;color:#9ca3af;font-size:13px;line-height:1.5;">Qualquer d&#250;vida, responda este e-mail. Estamos aqui para ajudar!</p>`,
     ),

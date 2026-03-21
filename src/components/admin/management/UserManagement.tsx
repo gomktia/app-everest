@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SearchableCombobox } from '@/components/ui/searchable-combobox'
 import {
   Dialog,
   DialogContent,
@@ -741,18 +742,13 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
           </div>
           <div className="space-y-2">
             <Label>Turma (opcional)</Label>
-            <Select value={newUserClassId} onValueChange={setNewUserClassId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma turma" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableClasses.map((cls) => (
-                  <SelectItem key={cls.id} value={cls.id}>
-                    {cls.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableCombobox
+              options={availableClasses.map(cls => ({ value: cls.id, label: cls.name }))}
+              value={newUserClassId}
+              onValueChange={setNewUserClassId}
+              placeholder="Selecione uma turma"
+              searchPlaceholder="Buscar turma..."
+            />
           </div>
         </div>
         <DialogFooter>

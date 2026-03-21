@@ -22,13 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { SearchableCombobox } from '@/components/ui/searchable-combobox'
 import {
   Users,
   UserPlus,
@@ -373,23 +367,21 @@ export default function AdminClassStudentsPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um aluno" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.first_name} {user.last_name} - {user.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {availableUsers.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  Todos os alunos já estão matriculados nesta turma
-                </p>
-              )}
+              <SearchableCombobox
+                options={availableUsers.map(u => ({
+                  value: u.id,
+                  label: `${u.first_name} ${u.last_name}`.trim() || u.email,
+                  sublabel: u.email,
+                }))}
+                value={selectedUserId}
+                onValueChange={setSelectedUserId}
+                placeholder="Selecione um aluno"
+                searchPlaceholder="Buscar por nome ou email..."
+                emptyMessage={availableUsers.length === 0
+                  ? 'Todos os alunos já estão matriculados nesta turma'
+                  : 'Nenhum aluno encontrado'
+                }
+              />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>

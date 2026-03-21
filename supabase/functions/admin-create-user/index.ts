@@ -43,7 +43,27 @@ serve(async (req) => {
       return jsonResponse({ error: 'Forbidden: admin/teacher only' }, 403)
     }
 
-    const { email, first_name, last_name, class_id } = await req.json()
+    const body = await req.json()
+    const { action, email, first_name, last_name, class_id, user_id, new_email } = body
+
+    // Handle update_email action
+    if (action === 'update_email') {
+      if (!user_id || !new_email) {
+        return jsonResponse({ error: 'Missing user_id or new_email' }, 400)
+      }
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      )
+      const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
+        email: new_email.toLowerCase().trim(),
+      })
+      if (updateErr) {
+        return jsonResponse({ error: updateErr.message }, 400)
+      }
+      return jsonResponse({ success: true, message: 'Email updated' })
+    }
 
     if (!email || !first_name || !last_name) {
       return jsonResponse({ error: 'Missing required fields: email, first_name, last_name' }, 400)

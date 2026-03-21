@@ -7,6 +7,25 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? ''
 const KIWIFY_WEBHOOK_TOKEN = Deno.env.get('KIWIFY_WEBHOOK_TOKEN') ?? ''
 const KIWIFY_CLIENT_SECRET = Deno.env.get('KIWIFY_CLIENT_SECRET') ?? ''
 
+function generateTempPassword(): string {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+  const lower = 'abcdefghjkmnpqrstuvwxyz'
+  const digits = '23456789'
+  const special = '#@!&%'
+  const all = upper + lower + digits + special
+
+  const pick = (chars: string) => chars[Math.floor(Math.random() * chars.length)]
+
+  const required = [pick(upper), pick(lower), pick(digits), pick(special)]
+  for (let i = 0; i < 4; i++) required.push(pick(all))
+
+  for (let i = required.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [required[i], required[j]] = [required[j], required[i]]
+  }
+  return required.join('')
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -109,16 +128,19 @@ serve(async (req) => {
       .maybeSingle()
 
     let userId: string
+    let tempPassword: string | null = null
 
     if (existingUser) {
       // User exists
       userId = existingUser.id
     } else {
-      // 3. Create new auth user (no password - magic link only)
+      // 3. Create new auth user with random temporary password
+      tempPassword = generateTempPassword()
       const { data: newAuthUser, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
         email: customerEmail,
+        password: tempPassword,
         email_confirm: true,
-        user_metadata: { first_name: firstName, last_name: lastName },
+        user_metadata: { first_name: firstName, last_name: lastName, temp_password: true },
       })
 
       if (createAuthError) {
@@ -147,12 +169,7 @@ serve(async (req) => {
         is_active: true,
       }, { onConflict: 'id' })
 
-      // Create student record
-      await supabaseAdmin.from('students').upsert({
-        user_id: userId,
-        student_id_number: `STU-${userId.substring(0, 8)}`,
-        enrollment_date: new Date().toISOString().split('T')[0],
-      }, { onConflict: 'user_id' })
+      // Note: students table removed — student data lives in users + student_classes
     }
 
     // 5. Enroll in class (skip if already enrolled)
@@ -164,12 +181,16 @@ serve(async (req) => {
       .maybeSingle()
 
     if (!existingEnrollment) {
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + 365)
+
       await supabaseAdmin.from('student_classes').insert({
         user_id: userId,
         class_id: productMapping.class_id,
         enrollment_date: new Date().toISOString().split('T')[0],
         source: 'kiwify',
         coupon_code: couponCode,
+        subscription_expires_at: expiresAt.toISOString(),
       })
     }
 
@@ -204,11 +225,15 @@ serve(async (req) => {
 <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="${appUrl}/login" style="height:50px;v-text-anchor:middle;width:280px;" arcsize="16%" fillcolor="#ff6b35"><center style="color:#fff;font-family:Arial;font-size:16px;font-weight:bold;">Acessar Plataforma</center></v:roundrect><![endif]-->
 <!--[if !mso]><!--><a href="${appUrl}/login" style="background-color:#ff6b35;color:#ffffff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;display:block;text-align:center;max-width:280px;margin:0 auto;mso-padding-alt:0;box-sizing:border-box;">Acessar Plataforma</a><!--<![endif]-->
 </td></tr></table>
-<!-- Info box -->
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<!-- Password box -->
+${typeof tempPassword === 'string' ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+<tr><td style="background-color:#f3f4f6;border-radius:8px;padding:16px;border-left:4px solid #ff6b35;">
+<p style="margin:0 0 8px;color:#1a1a2e;font-size:15px;font-weight:700;">Seus dados de acesso:</p>
+<p style="margin:0;color:#4b5563;font-size:14px;line-height:1.8;"><strong>Senha tempor&#225;ria:</strong> ${tempPassword}<br/><em style="font-size:12px;color:#9ca3af;">Recomendamos trocar a senha no primeiro acesso.</em></p>
+</td></tr></table>` : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td style="background-color:#fff7ed;border-radius:8px;padding:16px;border-left:3px solid #ff6b35;">
-<p style="margin:0;font-size:13px;color:#9a3412;line-height:1.5;"><strong>&#128161; Como acessar?</strong><br/>Informe seu email no login e receba um link m&#225;gico. Clicou, entrou! Sem senha para lembrar.</p>
-</td></tr></table>
+<p style="margin:0;font-size:13px;color:#9a3412;line-height:1.5;"><strong>&#128161; Como acessar?</strong><br/>Use seu email e senha cadastrados para entrar na plataforma.</p>
+</td></tr></table>`}
 </td></tr>
 <!-- Footer -->
 <tr><td style="background-color:#f9fafb;padding:20px 24px;text-align:center;border-top:1px solid #e5e7eb;">
