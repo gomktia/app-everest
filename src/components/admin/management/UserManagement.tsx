@@ -44,7 +44,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { MoreHorizontal, PlusCircle, Search, Edit, Trash2, UserX, UserCheck, RefreshCw, GraduationCap, Users as UsersIcon, Loader2, Circle, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { MoreHorizontal, PlusCircle, Search, Edit, Trash2, UserX, UserCheck, RefreshCw, GraduationCap, Users as UsersIcon, Loader2, Circle, AlertTriangle, CheckCircle2, Eye, KeyRound, BookOpen } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { getUsers, updateUser, type User, getUsersWithClasses, type UserWithClasses } from '@/services/adminUserService'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -660,9 +660,15 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => openEditDialog(user)}>
-                            <Edit className="mr-2 h-4 w-4" /> Editar
+                          <DropdownMenuItem asChild>
+                            <Link to={`/admin/users/${user.id}/profile`}>
+                              <Eye className="mr-2 h-4 w-4" /> Ver Perfil Completo
+                            </Link>
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEditDialog(user)}>
+                            <Edit className="mr-2 h-4 w-4" /> Editar Rápido
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           {!isTeacher && user.role === 'student' && (
                             <DropdownMenuItem asChild>
                               <Link to={`/admin/users/${user.id}/classes`}>
@@ -670,6 +676,20 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
                               </Link>
                             </DropdownMenuItem>
                           )}
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              try {
+                                await supabase.auth.resetPasswordForEmail(user.email, {
+                                  redirectTo: `${window.location.origin}/reset-password`,
+                                })
+                                toast({ title: 'Email enviado', description: `Link de redefinição enviado para ${user.email}` })
+                              } catch {
+                                toast({ title: 'Erro', description: 'Não foi possível enviar o email', variant: 'destructive' })
+                              }
+                            }}
+                          >
+                            <KeyRound className="mr-2 h-4 w-4" /> Resetar Senha
+                          </DropdownMenuItem>
                           {!isTeacher && (
                             <>
                               <DropdownMenuSeparator />
