@@ -4,18 +4,39 @@ import { logger } from '@/lib/logger'
 
 export type User = Database['public']['Tables']['users']['Row']
 
-export const getUsers = async (): Promise<User[]> => {
-  const { data, error } = await supabase
+export interface PaginatedUsers {
+  data: User[]
+  count: number
+}
+
+export const getUsers = async (
+  page: number = 0,
+  pageSize: number = 50,
+  search?: string,
+  role?: string
+): Promise<PaginatedUsers> => {
+  let query = supabase
     .from('users')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(page * pageSize, (page + 1) * pageSize - 1)
+
+  if (role) {
+    query = query.eq('role', role)
+  }
+
+  if (search) {
+    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`)
+  }
+
+  const { data, error, count } = await query
 
   if (error) {
     logger.warn('Error fetching users:', error.message)
     throw error
   }
 
-  return data || []
+  return { data: data || [], count: count || 0 }
 }
 
 export const getUserById = async (id: string): Promise<User | null> => {
@@ -116,12 +137,30 @@ export interface UserWithClasses extends User {
   isInTastingClass?: boolean
 }
 
-export const getUsersWithClasses = async (): Promise<UserWithClasses[]> => {
-  // Buscar todos os usuários
-  const { data: users, error: usersError } = await supabase
+export interface PaginatedUsersWithClasses {
+  data: UserWithClasses[]
+  count: number
+}
+
+export const getUsersWithClasses = async (
+  page: number = 0,
+  pageSize: number = 50,
+  search?: string,
+  role?: string
+): Promise<PaginatedUsersWithClasses> => {
+  // 1. Buscar usuarios paginados
+  let query = supabase
     .from('users')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(page * pageSize, (page + 1) * pageSize - 1)
+
+  if (role) query = query.eq('role', role)
+  if (search) {
+    query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`)
+  }
+
+  const { data: users, error: usersError, count } = await query
 
   if (usersError) {
     logger.warn('Error fetching users:', usersError.message)
@@ -129,90 +168,53 @@ export const getUsersWithClasses = async (): Promise<UserWithClasses[]> => {
   }
 
   if (!users || users.length === 0) {
-    return []
+    return { data: [], count: 0 }
   }
 
-  // Buscar turmas de todos os usuários
-  // Note: class_type may not exist yet in production — fall back to query without it
-  let studentClasses: any[] | null = null
-  const { data: scData, error: classesError } = await supabase
-    .from('student_classes')
-    .select(`
-      user_id,
-      classes!inner (
-        id,
-        name,
-        class_type
-      )
-    `)
+  const userIds = users.map(u => u.id)
 
-  if (classesError) {
-    // If error is about class_type column, retry without it
-    if (classesError.message?.includes('class_type') || classesError.code === '42703') {
-      logger.warn('class_type column not found, retrying without it')
-      const { data: fallback } = await supabase
-        .from('student_classes')
-        .select(`user_id, classes!inner(id, name)`)
-      studentClasses = fallback
-    } else {
-      logger.warn('Error fetching student classes (non-fatal):', classesError.message)
-    }
-  } else {
-    studentClasses = scData
-  }
-
-  // Buscar turmas de professores (via teacher_id na tabela classes)
-  const { data: teacherClasses } = await supabase
-    .from('classes')
-    .select('id, name, class_type, teacher_id')
-    .not('teacher_id', 'is', null)
+  // 2. Buscar turmas APENAS dos usuarios da pagina atual (2 queries paralelas)
+  const [studentClassesResult, teacherClassesResult] = await Promise.all([
+    supabase
+      .from('student_classes')
+      .select('user_id, classes!inner(id, name, class_type)')
+      .in('user_id', userIds),
+    supabase
+      .from('classes')
+      .select('id, name, class_type, teacher_id')
+      .in('teacher_id', userIds)
+  ])
 
   // Mapear turmas por user_id (alunos)
   const classesMap = new Map<string, Array<{ id: string; name: string; class_type: string }>>()
-
-  if (studentClasses) {
-    studentClasses.forEach((sc: any) => {
-      const userId = sc.user_id
-      const classInfo = sc.classes
-
-      if (!classesMap.has(userId)) {
-        classesMap.set(userId, [])
-      }
-      classesMap.get(userId)?.push(classInfo)
-    })
+  for (const sc of studentClassesResult.data || []) {
+    const arr = classesMap.get(sc.user_id) || []
+    arr.push(sc.classes as any)
+    classesMap.set(sc.user_id, arr)
   }
 
   // Mapear turmas por teacher_id (professores)
   const teacherClassesMap = new Map<string, Array<{ id: string; name: string; class_type: string }>>()
-
-  if (teacherClasses) {
-    teacherClasses.forEach((tc: any) => {
-      const teacherId = tc.teacher_id
-      if (!teacherClassesMap.has(teacherId)) {
-        teacherClassesMap.set(teacherId, [])
-      }
-      teacherClassesMap.get(teacherId)?.push({ id: tc.id, name: tc.name, class_type: tc.class_type })
-    })
+  for (const tc of teacherClassesResult.data || []) {
+    if (!tc.teacher_id) continue
+    const arr = teacherClassesMap.get(tc.teacher_id) || []
+    arr.push({ id: tc.id, name: tc.name, class_type: tc.class_type })
+    teacherClassesMap.set(tc.teacher_id, arr)
   }
 
-  // Combinar dados
+  // 3. Combinar dados
   const usersWithClasses: UserWithClasses[] = users.map(user => {
     const userClasses = user.role === 'teacher' || user.role === 'administrator'
       ? teacherClassesMap.get(user.id) || []
       : classesMap.get(user.id) || []
     const isInTastingClass = userClasses.some(c =>
-      c.name.toLowerCase().includes('degustação') ||
-      c.name.toLowerCase().includes('degustacao')
+      c.name?.toLowerCase().includes('degustação') ||
+      c.name?.toLowerCase().includes('degustacao')
     )
-
-    return {
-      ...user,
-      classes: userClasses,
-      isInTastingClass
-    }
+    return { ...user, classes: userClasses, isInTastingClass }
   })
 
-  return usersWithClasses
+  return { data: usersWithClasses, count: count || 0 }
 }
 
 export async function banUser(userId: string): Promise<void> {

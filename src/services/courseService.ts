@@ -408,10 +408,14 @@ export const courseService = {
       const { data: course, error: courseError } = await supabase
         .from('video_courses')
         .select(`
-          *,
+          id, name, description, thumbnail_url, category, is_active,
           video_modules (
-            *,
-            video_lessons (*)
+            id, name, description, order_index, is_active, parent_module_id,
+            video_lessons (
+              id, title, description, order_index, duration_seconds,
+              video_source_type, video_source_id, is_preview, is_active,
+              quiz_required, quiz_min_percentage, topic_id
+            )
           )
         `)
         .eq('id', courseId)

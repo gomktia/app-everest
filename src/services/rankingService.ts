@@ -233,7 +233,7 @@ export const rankingService = {
 
       // Buscar estatísticas do usuário para verificar conquistas
       const userPosition = await this.getUserPosition(userId)
-      const scoreHistory = await this.getUserScoreHistory(userId, 1000)
+      const scoreHistory = await this.getUserScoreHistory(userId, 100)
 
       const newAchievements: UserAchievement[] = []
 

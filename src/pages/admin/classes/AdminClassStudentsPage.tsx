@@ -136,12 +136,12 @@ export default function AdminClassStudentsPage() {
         setStudents([])
       }
 
-      // Carregar todos os usuários para adicionar
-      const allUsers = await getUsers()
+      // Carregar usuários estudantes disponíveis para adicionar (paginado)
+      const { data: allUsers } = await getUsers(0, 200, undefined, 'student')
       logger.debug('👥 All users:', allUsers.length)
       const enrolledIds = (studentsData || []).map((s: any) => s.user_id)
       logger.debug('📝 Enrolled IDs:', enrolledIds)
-      const available = allUsers.filter(u => !enrolledIds.includes(u.id) && u.role === 'student')
+      const available = allUsers.filter(u => !enrolledIds.includes(u.id))
       logger.debug('✨ Available users:', available.length)
       setAvailableUsers(available)
 

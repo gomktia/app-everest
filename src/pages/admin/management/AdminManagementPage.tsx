@@ -14,7 +14,6 @@ import {
   UserCheck,
   BookOpen
 } from 'lucide-react'
-import { getUsers } from '@/services/adminUserService'
 import { supabase } from '@/lib/supabase/client'
 import { useTeacherClasses } from '@/hooks/useTeacherClasses'
 
@@ -54,34 +53,29 @@ export default function AdminManagementPage() {
         return
       }
 
-      // Get users — wrapped in try/catch so RLS errors don't crash
-      let users: Awaited<ReturnType<typeof getUsers>> = []
+      // Count by role using head queries (no data transfer)
       try {
-        users = await getUsers()
+        const [totalR, studentsR, teachersR, adminsR, coursesR] = await Promise.all([
+          supabase.from('users').select('id', { count: 'exact', head: true }),
+          supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'student'),
+          supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'teacher'),
+          supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'administrator'),
+          supabase.from('video_courses').select('id', { count: 'exact', head: true }),
+        ])
+
+        setStats({
+          totalUsers: totalR.count || 0,
+          students: studentsR.count || 0,
+          teachers: teachersR.count || 0,
+          administrators: adminsR.count || 0,
+          totalCourses: coursesR.count || 0,
+          loading: false
+        })
       } catch {
-        logger.warn('Could not load users (RLS or permission issue)')
+        logger.warn('Could not load user counts (RLS or permission issue)')
         setStats(prev => ({ ...prev, loading: false }))
         return
       }
-
-      // Count by role
-      const students = users.filter(u => u.role === 'student').length
-      const teachers = users.filter(u => u.role === 'teacher').length
-      const administrators = users.filter(u => u.role === 'administrator').length
-
-      // Get courses count
-      const { count: coursesCount } = await supabase
-        .from('video_courses')
-        .select('*', { count: 'exact', head: true })
-
-      setStats({
-        totalUsers: users.length,
-        students,
-        teachers,
-        administrators,
-        totalCourses: coursesCount || 0,
-        loading: false
-      })
     } catch (error) {
       logger.warn('Erro ao carregar estatisticas:', error)
       setStats(prev => ({ ...prev, loading: false }))

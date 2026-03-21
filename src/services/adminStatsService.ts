@@ -99,45 +99,40 @@ export interface UserGrowthData {
 export async function getUserGrowthData(days: number = 180): Promise<UserGrowthData[]> {
   try {
     const monthCount = Math.max(1, Math.ceil(days / 30))
+
+    // Try RPC first (1 query with GROUP BY in DB instead of loading all rows)
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_growth_data', {
+      p_months: monthCount
+    })
+
+    if (!rpcError && rpcData && rpcData.length > 0) {
+      return rpcData.map((d: any) => ({
+        month: d.month_label,
+        usuarios: Number(d.total_users) || 0,
+        ativos: Number(d.active_users) || 0,
+      }))
+    }
+
+    // Fallback: simplified count queries (no full table scan)
     const now = new Date()
-    const rangeStart = new Date(now.getFullYear(), now.getMonth() - (monthCount - 1), 1)
-
-    // 2 queries total instead of 2×N per month
-    const [usersResult, sessionsResult] = await Promise.all([
-      supabase
-        .from('users')
-        .select('created_at')
-        .order('created_at'),
-      supabase
-        .from('user_sessions')
-        .select('created_at')
-        .gte('created_at', rangeStart.toISOString())
-        .limit(10000),
-    ])
-
-    const users = usersResult.data || []
-    const sessions = sessionsResult.data || []
-
     const result: UserGrowthData[] = []
 
     for (let i = monthCount - 1; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const nextDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1)
-      const nextDateISO = nextDate.toISOString()
-      const dateISO = date.toISOString()
 
-      // Count users created before end of this month
-      const totalUsers = users.filter(u => u.created_at <= nextDateISO).length
-
-      // Count sessions in this month
-      const activeUsers = sessions.filter(s =>
-        s.created_at >= dateISO && s.created_at < nextDateISO
-      ).length
+      const [usersR, sessionsR] = await Promise.all([
+        supabase.from('users').select('id', { count: 'exact', head: true })
+          .lt('created_at', nextDate.toISOString()),
+        supabase.from('user_sessions').select('user_id', { count: 'exact', head: true })
+          .gte('created_at', date.toISOString())
+          .lt('created_at', nextDate.toISOString()),
+      ])
 
       result.push({
         month: date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
-        usuarios: totalUsers,
-        ativos: activeUsers,
+        usuarios: usersR.count || 0,
+        ativos: sessionsR.count || 0,
       })
     }
 
@@ -164,44 +159,35 @@ export async function getWeeklyActivityData(rangeDays: number = 7): Promise<Acti
   try {
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
 
-    const now = new Date()
-    const rangeStart = new Date(now)
-    rangeStart.setDate(now.getDate() - rangeDays)
-    rangeStart.setHours(0, 0, 0, 0)
+    // Try RPC first (1 query with GROUP BY in DB instead of 3 queries + 15k rows)
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_weekly_activity_data', {
+      p_days: rangeDays
+    })
 
+    if (!rpcError && rpcData) {
+      const dayTotals = [0, 0, 0, 0, 0, 0, 0]
+      for (const row of rpcData) {
+        dayTotals[row.day_of_week] = Number(row.activity_count) || 0
+      }
+      return dayNames.map((day, i) => ({ day, atividades: dayTotals[i] }))
+    }
+
+    // Fallback: 3 count queries (still better than loading rows)
+    const rangeStart = new Date()
+    rangeStart.setDate(rangeStart.getDate() - rangeDays)
+    rangeStart.setHours(0, 0, 0, 0)
     const rangeStartISO = rangeStart.toISOString()
 
-    // 3 queries total for entire range instead of 3×N per day
     const [sessions, quizAttempts, flashcardSessions] = await Promise.all([
-      supabase
-        .from('user_sessions')
-        .select('created_at')
-        .gte('created_at', rangeStartISO)
-        .limit(5000),
-      supabase
-        .from('quiz_attempts')
-        .select('created_at')
-        .gte('created_at', rangeStartISO)
-        .limit(5000),
-      supabase
-        .from('flashcard_session_history')
-        .select('started_at')
-        .gte('started_at', rangeStartISO)
-        .limit(5000),
+      supabase.from('user_sessions').select('created_at').gte('created_at', rangeStartISO).limit(5000),
+      supabase.from('quiz_attempts').select('created_at').gte('created_at', rangeStartISO).limit(5000),
+      supabase.from('flashcard_session_history').select('started_at').gte('started_at', rangeStartISO).limit(5000),
     ])
 
-    // Aggregate by day-of-week in memory
     const dayTotals = [0, 0, 0, 0, 0, 0, 0]
-
-    for (const s of sessions.data || []) {
-      dayTotals[new Date(s.created_at).getDay()]++
-    }
-    for (const q of quizAttempts.data || []) {
-      dayTotals[new Date(q.created_at).getDay()]++
-    }
-    for (const f of flashcardSessions.data || []) {
-      dayTotals[new Date(f.started_at).getDay()]++
-    }
+    for (const s of sessions.data || []) dayTotals[new Date(s.created_at).getDay()]++
+    for (const q of quizAttempts.data || []) dayTotals[new Date(q.created_at).getDay()]++
+    for (const f of flashcardSessions.data || []) dayTotals[new Date(f.started_at).getDay()]++
 
     return dayNames.map((day, i) => ({ day, atividades: dayTotals[i] }))
   } catch (error) {

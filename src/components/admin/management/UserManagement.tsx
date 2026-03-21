@@ -98,7 +98,8 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
   const loadUsers = async () => {
     setIsLoading(true)
     try {
-      let data = await getUsersWithClasses()
+      const result = await getUsersWithClasses(0, 200)
+      let data = result.data
       // For teachers, only show their students
       if (isTeacher && teacherStudentIds.length > 0) {
         const studentSet = new Set(teacherStudentIds)
