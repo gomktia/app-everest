@@ -833,7 +833,7 @@ export default function AdminCourseEditorPage() {
         // Fetch Kiwify product mapping
         if (courseId) {
           const { data: kiwifyData } = await supabase
-            .from('kiwify_products' as any)
+            .from('kiwify_products')
             .select('kiwify_product_id')
             .eq('class_id', courseId)
             .maybeSingle()
@@ -847,7 +847,7 @@ export default function AdminCourseEditorPage() {
               .maybeSingle()
             if (classLink) {
               const { data: kiwifyByClass } = await supabase
-                .from('kiwify_products' as any)
+                .from('kiwify_products')
                 .select('kiwify_product_id')
                 .eq('class_id', classLink.class_id)
                 .maybeSingle()
@@ -1684,7 +1684,7 @@ export default function AdminCourseEditorPage() {
           .maybeSingle()
 
         if (classLink) {
-          await supabase.from('kiwify_products' as any).upsert({
+          await supabase.from('kiwify_products').upsert({
             kiwify_product_id: course.kiwify_product_id.trim(),
             class_id: classLink.class_id,
             product_name: course.name,

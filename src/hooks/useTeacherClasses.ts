@@ -53,7 +53,7 @@ export function useTeacherClasses(): TeacherContext {
       try {
         // 1. Get teacher record
         const { data: teacher } = await supabase
-          .from('teachers' as any)
+          .from('teachers')
           .select('id')
           .eq('user_id', profile.id)
           .single()
@@ -70,7 +70,7 @@ export function useTeacherClasses(): TeacherContext {
 
         // 2. Get class IDs for this teacher
         const { data: classes } = await supabase
-          .from('classes' as any)
+          .from('classes')
           .select('id')
           .eq('teacher_id', tid)
 
@@ -80,7 +80,7 @@ export function useTeacherClasses(): TeacherContext {
         // 3. Get student IDs enrolled in these classes
         if (cids.length > 0) {
           const { data: enrollments } = await supabase
-            .from('student_classes' as any)
+            .from('student_classes')
             .select('user_id')
             .in('class_id', cids)
 

@@ -155,7 +155,7 @@ export default function AdminGamificationPage() {
         const { data: essayData } = await supabase
           .from('essays')
           .select('student_id, final_grade')
-          .eq('status', 'corrected' as any)
+          .eq('status', 'corrected')
           .not('final_grade', 'is', null)
 
         if (essayData && essayData.length > 0) {

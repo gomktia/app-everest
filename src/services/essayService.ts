@@ -110,7 +110,7 @@ export const saveCorrection = async (
       final_grade: payload.final_grade,
       teacher_feedback_text: payload.teacher_feedback_text,
       teacher_id: teacherId,
-      status: 'corrected' as any,
+      status: 'corrected',
       correction_date: new Date().toISOString(),
     })
     .eq('id', submissionId)
@@ -220,8 +220,8 @@ export const getUserEssayStats = async (userId: string): Promise<EssayStatsData>
     // Single query with count instead of fetching full list (N+1 fix)
     const [totalResult, correctedResult, pendingResult] = await Promise.all([
       supabase.from('essays').select('id', { count: 'exact', head: true }).eq('student_id', userId),
-      supabase.from('essays').select('final_grade').eq('student_id', userId).eq('status', 'corrected' as any).not('final_grade', 'is', null),
-      supabase.from('essays').select('id', { count: 'exact', head: true }).eq('student_id', userId).in('status', ['submitted', 'correcting'] as any),
+      supabase.from('essays').select('final_grade').eq('student_id', userId).eq('status', 'corrected').not('final_grade', 'is', null),
+      supabase.from('essays').select('id', { count: 'exact', head: true }).eq('student_id', userId).in('status', ['submitted', 'correcting']),
     ])
 
     const correctedGrades = correctedResult.data || []
@@ -235,7 +235,7 @@ export const getUserEssayStats = async (userId: string): Promise<EssayStatsData>
       .from('essays')
       .select('submission_date, correction_date')
       .eq('student_id', userId)
-      .eq('status', 'corrected' as any)
+      .eq('status', 'corrected')
       .not('correction_date', 'is', null)
       .not('submission_date', 'is', null)
 

@@ -178,7 +178,7 @@ export const dashboardService = {
               .from('essays')
               .select('id', { count: 'exact', head: true })
               .in('student_id', teacherStudentIds)
-              .in('status', ['submitted', 'correcting'] as any)
+              .in('status', ['submitted', 'correcting'])
           : Promise.resolve({ count: 0, error: null }),
 
         // Tópicos do fórum sem resposta (global — não há scoping por turma)
