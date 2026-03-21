@@ -52,5 +52,7 @@ Sentry.init({
     // Supabase client init (missing env vars on stale cache)
     'supabaseUrl is required',
     'Missing VITE_SUPABASE_URL',
+    // PWA service worker registration failures (benign)
+    /^Rejected$/,
   ],
 })
