@@ -64,7 +64,7 @@ export function useAccessExpiration(): AccessExpirationState {
         let nearestDate: Date | null = null
 
         for (const enrollment of enrollments) {
-          const classData = enrollment.class as any
+          const classData = enrollment.class
 
           // Skip inactive/archived classes
           if (classData?.status && classData.status !== 'active') continue

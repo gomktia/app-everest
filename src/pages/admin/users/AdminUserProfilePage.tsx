@@ -133,13 +133,13 @@ export default function AdminUserProfilePage() {
       setFullName(fullNameValue)
       setEmail(user.email)
       setOriginalEmail(user.email)
-      setPhone((user as any).phone || '')
-      setCpfCnpj((user as any).cpf_cnpj || '')
-      setIsBanned((user as any).is_banned || false)
-      setIsUnlimitedAccess((user as any).is_unlimited_access || false)
+      setPhone(user.phone || '')
+      setCpfCnpj(user.cpf_cnpj || '')
+      setIsBanned(user.is_banned || false)
+      setIsUnlimitedAccess(user.is_unlimited_access || false)
       setRole(user.role || 'student')
       setCreatedAt(user.created_at)
-      setLastSeenAt((user as any).last_seen_at || null)
+      setLastSeenAt(user.last_seen_at || null)
 
       // Fetch XP
       try {
@@ -269,7 +269,7 @@ export default function AdminUserProfilePage() {
           first_name: firstName,
           last_name: lastName,
           role,
-        } as any)
+        })
       } catch (err) {
         errors.push('Erro ao atualizar perfil')
         logger.error('Erro ao atualizar perfil:', err)

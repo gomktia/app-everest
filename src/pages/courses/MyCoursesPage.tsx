@@ -91,7 +91,7 @@ export default function MyCoursesPage() {
           // Build map: class_id -> product info
           const classToProduct: Record<string, ProductInfo> = {}
           for (const pc of productClasses) {
-            const prod = (pc as any).stripe_products
+            const prod = pc.stripe_products
             if (prod && prod.landing_page_slug) {
               classToProduct[pc.class_id] = {
                 price_cents: prod.price_cents,

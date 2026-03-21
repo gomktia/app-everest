@@ -124,7 +124,7 @@ export default function RankingPage() {
           // Simulados: best score per user
           const simMap = new Map<string, { name: string; score: number; user_id: string }>()
           for (const a of simData || []) {
-            const u = (a as any).users
+            const u = a.users
             if (!u) continue
             const uid = u.id
             const name = `${u.first_name || ''} ${u.last_name || ''}`.trim()
@@ -138,11 +138,11 @@ export default function RankingPage() {
           // Redações: best score per user
           const essayMap = new Map<string, { name: string; score: number; user_id: string }>()
           for (const e of essayData || []) {
-            const u = (e as any).users
+            const u = e.users
             if (!u) continue
             const uid = u.id
             const name = `${u.first_name || ''} ${u.last_name || ''}`.trim()
-            const score = (e as any).final_grade_ciaar || (e as any).final_grade || 0
+            const score = e.final_grade_ciaar || e.final_grade || 0
             if (!essayMap.has(uid) || score > essayMap.get(uid)!.score) {
               essayMap.set(uid, { name, score: Math.round(score * 10) / 10, user_id: uid })
             }

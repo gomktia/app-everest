@@ -158,7 +158,7 @@ export default function DashboardPage() {
         const classToSlug: Record<string, string> = {}
         if (productClasses) {
           for (const pc of productClasses) {
-            const prod = (pc as any).stripe_products
+            const prod = pc.stripe_products
             if (prod?.landing_page_slug) {
               classToSlug[pc.class_id] = prod.landing_page_slug
             }
@@ -170,7 +170,7 @@ export default function DashboardPage() {
             (new Date(sc.subscription_expires_at!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
           )
           return {
-            className: (sc as any).classes?.name || 'Curso',
+            className: sc.classes?.name || 'Curso',
             daysLeft,
             slug: classToSlug[sc.class_id] || null,
           }

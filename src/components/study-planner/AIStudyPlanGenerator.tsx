@@ -102,7 +102,7 @@ export function AIStudyPlanGenerator({ open, onOpenChange, userId }: Props) {
       const subjectMap: Record<string, { correct: number; total: number }> = {}
 
       if (answers) {
-        for (const ans of answers as any[]) {
+        for (const ans of answers) {
           const tags: string[] = ans.quiz_questions?.tags ?? []
           const subject = tags[0] ?? 'Outros'
           if (!subjectMap[subject]) subjectMap[subject] = { correct: 0, total: 0 }

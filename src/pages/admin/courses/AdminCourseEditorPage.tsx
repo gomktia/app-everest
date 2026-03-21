@@ -852,11 +852,11 @@ export default function AdminCourseEditorPage() {
                 .eq('class_id', classLink.class_id)
                 .maybeSingle()
               if (kiwifyByClass) {
-                setCourse(prev => ({ ...prev, kiwify_product_id: (kiwifyByClass as any).kiwify_product_id }))
+                setCourse(prev => ({ ...prev, kiwify_product_id: kiwifyByClass.kiwify_product_id }))
               }
             }
           } else {
-            setCourse(prev => ({ ...prev, kiwify_product_id: (kiwifyData as any).kiwify_product_id }))
+            setCourse(prev => ({ ...prev, kiwify_product_id: kiwifyData.kiwify_product_id }))
           }
         }
 

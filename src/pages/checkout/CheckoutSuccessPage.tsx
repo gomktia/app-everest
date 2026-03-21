@@ -140,7 +140,7 @@ export default function CheckoutSuccessPage() {
           return
         }
 
-        const items = data.order_items as any[]
+        const items = data.order_items
         const productName = items?.[0]?.stripe_products?.product_name || 'Seu curso'
 
         setOrder({

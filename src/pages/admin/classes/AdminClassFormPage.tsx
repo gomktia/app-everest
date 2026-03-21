@@ -148,7 +148,7 @@ export default function AdminClassFormPage() {
 
       if (error) throw error
 
-      const classData = data as any
+      const classData = data
       if (classData) {
         form.reset({
           name: classData.name,

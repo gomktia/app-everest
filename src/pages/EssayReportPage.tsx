@@ -53,7 +53,7 @@ export default function EssayReportPage() {
     )
   }
 
-  const data = essay as any
+  const data = essay
   const correctionType: CorrectionType = correction?.correctionType || (data.correction_type as CorrectionType) || 'ciaar'
   const isEnem = correctionType === 'enem'
   const finalGrade = isEnem

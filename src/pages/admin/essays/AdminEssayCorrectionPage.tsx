@@ -152,7 +152,7 @@ export default function AdminEssayCorrectionPage() {
           setSuggestions(existingCorrection.improvementSuggestions)
 
           // Find the template that was used
-          const usedTemplateId = (essayData as any)?.correction_template_id
+          const usedTemplateId = essayData?.correction_template_id
           const usedTemplate = usedTemplateId
             ? templates.find(t => t.id === usedTemplateId)
             : templates.find(t => t.correction_type === existingCorrection.correctionType && t.is_default)
@@ -165,42 +165,42 @@ export default function AdminEssayCorrectionPage() {
         }
 
         // Load transcribed text
-        if ((essayData as any)?.transcribed_text) {
-          setTranscribedText((essayData as any).transcribed_text)
+        if (essayData?.transcribed_text) {
+          setTranscribedText(essayData.transcribed_text)
         }
 
         // Load teacher feedback
-        if ((essayData as any)?.teacher_feedback_text) {
-          setTeacherFeedback((essayData as any).teacher_feedback_text)
+        if (essayData?.teacher_feedback_text) {
+          setTeacherFeedback(essayData.teacher_feedback_text)
         }
 
         // Load file URL for image/PDF essays
-        if ((essayData as any)?.file_url) {
+        if (essayData?.file_url) {
           const { data } = await supabase.storage
             .from('essays')
-            .createSignedUrl((essayData as any).file_url, 3600)
+            .createSignedUrl(essayData.file_url, 3600)
           if (data?.signedUrl) setFileUrl(data.signedUrl)
         }
 
         // Load corrected file URL
-        if ((essayData as any)?.corrected_file_url) {
+        if (essayData?.corrected_file_url) {
           const { data } = await supabase.storage
             .from('essays')
-            .createSignedUrl((essayData as any).corrected_file_url, 3600)
+            .createSignedUrl(essayData.corrected_file_url, 3600)
           if (data?.signedUrl) setCorrectedFileUrl(data.signedUrl)
         }
 
         // Load teacher annotations
-        if ((essayData as any)?.annotated_text_html) {
-          setAnnotatedTextHtml((essayData as any).annotated_text_html)
+        if (essayData?.annotated_text_html) {
+          setAnnotatedTextHtml(essayData.annotated_text_html)
         }
-        if ((essayData as any)?.annotation_image_url) {
-          setAnnotationImageUrl((essayData as any).annotation_image_url)
+        if (essayData?.annotation_image_url) {
+          setAnnotationImageUrl(essayData.annotation_image_url)
         }
-        if ((essayData as any)?.teacher_feedback_audio_url) {
+        if (essayData?.teacher_feedback_audio_url) {
           const { data } = await supabase.storage
             .from('essays')
-            .createSignedUrl((essayData as any).teacher_feedback_audio_url, 3600)
+            .createSignedUrl(essayData.teacher_feedback_audio_url, 3600)
           if (data?.signedUrl) setFeedbackAudioUrl(data.signedUrl)
         }
       } catch {
@@ -550,7 +550,7 @@ export default function AdminEssayCorrectionPage() {
           teacher_feedback_text: teacherFeedback || null,
           annotated_text_html: annotatedTextHtml || null,
           annotation_image_url: annotationImageUrl || null,
-        } as any)
+        })
         .eq('id', submissionId)
 
       toast({ title: 'Rascunho salvo!' })
@@ -588,7 +588,7 @@ export default function AdminEssayCorrectionPage() {
           annotated_text_html: annotatedTextHtml || null,
           annotation_image_url: annotationImageUrl || null,
           teacher_feedback_audio_url: feedbackAudioUrl || null,
-        } as any)
+        })
         .eq('id', submissionId)
 
       if (updateError) {
@@ -732,9 +732,9 @@ export default function AdminEssayCorrectionPage() {
   const classId = essay.users?.student_classes?.[0]?.class_id
   const className = essay.users?.student_classes?.[0]?.classes?.name
   const essayText = transcribedText || essay.submission_text || ''
-  const isImage = fileUrl && /\.(jpg|jpeg|png)$/i.test((essay as any).file_url || '')
-  const submittedAt = (essay as any)?.created_at
-    ? new Date((essay as any).created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const isImage = fileUrl && /\.(jpg|jpeg|png)$/i.test(essay.file_url || '')
+  const submittedAt = essay.created_at
+    ? new Date(essay.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : '—'
 
   const getGradeColor = (g: number, max: number) => {
@@ -949,7 +949,7 @@ export default function AdminEssayCorrectionPage() {
                     if (error) throw error
                     await supabase
                       .from('essays')
-                      .update({ teacher_feedback_audio_url: fileName } as any)
+                      .update({ teacher_feedback_audio_url: fileName })
                       .eq('id', submissionId)
                     const { data } = await supabase.storage
                       .from('essays')

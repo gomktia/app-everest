@@ -21,15 +21,15 @@ export type EssayForCorrection = Essay & {
   } | null
 }
 
-export interface StudentEssayDetails {
-  id: string
-  title: string
-  content: string
-  status: string
-  submitted_at: string
+export type StudentEssayDetails = Essay & {
+  title?: string
+  content?: string
+  submitted_at?: string
   feedback?: string
   score?: number
-  theme: string
+  theme?: string
+  essay_prompts?: Pick<EssayPrompt, 'title' | 'evaluation_criteria'> | null
+  essay_annotations?: EssayAnnotation[]
 }
 
 export const getEssayForCorrection = async (

@@ -230,16 +230,16 @@ export default function EssayDetailsPage() {
         setEssay(essayData)
         setCorrection(correctionData)
 
-        if ((essayData as any)?.corrected_file_url) {
+        if (essayData?.corrected_file_url) {
           const { data } = await supabase.storage
             .from('essays')
-            .createSignedUrl((essayData as any).corrected_file_url, 3600)
+            .createSignedUrl(essayData.corrected_file_url, 3600)
           if (data?.signedUrl) setCorrectedFileUrl(data.signedUrl)
         }
-        if ((essayData as any)?.teacher_feedback_audio_url) {
+        if (essayData?.teacher_feedback_audio_url) {
           const { data } = await supabase.storage
             .from('essays')
-            .createSignedUrl((essayData as any).teacher_feedback_audio_url, 3600)
+            .createSignedUrl(essayData.teacher_feedback_audio_url, 3600)
           if (data?.signedUrl) setFeedbackAudioUrl(data.signedUrl)
         }
       } finally {
@@ -262,24 +262,24 @@ export default function EssayDetailsPage() {
     )
   }
 
-  const isCorrected = (essay as any).status === 'corrected'
-  const submissionDate = (essay as any).submission_date || (essay as any).created_at
+  const isCorrected = essay.status === 'corrected'
+  const submissionDate = essay.submission_date || essay.created_at
   const formattedDate = submissionDate ? new Date(submissionDate).toLocaleDateString('pt-BR') : '—'
-  const submissionText = (essay as any).submission_text || ''
+  const submissionText = essay.submission_text || ''
   const wordCount = submissionText.trim() ? submissionText.trim().split(/\s+/).length : 0
-  const promptTitle = (essay as any).essay_prompts?.title || 'Redação'
-  const teacherFeedback = (essay as any).teacher_feedback_text || ''
-  const annotatedTextHtml = (essay as any).annotated_text_html || ''
-  const annotationImageUrl = (essay as any).annotation_image_url || ''
+  const promptTitle = essay.essay_prompts?.title || 'Redação'
+  const teacherFeedback = essay.teacher_feedback_text || ''
+  const annotatedTextHtml = essay.annotated_text_html || ''
+  const annotationImageUrl = essay.annotation_image_url || ''
 
   // Detect correction type
-  const correctionType: CorrectionType = correction?.correctionType || ((essay as any).correction_type as CorrectionType) || 'ciaar'
+  const correctionType: CorrectionType = correction?.correctionType || (essay.correction_type as CorrectionType) || 'ciaar'
   const isEnem = correctionType === 'enem'
 
   // Grade data
   const finalGrade = isEnem
-    ? (correction?.finalGrade ?? (essay as any).final_grade_enem ?? 0)
-    : (correction?.finalGrade ?? (essay as any).final_grade_ciaar ?? 0)
+    ? (correction?.finalGrade ?? essay.final_grade_enem ?? 0)
+    : (correction?.finalGrade ?? essay.final_grade_ciaar ?? 0)
   const maxGrade = isEnem ? 1000 : 10
   const expressionDebit = correction?.totalExpressionDebit ?? 0
   const structureDebit = correction?.totalStructureDebit ?? 0

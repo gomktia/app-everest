@@ -73,7 +73,7 @@ export default function AdminClassesPage() {
       if (error || !data) return
 
       const map: Record<string, LinkedCourse> = {}
-      for (const row of data as any[]) {
+      for (const row of data) {
         // Keep the first linked course per class
         if (!map[row.class_id] && row.video_courses) {
           map[row.class_id] = {

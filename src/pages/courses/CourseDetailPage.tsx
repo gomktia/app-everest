@@ -180,7 +180,7 @@ export default function CourseDetailPage() {
         .in('class_id', classIds)
         .limit(1)
 
-      const slug = (productClasses as any)?.[0]?.stripe_products?.landing_page_slug
+      const slug = productClasses?.[0]?.stripe_products?.landing_page_slug
       if (slug) setCheckoutSlug(slug)
     }
     fetchCheckoutSlug()

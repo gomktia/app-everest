@@ -129,7 +129,7 @@ export default function AdminLiveEventsPage() {
 
   const [lives, setLives] = useState<LiveEvent[]>([])
   const [classes, setClasses] = useState<{ id: string; name: string }[]>([])
-  const [courses, setCourses] = useState<{ id: string; title: string }[]>([])
+  const [courses, setCourses] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -588,7 +588,7 @@ export default function AdminLiveEventsPage() {
                 <SelectContent>
                   <SelectItem value="none">Nenhum</SelectItem>
                   {courses.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{(c as any).name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

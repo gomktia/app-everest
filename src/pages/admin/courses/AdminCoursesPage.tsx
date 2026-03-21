@@ -142,7 +142,7 @@ export default function AdminCoursesPage() {
   }
 
   const renderStatusBadge = (course: AdminCourse) => {
-    const status = (course as any).status || (course.is_active ? 'published' : 'draft')
+    const status = course.status || (course.is_active ? 'published' : 'draft')
     switch (status) {
       case 'published':
         return <Badge className="bg-green-100 dark:bg-green-950/50 text-green-500 font-semibold">Publicado</Badge>
@@ -253,22 +253,22 @@ export default function AdminCoursesPage() {
                         >
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-3">
-                              {(course as any).thumbnail_url ? (
-                                <img src={(course as any).thumbnail_url} alt={`Capa do curso ${course.name}`} className="w-12 h-8 rounded object-cover" loading="lazy" />
+                              {course.thumbnail_url ? (
+                                <img src={course.thumbnail_url} alt={`Capa do curso ${course.name}`} className="w-12 h-8 rounded object-cover" loading="lazy" />
                               ) : (
                                 <div className="w-12 h-8 rounded bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
-                                  {(course as any).acronym || course.name?.substring(0, 2).toUpperCase()}
+                                  {course.acronym || course.name?.substring(0, 2).toUpperCase()}
                                 </div>
                               )}
                               <div>
                                 <div className="flex items-center gap-2">
                                   <p className="font-semibold text-foreground">{course.name}</p>
-                                  {(course as any).show_in_storefront && (
+                                  {course.show_in_storefront && (
                                     <Eye className="h-3.5 w-3.5 text-muted-foreground" title="Visível na vitrine" />
                                   )}
                                 </div>
-                                {(course as any).acronym && (
-                                  <p className="text-xs text-muted-foreground">{(course as any).acronym}</p>
+                                {course.acronym && (
+                                  <p className="text-xs text-muted-foreground">{course.acronym}</p>
                                 )}
                               </div>
                             </div>

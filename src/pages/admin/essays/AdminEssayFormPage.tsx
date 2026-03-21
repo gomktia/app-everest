@@ -87,7 +87,7 @@ export default function AdminEssayFormPage() {
           description: prompt.description || '',
           is_active: prompt.is_active ?? true,
           criteria_template_id: prompt.criteria_template_id || '',
-          suggested_repertoire: (prompt as any).suggested_repertoire || '',
+          suggested_repertoire: prompt.suggested_repertoire || '',
           start_date: prompt.start_date ? prompt.start_date.split('T')[0] : '',
           end_date: prompt.end_date ? prompt.end_date.split('T')[0] : '',
         })

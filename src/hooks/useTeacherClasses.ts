@@ -65,7 +65,7 @@ export function useTeacherClasses(): TeacherContext {
           return
         }
 
-        const tid = (teacher as any).id as string
+        const tid = teacher.id
         setTeacherId(tid)
 
         // 2. Get class IDs for this teacher
