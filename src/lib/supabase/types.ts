@@ -12,33 +12,55 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      abandoned_carts: {
+        Row: {
+          abandoned_at: string | null
+          created_at: string | null
+          email: string
+          id: string
+          products: Json
+          recovered_order_id: string | null
+          recovery_email_sent: boolean | null
+          recovery_token: string | null
+          stripe_checkout_session_id: string | null
+          total_cents: number
+        }
+        Insert: {
+          abandoned_at?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          products: Json
+          recovered_order_id?: string | null
+          recovery_email_sent?: boolean | null
+          recovery_token?: string | null
+          stripe_checkout_session_id?: string | null
+          total_cents: number
+        }
+        Update: {
+          abandoned_at?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          products?: Json
+          recovered_order_id?: string | null
+          recovery_email_sent?: boolean | null
+          recovery_token?: string | null
+          stripe_checkout_session_id?: string | null
+          total_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abandoned_carts_recovered_order_id_fkey"
+            columns: ["recovered_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       acervo_items: {
         Row: {
           banca: string | null
@@ -120,6 +142,105 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_commissions: {
+        Row: {
+          affiliate_id: string
+          approved_at: string | null
+          commission_cents: number
+          created_at: string | null
+          id: string
+          order_id: string
+          paid_at: string | null
+          reversed_at: string | null
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          approved_at?: string | null
+          commission_cents: number
+          created_at?: string | null
+          id?: string
+          order_id: string
+          paid_at?: string | null
+          reversed_at?: string | null
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          approved_at?: string | null
+          commission_cents?: number
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          paid_at?: string | null
+          reversed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          affiliate_code: string
+          commission_percent: number
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          total_earned_cents: number | null
+          total_paid_cents: number | null
+          user_id: string
+        }
+        Insert: {
+          affiliate_code: string
+          commission_percent?: number
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          total_earned_cents?: number | null
+          total_paid_cents?: number | null
+          user_id: string
+        }
+        Update: {
+          affiliate_code?: string
+          commission_percent?: number
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          total_earned_cents?: number | null
+          total_paid_cents?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_provider_configs: {
         Row: {
           api_key: string | null
@@ -161,6 +282,57 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      ai_usage_log: {
+        Row: {
+          cost_estimate_brl: number | null
+          created_at: string | null
+          feature: string
+          id: string
+          metadata: Json | null
+          model: string | null
+          tokens_input: number | null
+          tokens_output: number | null
+          user_id: string | null
+        }
+        Insert: {
+          cost_estimate_brl?: number | null
+          created_at?: string | null
+          feature: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          cost_estimate_brl?: number | null
+          created_at?: string | null
+          feature?: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audio_courses: {
         Row: {
@@ -1198,6 +1370,51 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          applicable_products: string[] | null
+          code: string
+          created_at: string | null
+          current_uses: number | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          stripe_coupon_id: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          applicable_products?: string[] | null
+          code: string
+          created_at?: string | null
+          current_uses?: number | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          stripe_coupon_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          applicable_products?: string[] | null
+          code?: string
+          created_at?: string | null
+          current_uses?: number | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          stripe_coupon_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       error_categories: {
         Row: {
           created_at: string
@@ -2025,6 +2242,7 @@ export type Database = {
           description: string | null
           id: string
           max_slots: number | null
+          motivational_message: string | null
           slug: string
           status: string
           title: string
@@ -2040,6 +2258,7 @@ export type Database = {
           description?: string | null
           id?: string
           max_slots?: number | null
+          motivational_message?: string | null
           slug: string
           status?: string
           title: string
@@ -2055,6 +2274,7 @@ export type Database = {
           description?: string | null
           id?: string
           max_slots?: number | null
+          motivational_message?: string | null
           slug?: string
           status?: string
           title?: string
@@ -2315,6 +2535,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          panda_live_id: string | null
+          panda_rtmp: string | null
+          panda_stream_key: string | null
           provider: string
           recording_published: boolean | null
           recording_url: string | null
@@ -2322,7 +2545,7 @@ export type Database = {
           scheduled_end: string
           scheduled_start: string
           status: string
-          stream_url: string
+          stream_url: string | null
           teacher_id: string
           title: string
           updated_at: string | null
@@ -2334,6 +2557,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          panda_live_id?: string | null
+          panda_rtmp?: string | null
+          panda_stream_key?: string | null
           provider: string
           recording_published?: boolean | null
           recording_url?: string | null
@@ -2341,7 +2567,7 @@ export type Database = {
           scheduled_end: string
           scheduled_start: string
           status?: string
-          stream_url: string
+          stream_url?: string | null
           teacher_id: string
           title: string
           updated_at?: string | null
@@ -2353,6 +2579,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          panda_live_id?: string | null
+          panda_rtmp?: string | null
+          panda_stream_key?: string | null
           provider?: string
           recording_published?: boolean | null
           recording_url?: string | null
@@ -2360,7 +2589,7 @@ export type Database = {
           scheduled_end?: string
           scheduled_start?: string
           status?: string
-          stream_url?: string
+          stream_url?: string | null
           teacher_id?: string
           title?: string
           updated_at?: string | null
@@ -2403,6 +2632,42 @@ export type Database = {
           },
         ]
       }
+      mind_maps: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          data: Json
+          icon: string | null
+          id: string
+          subject: string
+          title: string
+          topic: string
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          data?: Json
+          icon?: string | null
+          id?: string
+          subject: string
+          title: string
+          topic: string
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          data?: Json
+          icon?: string | null
+          id?: string
+          subject?: string
+          title?: string
+          topic?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -2438,6 +2703,197 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      order_items: {
+        Row: {
+          class_id: string
+          id: string
+          order_id: string
+          price_cents: number
+          quantity: number | null
+          stripe_product_id: string
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          order_id: string
+          price_cents: number
+          quantity?: number | null
+          stripe_product_id: string
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          order_id?: string
+          price_cents?: number
+          quantity?: number | null
+          stripe_product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_stripe_product_id_fkey"
+            columns: ["stripe_product_id"]
+            isOneToOne: false
+            referencedRelation: "stripe_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          affiliate_id: string | null
+          coupon_id: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          installments: number | null
+          metadata: Json | null
+          payment_method: string | null
+          split_payments_completed: number | null
+          split_payments_expected: number | null
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_customer_id: string | null
+          total_cents: number
+          user_id: string | null
+        }
+        Insert: {
+          affiliate_id?: string | null
+          coupon_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          installments?: number | null
+          metadata?: Json | null
+          payment_method?: string | null
+          split_payments_completed?: number | null
+          split_payments_expected?: number | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          total_cents: number
+          user_id?: string | null
+        }
+        Update: {
+          affiliate_id?: string | null
+          coupon_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          installments?: number | null
+          metadata?: Json | null
+          payment_method?: string | null
+          split_payments_completed?: number | null
+          split_payments_expected?: number | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_customer_id?: string | null
+          total_cents?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_cents: number
+          card_brand: string | null
+          card_last4: string | null
+          created_at: string | null
+          id: string
+          net_amount_cents: number | null
+          order_id: string
+          paid_at: string | null
+          payment_method: string | null
+          pix_expiration: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_fee_cents: number | null
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string | null
+          id?: string
+          net_amount_cents?: number | null
+          order_id: string
+          paid_at?: string | null
+          payment_method?: string | null
+          pix_expiration?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_fee_cents?: number | null
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          card_brand?: string | null
+          card_last4?: string | null
+          created_at?: string | null
+          id?: string
+          net_amount_cents?: number | null
+          order_id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          pix_expiration?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_fee_cents?: number | null
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pomodoro_sessions: {
         Row: {
@@ -2581,34 +3037,55 @@ export type Database = {
       }
       quiz_attempts: {
         Row: {
+          answers: Json | null
           attempt_date: string
           created_at: string
           duration_seconds: number | null
           id: string
+          percentage: number | null
           quiz_id: string
           score: number
+          started_at: string | null
+          status: string | null
+          submitted_at: string | null
+          time_spent_seconds: number | null
+          total_points: number | null
           total_questions: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          answers?: Json | null
           attempt_date?: string
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          percentage?: number | null
           quiz_id: string
-          score: number
-          total_questions: number
+          score?: number
+          started_at?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          time_spent_seconds?: number | null
+          total_points?: number | null
+          total_questions?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          answers?: Json | null
           attempt_date?: string
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          percentage?: number | null
           quiz_id?: string
           score?: number
+          started_at?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          time_spent_seconds?: number | null
+          total_points?: number | null
           total_questions?: number
           updated_at?: string
           user_id?: string
@@ -2727,6 +3204,7 @@ export type Database = {
       quiz_questions: {
         Row: {
           acervo_item_id: string | null
+          ai_audited_at: string | null
           correct_answer: string
           correct_answers: Json | null
           created_at: string
@@ -2737,6 +3215,7 @@ export type Database = {
           explanation_html: string | null
           id: string
           matching_pairs: Json | null
+          needs_review: boolean | null
           options: Json | null
           options_rich: Json | null
           ordering_items: Json | null
@@ -2761,6 +3240,7 @@ export type Database = {
         }
         Insert: {
           acervo_item_id?: string | null
+          ai_audited_at?: string | null
           correct_answer: string
           correct_answers?: Json | null
           created_at?: string
@@ -2771,6 +3251,7 @@ export type Database = {
           explanation_html?: string | null
           id?: string
           matching_pairs?: Json | null
+          needs_review?: boolean | null
           options?: Json | null
           options_rich?: Json | null
           ordering_items?: Json | null
@@ -2795,6 +3276,7 @@ export type Database = {
         }
         Update: {
           acervo_item_id?: string | null
+          ai_audited_at?: string | null
           correct_answer?: string
           correct_answers?: Json | null
           created_at?: string
@@ -2805,6 +3287,7 @@ export type Database = {
           explanation_html?: string | null
           id?: string
           matching_pairs?: Json | null
+          needs_review?: boolean | null
           options?: Json | null
           options_rich?: Json | null
           ordering_items?: Json | null
@@ -2999,6 +3482,74 @@ export type Database = {
           },
         ]
       }
+      refunds: {
+        Row: {
+          admin_user_id: string | null
+          amount_cents: number
+          created_at: string | null
+          id: string
+          order_id: string
+          payment_id: string
+          reason: string | null
+          refunded_at: string | null
+          status: string
+          stripe_refund_id: string | null
+        }
+        Insert: {
+          admin_user_id?: string | null
+          amount_cents: number
+          created_at?: string | null
+          id?: string
+          order_id: string
+          payment_id: string
+          reason?: string | null
+          refunded_at?: string | null
+          status?: string
+          stripe_refund_id?: string | null
+        }
+        Update: {
+          admin_user_id?: string | null
+          amount_cents?: number
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          payment_id?: string
+          reason?: string | null
+          refunded_at?: string | null
+          status?: string
+          stripe_refund_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rpg_ranks: {
         Row: {
           created_at: string
@@ -3059,6 +3610,84 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_product_classes: {
+        Row: {
+          class_id: string
+          id: string
+          stripe_product_id: string
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          stripe_product_id: string
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          stripe_product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_product_classes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stripe_product_classes_stripe_product_id_fkey"
+            columns: ["stripe_product_id"]
+            isOneToOne: false
+            referencedRelation: "stripe_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_products: {
+        Row: {
+          access_days: number | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          installments_max: number | null
+          is_active: boolean | null
+          is_bundle: boolean | null
+          landing_page_slug: string | null
+          price_cents: number
+          product_name: string
+          stripe_price_id: string
+          stripe_product_id: string
+        }
+        Insert: {
+          access_days?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          installments_max?: number | null
+          is_active?: boolean | null
+          is_bundle?: boolean | null
+          landing_page_slug?: string | null
+          price_cents: number
+          product_name: string
+          stripe_price_id: string
+          stripe_product_id: string
+        }
+        Update: {
+          access_days?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          installments_max?: number | null
+          is_active?: boolean | null
+          is_bundle?: boolean | null
+          landing_page_slug?: string | null
+          price_cents?: number
+          product_name?: string
+          stripe_price_id?: string
+          stripe_product_id?: string
+        }
+        Relationships: []
+      }
       student_classes: {
         Row: {
           class_id: string
@@ -3066,6 +3695,7 @@ export type Database = {
           created_at: string
           enrollment_date: string
           id: string
+          order_id: string | null
           source: string | null
           subscription_expires_at: string | null
           updated_at: string
@@ -3077,6 +3707,7 @@ export type Database = {
           created_at?: string
           enrollment_date: string
           id?: string
+          order_id?: string | null
           source?: string | null
           subscription_expires_at?: string | null
           updated_at?: string
@@ -3088,6 +3719,7 @@ export type Database = {
           created_at?: string
           enrollment_date?: string
           id?: string
+          order_id?: string | null
           source?: string | null
           subscription_expires_at?: string | null
           updated_at?: string
@@ -3099,6 +3731,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_classes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
@@ -3524,6 +4163,8 @@ export type Database = {
       }
       users: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           cpf_cnpj: string | null
           created_at: string
           department: string | null
@@ -3538,12 +4179,15 @@ export type Database = {
           is_unlimited_access: boolean | null
           last_name: string
           last_seen_at: string | null
+          must_change_password: boolean
           phone: string | null
           role: string
           student_id_number: string | null
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           cpf_cnpj?: string | null
           created_at?: string
           department?: string | null
@@ -3558,12 +4202,15 @@ export type Database = {
           is_unlimited_access?: boolean | null
           last_name?: string
           last_seen_at?: string | null
+          must_change_password?: boolean
           phone?: string | null
           role?: string
           student_id_number?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           cpf_cnpj?: string | null
           created_at?: string
           department?: string | null
@@ -3578,6 +4225,7 @@ export type Database = {
           is_unlimited_access?: boolean | null
           last_name?: string
           last_seen_at?: string | null
+          must_change_password?: boolean
           phone?: string | null
           role?: string
           student_id_number?: string | null
@@ -3657,8 +4305,8 @@ export type Database = {
           module_id: string
           order_index: number
           quiz_id: string | null
-          quiz_min_percentage: number
-          quiz_required: boolean
+          quiz_min_percentage: number | null
+          quiz_required: boolean | null
           title: string
           topic_id: string | null
           updated_at: string
@@ -3678,8 +4326,8 @@ export type Database = {
           module_id: string
           order_index?: number
           quiz_id?: string | null
-          quiz_min_percentage?: number
-          quiz_required?: boolean
+          quiz_min_percentage?: number | null
+          quiz_required?: boolean | null
           title: string
           topic_id?: string | null
           updated_at?: string
@@ -3699,8 +4347,8 @@ export type Database = {
           module_id?: string
           order_index?: number
           quiz_id?: string | null
-          quiz_min_percentage?: number
-          quiz_required?: boolean
+          quiz_min_percentage?: number | null
+          quiz_required?: boolean | null
           title?: string
           topic_id?: string | null
           updated_at?: string
@@ -3750,6 +4398,7 @@ export type Database = {
           module_type: string | null
           name: string
           order_index: number
+          parent_module_id: string | null
           quiz_id: string | null
           updated_at: string
         }
@@ -3762,6 +4411,7 @@ export type Database = {
           module_type?: string | null
           name: string
           order_index?: number
+          parent_module_id?: string | null
           quiz_id?: string | null
           updated_at?: string
         }
@@ -3774,6 +4424,7 @@ export type Database = {
           module_type?: string | null
           name?: string
           order_index?: number
+          parent_module_id?: string | null
           quiz_id?: string | null
           updated_at?: string
         }
@@ -3783,6 +4434,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "video_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_modules_parent_module_id_fkey"
+            columns: ["parent_module_id"]
+            isOneToOne: false
+            referencedRelation: "video_modules"
             referencedColumns: ["id"]
           },
           {
@@ -3839,6 +4497,8 @@ export type Database = {
     Views: {
       user_profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string | null
           email: string | null
           first_name: string | null
@@ -3849,6 +4509,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -3859,6 +4521,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -3881,6 +4545,7 @@ export type Database = {
         }
         Returns: string
       }
+      admin_delete_user: { Args: { p_user_id: string }; Returns: undefined }
       calculate_subscription_expiration: {
         Args: { p_class_id: string; p_enrollment_date: string }
         Returns: string
@@ -3908,6 +4573,10 @@ export type Database = {
       get_auth_user_role: { Args: never; Returns: string }
       get_gamification_stats: { Args: never; Returns: Json }
       get_import_stats: { Args: never; Returns: Json }
+      get_invite_registration_count: {
+        Args: { p_invite_id: string }
+        Returns: number
+      }
       get_question_performance_for_quiz: {
         Args: { p_quiz_id: string }
         Returns: {
@@ -3984,6 +4653,14 @@ export type Database = {
           content_type: string
         }[]
       }
+      get_user_growth_data: {
+        Args: { p_months?: number }
+        Returns: {
+          active_users: number
+          month_label: string
+          total_users: number
+        }[]
+      }
       get_user_rank_position: {
         Args: { p_user_id: string }
         Returns: {
@@ -4019,6 +4696,13 @@ export type Database = {
           score_value: number
         }[]
       }
+      get_weekly_activity_data: {
+        Args: { p_days?: number }
+        Returns: {
+          activity_count: number
+          day_of_week: number
+        }[]
+      }
       get_xp_statistics: {
         Args: never
         Returns: {
@@ -4029,6 +4713,10 @@ export type Database = {
           total_xp_distributed: number
         }[]
       }
+      increment: {
+        Args: { column_name: string; row_id: string; table_name: string }
+        Returns: undefined
+      }
       increment_topic_pomodoros: {
         Args: { topic_id: string }
         Returns: undefined
@@ -4038,6 +4726,11 @@ export type Database = {
       is_authenticated: { Args: never; Returns: boolean }
       is_teacher: { Args: never; Returns: boolean }
       is_trial_user: { Args: { user_id: string }; Returns: boolean }
+      register_invite_slot: {
+        Args: { p_invite_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      submit_quiz_attempt: { Args: { p_attempt_id: string }; Returns: Json }
       update_last_seen: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
@@ -4053,472 +4746,6 @@ export type Database = {
       session_status: "pending" | "active" | "completed"
       user_role: "student" | "teacher" | "administrator"
       video_source_provider: "panda_video" | "youtube" | "vimeo"
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  storage: {
-    Tables: {
-      buckets: {
-        Row: {
-          allowed_mime_types: string[] | null
-          avif_autodetection: boolean | null
-          created_at: string | null
-          file_size_limit: number | null
-          id: string
-          name: string
-          owner: string | null
-          owner_id: string | null
-          public: boolean | null
-          type: Database["storage"]["Enums"]["buckettype"]
-          updated_at: string | null
-        }
-        Insert: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id: string
-          name: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          type?: Database["storage"]["Enums"]["buckettype"]
-          updated_at?: string | null
-        }
-        Update: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id?: string
-          name?: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          type?: Database["storage"]["Enums"]["buckettype"]
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      buckets_analytics: {
-        Row: {
-          created_at: string
-          deleted_at: string | null
-          format: string
-          id: string
-          name: string
-          type: Database["storage"]["Enums"]["buckettype"]
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          deleted_at?: string | null
-          format?: string
-          id?: string
-          name: string
-          type?: Database["storage"]["Enums"]["buckettype"]
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          deleted_at?: string | null
-          format?: string
-          id?: string
-          name?: string
-          type?: Database["storage"]["Enums"]["buckettype"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      buckets_vectors: {
-        Row: {
-          created_at: string
-          id: string
-          type: Database["storage"]["Enums"]["buckettype"]
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id: string
-          type?: Database["storage"]["Enums"]["buckettype"]
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          type?: Database["storage"]["Enums"]["buckettype"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      migrations: {
-        Row: {
-          executed_at: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Insert: {
-          executed_at?: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Update: {
-          executed_at?: string | null
-          hash?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      objects: {
-        Row: {
-          bucket_id: string | null
-          created_at: string | null
-          id: string
-          last_accessed_at: string | null
-          metadata: Json | null
-          name: string | null
-          owner: string | null
-          owner_id: string | null
-          path_tokens: string[] | null
-          updated_at: string | null
-          user_metadata: Json | null
-          version: string | null
-        }
-        Insert: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Update: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "objects_bucketId_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          id: string
-          in_progress_size: number
-          key: string
-          owner_id: string | null
-          upload_signature: string
-          user_metadata: Json | null
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          id: string
-          in_progress_size?: number
-          key: string
-          owner_id?: string | null
-          upload_signature: string
-          user_metadata?: Json | null
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          id?: string
-          in_progress_size?: number
-          key?: string
-          owner_id?: string | null
-          upload_signature?: string
-          user_metadata?: Json | null
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads_parts: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          etag: string
-          id: string
-          key: string
-          owner_id: string | null
-          part_number: number
-          size: number
-          upload_id: string
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          etag: string
-          id?: string
-          key: string
-          owner_id?: string | null
-          part_number: number
-          size?: number
-          upload_id: string
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          etag?: string
-          id?: string
-          key?: string
-          owner_id?: string | null
-          part_number?: number
-          size?: number
-          upload_id?: string
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey"
-            columns: ["upload_id"]
-            isOneToOne: false
-            referencedRelation: "s3_multipart_uploads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      vector_indexes: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          data_type: string
-          dimension: number
-          distance_metric: string
-          id: string
-          metadata_configuration: Json | null
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          data_type: string
-          dimension: number
-          distance_metric: string
-          id?: string
-          metadata_configuration?: Json | null
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          data_type?: string
-          dimension?: number
-          distance_metric?: string
-          id?: string
-          metadata_configuration?: Json | null
-          name?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vector_indexes_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets_vectors"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      can_insert_object: {
-        Args: { bucketid: string; metadata: Json; name: string; owner: string }
-        Returns: undefined
-      }
-      delete_leaf_prefixes: {
-        Args: { bucket_ids: string[]; names: string[] }
-        Returns: undefined
-      }
-      extension: { Args: { name: string }; Returns: string }
-      filename: { Args: { name: string }; Returns: string }
-      foldername: { Args: { name: string }; Returns: string[] }
-      get_common_prefix: {
-        Args: { p_delimiter: string; p_key: string; p_prefix: string }
-        Returns: string
-      }
-      get_level: { Args: { name: string }; Returns: number }
-      get_prefix: { Args: { name: string }; Returns: string }
-      get_prefixes: { Args: { name: string }; Returns: string[] }
-      get_size_by_bucket: {
-        Args: never
-        Returns: {
-          bucket_id: string
-          size: number
-        }[]
-      }
-      list_multipart_uploads_with_delimiter: {
-        Args: {
-          bucket_id: string
-          delimiter_param: string
-          max_keys?: number
-          next_key_token?: string
-          next_upload_token?: string
-          prefix_param: string
-        }
-        Returns: {
-          created_at: string
-          id: string
-          key: string
-        }[]
-      }
-      list_objects_with_delimiter: {
-        Args: {
-          _bucket_id: string
-          delimiter_param: string
-          max_keys?: number
-          next_token?: string
-          prefix_param: string
-          sort_order?: string
-          start_after?: string
-        }
-        Returns: {
-          created_at: string
-          id: string
-          last_accessed_at: string
-          metadata: Json
-          name: string
-          updated_at: string
-        }[]
-      }
-      operation: { Args: never; Returns: string }
-      search: {
-        Args: {
-          bucketname: string
-          levels?: number
-          limits?: number
-          offsets?: number
-          prefix: string
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          created_at: string
-          id: string
-          last_accessed_at: string
-          metadata: Json
-          name: string
-          updated_at: string
-        }[]
-      }
-      search_by_timestamp: {
-        Args: {
-          p_bucket_id: string
-          p_level: number
-          p_limit: number
-          p_prefix: string
-          p_sort_column: string
-          p_sort_column_after: string
-          p_sort_order: string
-          p_start_after: string
-        }
-        Returns: {
-          created_at: string
-          id: string
-          key: string
-          last_accessed_at: string
-          metadata: Json
-          name: string
-          updated_at: string
-        }[]
-      }
-      search_legacy_v1: {
-        Args: {
-          bucketname: string
-          levels?: number
-          limits?: number
-          offsets?: number
-          prefix: string
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          created_at: string
-          id: string
-          last_accessed_at: string
-          metadata: Json
-          name: string
-          updated_at: string
-        }[]
-      }
-      search_v2: {
-        Args: {
-          bucket_name: string
-          levels?: number
-          limits?: number
-          prefix: string
-          sort_column?: string
-          sort_column_after?: string
-          sort_order?: string
-          start_after?: string
-        }
-        Returns: {
-          created_at: string
-          id: string
-          key: string
-          last_accessed_at: string
-          metadata: Json
-          name: string
-          updated_at: string
-        }[]
-      }
-    }
-    Enums: {
-      buckettype: "STANDARD" | "ANALYTICS" | "VECTOR"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4644,9 +4871,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       audio_source_provider: ["panda_video_hls", "mp3_url"],
@@ -4662,11 +4886,6 @@ export const Constants = {
       session_status: ["pending", "active", "completed"],
       user_role: ["student", "teacher", "administrator"],
       video_source_provider: ["panda_video", "youtube", "vimeo"],
-    },
-  },
-  storage: {
-    Enums: {
-      buckettype: ["STANDARD", "ANALYTICS", "VECTOR"],
     },
   },
 } as const
