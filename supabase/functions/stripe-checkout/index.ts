@@ -259,6 +259,11 @@ serve(async (req) => {
     // 10-12. Handle payment methods
     if (payment_method === 'card') {
       // Create Stripe Checkout Session for card payment
+      // Build installment config (up to 12x for Brazilian cards)
+      const maxInstallments = installments && installments >= 2 && installments <= 12
+        ? installments
+        : 12
+
       const session = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
         payment_method_types: ['card'],
@@ -280,9 +285,17 @@ serve(async (req) => {
             user_id: user.id,
           },
         },
+        payment_method_options: {
+          card: {
+            installments: {
+              enabled: true,
+            },
+          },
+        },
         metadata: {
           order_id: orderId,
           product_slug,
+          installments: String(maxInstallments),
         },
         success_url: successUrl,
         cancel_url: cancelUrl,

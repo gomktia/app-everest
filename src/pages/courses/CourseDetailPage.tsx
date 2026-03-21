@@ -16,8 +16,6 @@ import {
   ExternalLink,
   MessageSquare,
   ShoppingCart,
-  Crown,
-  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -116,6 +114,7 @@ export default function CourseDetailPage() {
   const [enrollmentDate, setEnrollmentDate] = useState<string | null>(null)
   const [isTrialForThisCourse, setIsTrialForThisCourse] = useState(false)
   const [trialDurationDays, setTrialDurationDays] = useState<number | null>(null)
+  const [checkoutSlug, setCheckoutSlug] = useState<string | null>(null)
   // isTrialUser para este curso: só é trial se a turma que dá acesso é trial
   const isTrialUser = isTrialForThisCourse
 
@@ -161,6 +160,30 @@ export default function CourseDetailPage() {
     }
     checkEnrollment()
   }, [effectiveUserId, courseId])
+
+  // ---- Fetch checkout slug for this course ----
+  useEffect(() => {
+    async function fetchCheckoutSlug() {
+      if (!courseId) return
+      // course → class_courses → stripe_product_classes → stripe_products
+      const { data: classCourses } = await supabase
+        .from('class_courses')
+        .select('class_id')
+        .eq('course_id', courseId)
+      if (!classCourses || classCourses.length === 0) return
+
+      const classIds = classCourses.map(cc => cc.class_id)
+      const { data: productClasses } = await supabase
+        .from('stripe_product_classes')
+        .select('stripe_products!inner(landing_page_slug)')
+        .in('class_id', classIds)
+        .limit(1)
+
+      const slug = (productClasses as any)?.[0]?.stripe_products?.landing_page_slug
+      if (slug) setCheckoutSlug(slug)
+    }
+    fetchCheckoutSlug()
+  }, [courseId])
 
   // ---- Module rules for the student's class ----
   useEffect(() => {
@@ -382,7 +405,13 @@ export default function CourseDetailPage() {
                 <p className="text-muted-foreground text-sm">Adquira o acesso para desbloquear todas as aulas, materiais e funcionalidades.</p>
               </div>
               <div className="shrink-0">
-                {course.sales_url ? (
+                {checkoutSlug ? (
+                  <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white shadow-lg gap-2"
+                    onClick={() => navigate(`/checkout/${checkoutSlug}`)}>
+                    <ShoppingCart className="h-4 w-4" />
+                    Comprar agora
+                  </Button>
+                ) : course.sales_url ? (
                   <Button asChild size="lg" className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg gap-2">
                     <a href={course.sales_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
@@ -406,7 +435,7 @@ export default function CourseDetailPage() {
           <TrialCountdown
             enrollmentDate={enrollmentDate}
             durationDays={trialDurationDays}
-            upgradeUrl={course?.sales_url}
+            upgradeUrl={checkoutSlug ? `/checkout/${checkoutSlug}` : course?.sales_url}
           />
         )}
 
@@ -547,15 +576,10 @@ export default function CourseDetailPage() {
           }
 
           const handleLockedClick = () => {
-            if (isTrialUser) {
-              if (course.sales_url) {
-                window.open(course.sales_url, '_blank')
-              } else {
-                toast({
-                  title: 'Conteúdo exclusivo para assinantes',
-                  description: 'Entre em contato para adquirir o acesso completo.',
-                })
-              }
+            if (checkoutSlug) {
+              navigate(`/checkout/${checkoutSlug}`)
+            } else if (course.sales_url) {
+              window.open(course.sales_url, '_blank')
             } else {
               toast({ title: 'Adquira o curso para acessar este conteúdo', variant: 'destructive' })
             }
@@ -568,7 +592,7 @@ export default function CourseDetailPage() {
               firstIncompleteLessonId={firstIncompleteLesson?.lessonId ?? null}
               isEnrolled={isEnrolled}
               isTrialUser={isTrialUser}
-              salesUrl={course.sales_url}
+              checkoutSlug={checkoutSlug}
               onLockedClick={handleLockedClick}
             />
           ) : (
@@ -579,7 +603,7 @@ export default function CourseDetailPage() {
               defaultOpenModule={defaultOpenModule}
               isEnrolled={isEnrolled}
               isTrialUser={isTrialUser}
-              salesUrl={course.sales_url}
+              checkoutSlug={checkoutSlug}
               onLockedClick={handleLockedClick}
             />
           )
@@ -626,7 +650,7 @@ function ModuleCardView({
   firstIncompleteLessonId,
   isEnrolled,
   isTrialUser,
-  salesUrl,
+  checkoutSlug,
   onLockedClick,
 }: {
   course: CourseData
@@ -634,7 +658,7 @@ function ModuleCardView({
   firstIncompleteLessonId: string | null
   isEnrolled: boolean
   isTrialUser: boolean
-  salesUrl: string | null
+  checkoutSlug: string | null
   onLockedClick: () => void
 }) {
   return (
@@ -742,19 +766,17 @@ function ModuleCardView({
                   <Lock className="h-4 w-4" />
                   {(module as any)._lockMessage || 'Bloqueado'}
                 </div>
-                {isTrialUser && salesUrl && (
-                  <a
-                    href={salesUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                {checkoutSlug && (
+                  <Link
+                    to={`/checkout/${checkoutSlug}`}
                     className={cn(
                       'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200',
-                      'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-sm hover:shadow-md'
+                      'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-sm hover:shadow-md'
                     )}
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    Adquirir acesso
-                  </a>
+                    Comprar agora
+                  </Link>
                 )}
               </div>
             ) : isEnrolled ? (
@@ -798,7 +820,7 @@ function ModuleListView({
   defaultOpenModule,
   isEnrolled,
   isTrialUser,
-  salesUrl,
+  checkoutSlug,
   onLockedClick,
 }: {
   course: CourseData
@@ -807,7 +829,7 @@ function ModuleListView({
   defaultOpenModule: string[]
   isEnrolled: boolean
   isTrialUser: boolean
-  salesUrl: string | null
+  checkoutSlug: string | null
   onLockedClick: () => void
 }) {
   // When not enrolled, check which modules have any preview lessons
@@ -894,17 +916,15 @@ function ModuleListView({
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
                         {totalInModule} aula{totalInModule !== 1 ? 's' : ''} · {moduleLockMessage || 'Bloqueado'}
                       </span>
-                      {isTrialUser && salesUrl && (
-                        <a
-                          href={salesUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {checkoutSlug && (
+                        <Link
+                          to={`/checkout/${checkoutSlug}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-all"
+                          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 transition-all"
                         >
                           <ShoppingCart className="h-3 w-3" />
                           Comprar
-                        </a>
+                        </Link>
                       )}
                     </div>
                   )}
