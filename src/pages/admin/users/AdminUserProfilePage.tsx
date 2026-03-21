@@ -277,7 +277,7 @@ export default function AdminUserProfilePage() {
 
       // Update extra fields via direct query (may not be in typed schema)
       try {
-        const { error: phoneError } = await (supabase as any)
+        const { error: phoneError } = await supabase
           .from('users')
           .update({
             phone: phone || null,

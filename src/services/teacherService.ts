@@ -15,7 +15,7 @@ export interface Teacher {
 export async function getTeachers(): Promise<Teacher[]> {
     try {
         // Fetch teachers and users separately because of PGRST200 error (missing relationship in cache)
-        const { data: teachersData, error: teachersError } = await (supabase as any)
+        const { data: teachersData, error: teachersError } = await supabase
             .from('teachers')
             .select('id, user_id, employee_id_number, hire_date, department')
 
@@ -27,7 +27,7 @@ export async function getTeachers(): Promise<Teacher[]> {
         if (!teachersData || teachersData.length === 0) return []
 
         const userIds = teachersData.map((t: any) => t.user_id)
-        const { data: usersData, error: usersError } = await (supabase as any)
+        const { data: usersData, error: usersError } = await supabase
             .from('users')
             .select('id, first_name, last_name, email')
             .in('id', userIds)
@@ -59,7 +59,7 @@ export async function getTeachers(): Promise<Teacher[]> {
 
 export async function getTeacherByUserId(userId: string): Promise<Teacher | null> {
     try {
-        const { data: teacherData, error: teacherError } = await (supabase as any)
+        const { data: teacherData, error: teacherError } = await supabase
             .from('teachers')
             .select('id, user_id, employee_id_number, hire_date, department')
             .eq('user_id', userId)
@@ -72,7 +72,7 @@ export async function getTeacherByUserId(userId: string): Promise<Teacher | null
             return null
         }
 
-        const { data: userData, error: userError } = await (supabase as any)
+        const { data: userData, error: userError } = await supabase
             .from('users')
             .select('id, first_name, last_name, email')
             .eq('id', userId)

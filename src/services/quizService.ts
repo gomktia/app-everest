@@ -170,7 +170,7 @@ export const quizService = {
   async getQuizById(quizId: string): Promise<Quiz | null> {
     try {
       // Buscar metadados do quiz
-      const { data: quiz, error: quizError } = await (supabase as any)
+      const { data: quiz, error: quizError } = await supabase
         .from('quizzes')
         .select('id, title, description, duration_minutes')
         .eq('id', quizId)
@@ -179,7 +179,7 @@ export const quizService = {
       if (quizError) throw quizError
 
       // Buscar questões separadamente para evitar problemas de relação no join
-      const { data: questions, error: questionsError } = await (supabase as any)
+      const { data: questions, error: questionsError } = await supabase
         .from('quiz_questions')
         .select('id, question_text, question_type, options, correct_answer, explanation, points, reading_text_id')
         .eq('quiz_id', quizId)
@@ -187,7 +187,7 @@ export const quizService = {
       if (questionsError) throw questionsError
 
       // Buscar textos de leitura
-      const { data: readingTexts } = await (supabase as any)
+      const { data: readingTexts } = await supabase
         .from('quiz_reading_texts')
         .select('*')
         .eq('quiz_id', quizId)
@@ -280,7 +280,7 @@ export const quizService = {
       }
 
       // 1. Criar a tentativa via Supabase (S2 Protection: Ignoramos score do cliente)
-      const { data: attempt, error: attemptError } = await (supabase as any)
+      const { data: attempt, error: attemptError } = await supabase
         .from('quiz_attempts')
         .insert({
           user_id: userId,
@@ -301,14 +301,14 @@ export const quizService = {
         answer_value: answer
       }))
 
-      const { error: answersError } = await (supabase as any)
+      const { error: answersError } = await supabase
         .from('quiz_answers')
         .insert(answerInserts)
 
       if (answersError) throw answersError
 
       // 3. Chamar RPC para calcular nota e estatísticas no servidor (S2 Protection)
-      const { error: rpcError } = await (supabase as any).rpc('submit_quiz_attempt', {
+      const { error: rpcError } = await supabase.rpc('submit_quiz_attempt', {
         p_attempt_id: attempt.id
       })
 
@@ -331,14 +331,14 @@ export const quizService = {
             const correct = q.correct_answer && ansVal === q.correct_answer
             const pts = correct ? (q.points || 1) : 0
             earnedPts += pts
-            await (supabase as any).from('quiz_answers')
+            await supabase.from('quiz_answers')
               .update({ is_correct: correct, points_earned: pts })
               .eq('attempt_id', attempt.id)
               .eq('question_id', qId)
           }
 
           const pct = totalPts > 0 ? (earnedPts / totalPts) * 100 : 0
-          await (supabase as any).from('quiz_attempts')
+          await supabase.from('quiz_attempts')
             .update({ score: earnedPts, total_points: totalPts, percentage: Math.round(pct * 100) / 100 })
             .eq('id', attempt.id)
         }
@@ -357,7 +357,7 @@ export const quizService = {
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       if (!currentUser || currentUser.id !== userId) return []
 
-      const { data: attempts, error } = await (supabase as any)
+      const { data: attempts, error } = await supabase
         .from('quiz_attempts')
         .select(`
           id,
@@ -402,7 +402,7 @@ export const quizService = {
         return { totalAttempts: 0, averageScore: 0, bestScore: 0, totalQuestions: 0 }
       }
 
-      const { data: attempts, error } = await (supabase as any)
+      const { data: attempts, error } = await supabase
         .from('quiz_attempts')
         .select('score, total_questions')
         .eq('user_id', userId)

@@ -116,7 +116,7 @@ export async function startSimulationAttempt(quizId: string, userId: string): Pr
     if (!currentUser || currentUser.id !== userId) throw new Error('Não autorizado')
 
     // Check for existing in-progress attempt
-    const { data: existingAttempts } = await (supabase as any)
+    const { data: existingAttempts } = await supabase
       .from('quiz_attempts')
       .select('id')
       .eq('quiz_id', quizId)
@@ -129,7 +129,7 @@ export async function startSimulationAttempt(quizId: string, userId: string): Pr
     }
 
     // Create new attempt
-    const { data: newAttempt, error } = await (supabase as any)
+    const { data: newAttempt, error } = await supabase
       .from('quiz_attempts')
       .insert({
         quiz_id: quizId,
@@ -158,7 +158,7 @@ export async function saveSimulationAnswer(
     if (!user) throw new Error('Não autorizado')
 
     // Validar se o attempt pertence ao usuário
-    const { data: attempt } = await (supabase as any)
+    const { data: attempt } = await supabase
       .from('quiz_attempts')
       .select('user_id')
       .eq('id', attemptId)
@@ -167,7 +167,7 @@ export async function saveSimulationAnswer(
     const ifAttempt = attempt as any
     if (!ifAttempt || ifAttempt.user_id !== user.id) throw new Error('Não autorizado')
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('quiz_answers')
       .upsert({
         attempt_id: attemptId,
@@ -213,7 +213,7 @@ export async function submitSimulation(attemptId: string) {
  */
 async function submitSimulationFallback(attemptId: string) {
   // 1. Get the attempt and its quiz questions
-  const { data: attempt, error: attemptError } = await (supabase as any)
+  const { data: attempt, error: attemptError } = await supabase
     .from('quiz_attempts')
     .select('id, quiz_id, started_at')
     .eq('id', attemptId)
@@ -227,7 +227,7 @@ async function submitSimulationFallback(attemptId: string) {
     .eq('quiz_id', attempt.quiz_id)
 
   // 3. Get all answers for this attempt
-  const { data: answers } = await (supabase as any)
+  const { data: answers } = await supabase
     .from('quiz_answers')
     .select('id, question_id, answer_value')
     .eq('attempt_id', attemptId)
@@ -248,7 +248,7 @@ async function submitSimulationFallback(attemptId: string) {
     const pointsEarned = isCorrect ? (q.points || 1) : 0
     earnedPoints += pointsEarned
 
-    await (supabase as any)
+    await supabase
       .from('quiz_answers')
       .update({ is_correct: isCorrect, points_earned: pointsEarned })
       .eq('id', ans.id)
@@ -258,7 +258,7 @@ async function submitSimulationFallback(attemptId: string) {
   const timeSpent = Math.floor((Date.now() - new Date(attempt.started_at).getTime()) / 1000)
   const percentage = totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0
 
-  await (supabase as any)
+  await supabase
     .from('quiz_attempts')
     .update({
       status: 'submitted',
@@ -276,7 +276,7 @@ export async function getSimulationResult(attemptId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Não autorizado')
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('quiz_attempts')
       .select(`
         *,

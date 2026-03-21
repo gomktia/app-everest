@@ -123,7 +123,7 @@ export const saveCorrection = async (
     teacher_id: teacherId,
   }))
 
-  const { error: annotationError } = await (supabase as any)
+  const { error: annotationError } = await supabase
     .from('essay_annotations')
     .upsert(annotationsToInsert)
 
@@ -284,7 +284,7 @@ export const submitEssay = async (
       c5: { name: 'Proposta de Intervenção', value: 200 }
     }
 
-    const { data: prompt, error: promptError } = await (supabase as any)
+    const { data: prompt, error: promptError } = await supabase
       .from('essay_prompts')
       .insert({
         title: theme,
@@ -313,7 +313,7 @@ export const submitEssay = async (
     }
 
     // 3. Enviar redação
-    const { error: essayError } = await (supabase as any)
+    const { error: essayError } = await supabase
       .from('essays')
       .insert({
         student_id: userId,

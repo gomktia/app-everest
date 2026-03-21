@@ -282,7 +282,7 @@ export default function AdminClassFormPage() {
       }
 
       if (isEditing) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('classes')
           .update(classPayload)
           .eq('id', classId)
@@ -328,7 +328,7 @@ export default function AdminClassFormPage() {
           description: 'Turma atualizada com sucesso',
         })
       } else {
-        const { data: insertedData, error } = await (supabase as any)
+        const { data: insertedData, error } = await supabase
           .from('classes')
           .insert(classPayload)
           .select('id')

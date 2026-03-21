@@ -249,7 +249,7 @@ export default function TrialClassWizard() {
 
   async function loadCourses() {
     try {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('video_courses')
         .select('id, name, thumbnail_url')
         .order('name')
@@ -262,7 +262,7 @@ export default function TrialClassWizard() {
   async function loadModules(courseId: string) {
     setLoadingData(true)
     try {
-      const { data: mods } = await (supabase as any)
+      const { data: mods } = await supabase
         .from('video_modules')
         .select('id, name, sort_order')
         .eq('course_id', courseId)
@@ -275,7 +275,7 @@ export default function TrialClassWizard() {
       }
 
       const moduleIds = mods.map((m: any) => m.id)
-      const { data: lessons } = await (supabase as any)
+      const { data: lessons } = await supabase
         .from('video_lessons')
         .select('id, title, sort_order, module_id')
         .in('module_id', moduleIds)
@@ -340,7 +340,7 @@ export default function TrialClassWizard() {
     setSaving(true)
     try {
       if (state.classId) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('classes')
           .update({
             name: state.className.trim(),
@@ -353,7 +353,7 @@ export default function TrialClassWizard() {
           .eq('id', state.classId)
         if (error) throw error
       } else {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('classes')
           .insert({
             name: state.className.trim(),
@@ -388,7 +388,7 @@ export default function TrialClassWizard() {
     if (!state.classId) return false
     setSaving(true)
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('class_courses')
         .upsert(
           { class_id: state.classId, course_id: state.courseId },
@@ -422,7 +422,7 @@ export default function TrialClassWizard() {
       await saveAllModuleRules(state.classId, moduleRulesList)
 
       // Save lesson overrides
-      await (supabase as any)
+      await supabase
         .from('class_lesson_rules')
         .delete()
         .eq('class_id', state.classId)
@@ -437,7 +437,7 @@ export default function TrialClassWizard() {
         }))
 
       if (lessonRules.length > 0) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('class_lesson_rules')
           .insert(lessonRules)
         if (error) throw error
@@ -553,7 +553,7 @@ export default function TrialClassWizard() {
       const slug = state.inviteSlug.trim() || generateSlug(state.inviteTitle)
 
       if (state.inviteId) {
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('invites')
           .update({
             title: state.inviteTitle.trim(),
