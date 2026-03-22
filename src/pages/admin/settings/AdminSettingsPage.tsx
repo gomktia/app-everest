@@ -10,7 +10,6 @@ import {
   Settings,
   Save,
   Globe,
-  Mail,
   Bell,
   Shield,
   Palette,
@@ -39,13 +38,6 @@ const DEFAULTS: Record<SettingsKey, Record<string, any>> = {
     timezone: 'America/Sao_Paulo',
     maintenanceMode: false,
     allowSignups: true,
-  },
-  email: {
-    smtpHost: '',
-    smtpPort: '587',
-    smtpUser: '',
-    smtpPassword: '',
-    useSsl: true,
   },
   notifications: {
     newMessage: true,
@@ -147,7 +139,6 @@ export default function AdminSettingsPage() {
   }
 
   const g = settings.general
-  const e = settings.email
   const n = settings.notifications
   const s = settings.security
   const a = settings.appearance
@@ -192,7 +183,7 @@ export default function AdminSettingsPage() {
             }
             setActiveTab(v as SettingsKey)
           }}
-          layout={5}
+          layout={4}
           tabs={[
             {
               value: 'general',
@@ -278,82 +269,6 @@ export default function AdminSettingsPage() {
                       <Switch
                         checked={g.allowSignups}
                         onCheckedChange={(v) => updateField('general', 'allowSignups', v)}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ),
-            },
-            {
-              value: 'email',
-              label: 'E-mail',
-              content: (
-                <Card className="border-border shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-foreground">
-                      <Mail className="h-5 w-5" />
-                      Configurações de E-mail
-                    </CardTitle>
-                    <CardDescription>
-                      Configure o servidor SMTP e templates de e-mail
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="smtp-host">Servidor SMTP</Label>
-                        <Input
-                          id="smtp-host"
-                          placeholder="smtp.gmail.com"
-                          value={e.smtpHost}
-                          onChange={(ev) => updateField('email', 'smtpHost', ev.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="smtp-port">Porta SMTP</Label>
-                        <Input
-                          id="smtp-port"
-                          placeholder="587"
-                          type="number"
-                          value={e.smtpPort}
-                          onChange={(ev) => updateField('email', 'smtpPort', ev.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="smtp-user">Usuário SMTP</Label>
-                        <Input
-                          id="smtp-user"
-                          placeholder="noreply@everest.com"
-                          type="email"
-                          value={e.smtpUser}
-                          onChange={(ev) => updateField('email', 'smtpUser', ev.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="smtp-password">Senha SMTP</Label>
-                        <Input
-                          id="smtp-password"
-                          placeholder="********"
-                          type="password"
-                          value={e.smtpPassword}
-                          onChange={(ev) => updateField('email', 'smtpPassword', ev.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/50">
-                      <div className="space-y-0.5">
-                        <Label>Usar SSL/TLS</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Conexão segura com o servidor SMTP
-                        </p>
-                      </div>
-                      <Switch
-                        checked={e.useSsl}
-                        onCheckedChange={(v) => updateField('email', 'useSsl', v)}
                       />
                     </div>
                   </CardContent>

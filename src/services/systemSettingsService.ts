@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase/client'
 import { logger } from '@/lib/logger'
 
-export type SettingsKey = 'general' | 'email' | 'notifications' | 'security' | 'appearance'
+export type SettingsKey = 'general' | 'notifications' | 'security' | 'appearance'
 
 export async function getSettings(key: SettingsKey) {
   const { data, error } = await supabase
