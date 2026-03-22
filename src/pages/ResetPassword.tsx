@@ -48,30 +48,40 @@ export default function ResetPasswordPage() {
     const url = new URL(window.location.href)
     const code = url.searchParams.get('code')
 
+    // Listen for PASSWORD_RECOVERY event (works for hash-based redirects)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        setSessionReady(true)
+      }
+    })
+
     if (code) {
-      // Exchange the code from the email link for a valid session
+      // Exchange the PKCE code from the email link for a valid session
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
         if (error) {
-          setExchangeError(true)
+          // PKCE code_verifier missing (different browser) or code expired
+          // Check if already has a valid session (e.g. user is already logged in)
+          supabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+              setSessionReady(true)
+            } else {
+              setExchangeError(true)
+            }
+          })
         } else {
           setSessionReady(true)
         }
       })
     } else {
-      // Fallback: listen for PASSWORD_RECOVERY event (legacy flow)
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          setSessionReady(true)
-        }
-      })
-      // Check if already has session
+      // No code param — check if already has session (direct navigation)
       supabase.auth.getSession().then(({ data }) => {
         if (data.session) setSessionReady(true)
       })
-      return () => subscription.unsubscribe()
     }
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const form = useForm<FormValues>({

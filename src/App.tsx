@@ -305,11 +305,11 @@ const App = () => (
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<Navigate to="/login" replace />} />
                 <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
-                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/invite/:slug" element={<InvitePage />} />
               </Route>
 
-              {/* Checkout routes — accessible without login (for recovery links) */}
+              {/* Routes accessible with or without auth (email recovery links) */}
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/checkout/sucesso" element={<CheckoutSuccessPage />} />
               <Route path="/checkout/:slug" element={<CheckoutPage />} />
 
