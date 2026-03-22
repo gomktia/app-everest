@@ -226,11 +226,13 @@ export default function AdminQuestionsPage() {
                   </TableRow>
                 )}
                 {filtered.slice(0, 200).map((q) => (
-                  <TableRow key={q.id} className={q.needs_review ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}>
+                  <TableRow key={q.id} className={q.needs_review ? 'border-l-2 border-l-amber-400' : ''}>
                     <TableCell className="font-medium max-w-md truncate">
                       <div className="flex items-center gap-2">
                         {q.needs_review && (
-                          <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                          <Badge variant="outline" className="border-amber-400 text-amber-600 dark:text-amber-400 text-[10px] shrink-0 px-1.5">
+                            Verificar
+                          </Badge>
                         )}
                         <span className="truncate">{q.question_text}</span>
                       </div>
