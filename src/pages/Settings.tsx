@@ -131,10 +131,10 @@ function SecurityPasswordForm() {
   const { toast } = useToast()
 
   const handleSetPassword = async () => {
-    if (newPassword.length < 8) {
+    if (newPassword.length < 12) {
       toast({
         title: 'Senha muito curta',
-        description: 'A senha deve ter pelo menos 8 caracteres.',
+        description: 'A senha deve ter pelo menos 12 caracteres.',
         variant: 'destructive',
       })
       return
@@ -173,7 +173,7 @@ function SecurityPasswordForm() {
         <Label>Nova Senha</Label>
         <Input
           type="password"
-          placeholder="Mínimo 6 caracteres"
+          placeholder="Mínimo 12 caracteres"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
         />

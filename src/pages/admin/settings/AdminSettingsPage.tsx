@@ -454,7 +454,7 @@ export default function AdminSettingsPage() {
                       <div className="space-y-0.5">
                         <Label>Exigir Senha Forte</Label>
                         <p className="text-sm text-muted-foreground">
-                          Senhas devem ter no mínimo 8 caracteres (em breve)
+                          Senhas devem ter no mínimo 12 caracteres
                         </p>
                       </div>
                       <Switch

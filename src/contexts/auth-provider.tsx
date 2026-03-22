@@ -459,7 +459,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   'Authorization': `Bearer ${newSession.access_token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ maxSessions: 1 }),
+                body: JSON.stringify({ maxSessions: 2 }),
               }
             ).then(async (res) => {
               if (res.ok) {
@@ -467,12 +467,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 if (data.removedSessions > 0) {
                   toast({
                     title: 'Sessão anterior encerrada',
-                    description: 'O login anterior em outro dispositivo foi desconectado.',
+                    description: `${data.removedSessions} sessão(ões) em outro(s) dispositivo(s) foi(ram) desconectada(s).`,
                   })
                 }
               }
             }).catch(() => {
-              // Não bloqueia login se session-guard falhar
+              // Session guard failure should not block login — Supabase auth is the source of truth
             })
           }
 

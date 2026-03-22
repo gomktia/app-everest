@@ -17,8 +17,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
  * 3. Se exceder o limite, remove as mais antigas
  */
 
+const ALLOWED_ORIGIN = Deno.env.get('APP_URL') || 'https://app.everestpreparatorios.com.br'
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

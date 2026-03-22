@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -30,8 +30,8 @@ const loginSchema = z.object({
   email: z.string().email('Por favor, insira um email válido.'),
   password: z.string().optional(),
 }).refine(
-  (data) => !data.password || data.password.length >= 8,
-  { message: 'A senha deve ter pelo menos 8 caracteres.', path: ['password'] }
+  (data) => !data.password || data.password.length >= 12,
+  { message: 'A senha deve ter pelo menos 12 caracteres.', path: ['password'] }
 )
 
 type LoginValues = z.infer<typeof loginSchema>
@@ -45,21 +45,70 @@ export default function LoginPage() {
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [sentEmail, setSentEmail] = useState('')
 
+  // Rate limiting: track failed attempts
+  const MAX_ATTEMPTS = 5
+  const LOCKOUT_SECONDS = 120
+  const [failedAttempts, setFailedAttempts] = useState(0)
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null)
+  const [lockoutRemaining, setLockoutRemaining] = useState(0)
+
+  const isLockedOut = lockoutUntil !== null && Date.now() < lockoutUntil
+
+  useEffect(() => {
+    if (!lockoutUntil) return
+    const tick = () => {
+      const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000)
+      if (remaining <= 0) {
+        setLockoutUntil(null)
+        setLockoutRemaining(0)
+        setFailedAttempts(0)
+      } else {
+        setLockoutRemaining(remaining)
+      }
+    }
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [lockoutUntil])
+
+  const trackFailedAttempt = useCallback(() => {
+    const next = failedAttempts + 1
+    setFailedAttempts(next)
+    if (next >= MAX_ATTEMPTS) {
+      setLockoutUntil(Date.now() + LOCKOUT_SECONDS * 1000)
+    }
+  }, [failedAttempts])
+
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   })
 
   const onSubmit = async (data: LoginValues) => {
+    if (isLockedOut) {
+      toast({
+        title: 'Conta temporariamente bloqueada',
+        description: `Aguarde ${lockoutRemaining}s antes de tentar novamente.`,
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsLoading(true)
     if (usePasswordMode) {
       const { error } = await signIn(data.email, data.password || '')
       if (error) {
+        trackFailedAttempt()
+        const attemptsLeft = MAX_ATTEMPTS - (failedAttempts + 1)
         toast({
           title: 'Erro de Autenticação',
-          description: 'Email ou senha inválidos. Por favor, tente novamente.',
+          description: attemptsLeft > 0
+            ? `Email ou senha inválidos. ${attemptsLeft} tentativa${attemptsLeft !== 1 ? 's' : ''} restante${attemptsLeft !== 1 ? 's' : ''}.`
+            : `Muitas tentativas incorretas. Conta bloqueada por ${LOCKOUT_SECONDS / 60} minutos.`,
           variant: 'destructive',
         })
+      } else {
+        setFailedAttempts(0)
       }
     } else {
       const { error } = await signInWithMagicLink(data.email)
@@ -220,10 +269,21 @@ export default function LoginPage() {
                   />
                 )}
 
+                {isLockedOut && (
+                  <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-center">
+                    <p className="text-sm font-medium text-destructive">
+                      Conta temporariamente bloqueada
+                    </p>
+                    <p className="text-xs text-destructive/80 mt-1">
+                      Tente novamente em {lockoutRemaining}s
+                    </p>
+                  </div>
+                )}
+
                 <Button
                   type="submit"
                   className="w-full h-12 rounded-xl font-semibold text-sm shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
-                  disabled={isLoading}
+                  disabled={isLoading || isLockedOut}
                 >
                   {isLoading ? (
                     <>

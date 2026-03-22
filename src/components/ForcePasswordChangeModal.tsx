@@ -24,8 +24,8 @@ export function ForcePasswordChangeModal({ userId, onSuccess }: ForcePasswordCha
     e.preventDefault()
     setError('')
 
-    if (newPassword.length < 8) {
-      setError('A senha deve ter pelo menos 8 caracteres')
+    if (newPassword.length < 12) {
+      setError('A senha deve ter pelo menos 12 caracteres')
       return
     }
     if (newPassword !== confirmPassword) {
@@ -83,7 +83,7 @@ export function ForcePasswordChangeModal({ userId, onSuccess }: ForcePasswordCha
               <Input
                 type={showPassword ? 'text' : 'password'}
                 required
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 12 caracteres"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
                 className="pl-10 pr-10"

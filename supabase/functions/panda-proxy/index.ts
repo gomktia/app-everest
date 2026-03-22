@@ -3,11 +3,23 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const PANDA_API_URL = "https://api-v2.pandavideo.com.br"
 
+const ALLOWED_ORIGIN = Deno.env.get('APP_URL') || 'https://app.everestpreparatorios.com.br'
+
+// Whitelist of allowed Panda API endpoint prefixes
+const ALLOWED_ENDPOINTS = [
+    '/videos',
+    '/folders',
+    '/players',
+    '/shorts',
+]
+
+const ALLOWED_METHODS = ['GET', 'POST', 'PATCH', 'DELETE']
+
 serve(async (req) => {
-    // CORS Headers
     const corsHeaders = {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
         'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
     }
 
     if (req.method === 'OPTIONS') {
@@ -30,6 +42,32 @@ serve(async (req) => {
         }
 
         const { endpoint, method = 'GET', body } = await req.json()
+
+        // Validate endpoint against whitelist
+        if (!endpoint || typeof endpoint !== 'string' || !ALLOWED_ENDPOINTS.some(ep => endpoint.startsWith(ep))) {
+            return new Response(JSON.stringify({ error: 'Endpoint not allowed' }), {
+                status: 403,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+        }
+
+        // Validate HTTP method
+        const upperMethod = method.toUpperCase()
+        if (!ALLOWED_METHODS.includes(upperMethod)) {
+            return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+                status: 405,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+        }
+
+        // Prevent path traversal (e.g. /videos/../../admin)
+        if (endpoint.includes('..') || endpoint.includes('//')) {
+            return new Response(JSON.stringify({ error: 'Invalid endpoint path' }), {
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+        }
+
         const PANDA_API_KEY = Deno.env.get('PANDA_VIDEO_API_KEY')
 
         if (!PANDA_API_KEY) {

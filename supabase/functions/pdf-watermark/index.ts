@@ -13,8 +13,10 @@ import { PDFDocument, rgb, StandardFonts, degrees } from "https://esm.sh/pdf-lib
  * Header: Authorization: Bearer <jwt>
  */
 
+const ALLOWED_ORIGIN = Deno.env.get('APP_URL') || 'https://app.everestpreparatorios.com.br'
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

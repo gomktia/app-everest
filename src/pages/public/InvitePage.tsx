@@ -64,8 +64,8 @@ export default function InvitePage() {
       setError('As senhas não coincidem')
       return
     }
-    if (form.password.length < 8) {
-      setError('A senha deve ter pelo menos 8 caracteres')
+    if (form.password.length < 12) {
+      setError('A senha deve ter pelo menos 12 caracteres')
       return
     }
     if (!form.phone || form.phone.replace(/\D/g, '').length < 10) {
@@ -266,7 +266,7 @@ export default function InvitePage() {
                       <Input
                         type={showPassword ? 'text' : 'password'}
                         required
-                        placeholder="Min. 8 caracteres"
+                        placeholder="Min. 12 caracteres"
                         className="pr-10 h-11 rounded-xl border-border/60 focus:border-primary"
                         value={form.password}
                         onChange={e => setForm({ ...form, password: e.target.value })}

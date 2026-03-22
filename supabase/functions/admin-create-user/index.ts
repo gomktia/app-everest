@@ -3,8 +3,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? ''
 
+const ALLOWED_ORIGIN = Deno.env.get('APP_URL') || 'https://app.everestpreparatorios.com.br'
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -46,10 +48,32 @@ serve(async (req) => {
     const body = await req.json()
     const { action, email, first_name, last_name, class_id, user_id, new_email } = body
 
+    // Input sanitization helper
+    const sanitizeName = (name: unknown): string | null => {
+      if (typeof name !== 'string') return null
+      const trimmed = name.trim()
+      if (trimmed.length === 0 || trimmed.length > 100) return null
+      // Allow letters (including accented), spaces, hyphens, apostrophes
+      if (!/^[\p{L}\s\-']+$/u.test(trimmed)) return null
+      return trimmed
+    }
+
+    const validateEmail = (e: unknown): string | null => {
+      if (typeof e !== 'string') return null
+      const trimmed = e.toLowerCase().trim()
+      if (trimmed.length > 254) return null
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return null
+      return trimmed
+    }
+
     // Handle update_email action
     if (action === 'update_email') {
       if (!user_id || !new_email) {
         return jsonResponse({ error: 'Missing user_id or new_email' }, 400)
+      }
+      const safeNewEmail = validateEmail(new_email)
+      if (!safeNewEmail) {
+        return jsonResponse({ error: 'Invalid email format' }, 400)
       }
       const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
@@ -57,7 +81,7 @@ serve(async (req) => {
         { auth: { autoRefreshToken: false, persistSession: false } }
       )
       const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
-        email: new_email.toLowerCase().trim(),
+        email: safeNewEmail,
       })
       if (updateErr) {
         return jsonResponse({ error: updateErr.message }, 400)
@@ -65,8 +89,16 @@ serve(async (req) => {
       return jsonResponse({ success: true, message: 'Email updated' })
     }
 
-    if (!email || !first_name || !last_name) {
-      return jsonResponse({ error: 'Missing required fields: email, first_name, last_name' }, 400)
+    // Validate and sanitize all inputs
+    const safeEmail = validateEmail(email)
+    const safeFirstName = sanitizeName(first_name)
+    const safeLastName = sanitizeName(last_name)
+
+    if (!safeEmail) {
+      return jsonResponse({ error: 'Invalid or missing email' }, 400)
+    }
+    if (!safeFirstName || !safeLastName) {
+      return jsonResponse({ error: 'Invalid or missing name (max 100 chars, letters only)' }, 400)
     }
 
     // Admin client with service role
@@ -78,9 +110,9 @@ serve(async (req) => {
 
     // Create auth user (no password - magic link only)
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: email.toLowerCase().trim(),
+      email: safeEmail,
       email_confirm: true,
-      user_metadata: { first_name, last_name },
+      user_metadata: { first_name: safeFirstName, last_name: safeLastName },
     })
 
     if (createError) {
@@ -90,9 +122,9 @@ serve(async (req) => {
     // Create public.users
     await supabaseAdmin.from('users').upsert({
       id: newUser.user.id,
-      email: email.toLowerCase().trim(),
-      first_name,
-      last_name,
+      email: safeEmail,
+      first_name: safeFirstName,
+      last_name: safeLastName,
       role: 'student',
       is_active: true,
     }, { onConflict: 'id' })
@@ -127,9 +159,9 @@ serve(async (req) => {
           '<h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700;">Bem-vindo ao Everest!</h1>',
           '</td></tr>',
           '<tr><td style="padding:36px 40px;">',
-          `<p style="margin:0 0 16px;font-size:17px;color:#1f2937;line-height:1.6;">Ol&#225; <strong>${first_name}</strong>,</p>`,
+          `<p style="margin:0 0 16px;font-size:17px;color:#1f2937;line-height:1.6;">Ol&#225; <strong>${safeFirstName}</strong>,</p>`,
           `<p style="margin:0 0 16px;font-size:16px;color:#374151;line-height:1.6;">Sua conta foi criada na plataforma <strong style="color:#ea580c;">Everest Preparat&#243;rios</strong>.</p>`,
-          `<p style="margin:0 0 28px;font-size:16px;color:#374151;line-height:1.6;">Para acessar, clique no bot&#227;o abaixo e informe seu email <strong>${email}</strong>. Voc&#234; receber&#225; um link de acesso instant&#226;neo &#8212; sem senha!</p>`,
+          `<p style="margin:0 0 28px;font-size:16px;color:#374151;line-height:1.6;">Para acessar, clique no bot&#227;o abaixo e informe seu email <strong>${safeEmail}</strong>. Voc&#234; receber&#225; um link de acesso instant&#226;neo &#8212; sem senha!</p>`,
           '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 32px;">',
           `<a href="${appUrl}/login" style="background-color:#ea580c;color:#ffffff;padding:16px 48px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;box-shadow:0 2px 4px rgba(234,88,12,0.3);">Acessar Plataforma</a>`,
           '</td></tr></table>',

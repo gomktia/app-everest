@@ -21,7 +21,6 @@ export interface UserAchievement {
 
 export interface RankingEntry {
   user_id: string
-  email: string
   first_name: string
   last_name: string
   total_xp: number
@@ -189,7 +188,7 @@ export async function getRankingByClass(classId: string, limit: number = 50): Pr
 
     const [xpMap, usersResult, achievementsResult] = await Promise.all([
       getXPFromScores(studentIds),
-      supabase.from('users').select('id, email, first_name, last_name').in('id', studentIds),
+      supabase.from('users').select('id, first_name, last_name').in('id', studentIds),
       supabase.from('user_achievements').select('user_id').in('user_id', studentIds),
     ])
 
@@ -205,7 +204,6 @@ export async function getRankingByClass(classId: string, limit: number = 50): Pr
         const totalXp = xpMap.get(uid) || 0
         return {
           user_id: uid,
-          email: user?.email || '',
           first_name: user?.first_name || '',
           last_name: user?.last_name || '',
           total_xp: totalXp,
@@ -282,7 +280,7 @@ export async function getRanking(limit: number = 50): Promise<RankingEntry[]> {
     const userIds = topUsers.map(([uid]) => uid)
 
     const [usersResult, achievementsResult] = await Promise.all([
-      supabase.from('users').select('id, email, first_name, last_name').in('id', userIds),
+      supabase.from('users').select('id, first_name, last_name').in('id', userIds),
       supabase.from('user_achievements').select('user_id').in('user_id', userIds),
     ])
 
@@ -296,7 +294,6 @@ export async function getRanking(limit: number = 50): Promise<RankingEntry[]> {
       const user = usersMap.get(uid)
       return {
         user_id: uid,
-        email: user?.email || '',
         first_name: user?.first_name || '',
         last_name: user?.last_name || '',
         total_xp: totalXp,

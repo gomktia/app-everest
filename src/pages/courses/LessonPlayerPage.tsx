@@ -668,6 +668,8 @@ export default function LessonPlayerPage() {
   /* ---- listen for video end (Panda Video postMessage) ---- */
   useEffect(() => {
     const handler = (e: MessageEvent) => {
+      // Only accept messages from Panda Video player
+      if (!e.origin.includes('pandavideo.com.br')) return
       try {
         const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data
         if (data?.event === 'onEnded' || data?.message === 'ended' || data?.type === 'ended') {

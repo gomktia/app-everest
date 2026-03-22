@@ -27,7 +27,7 @@ import { supabase } from '@/lib/supabase/client'
 
 const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres.'),
+    password: z.string().min(12, 'A senha deve ter pelo menos 12 caracteres.'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
