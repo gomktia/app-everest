@@ -958,16 +958,35 @@ function SortableLessonItem({
                       {editingQIdx === idx ? (
                         <div className="space-y-2">
                           <Textarea value={q.question_text} onChange={(e) => updateGenQuestion(idx, 'question_text', e.target.value)} rows={3} className="text-sm" />
-                          {q.options.map((opt, optIdx) => (
-                            <div key={optIdx} className="flex items-center gap-2">
-                              <span className="text-xs font-mono text-muted-foreground w-5">{String.fromCharCode(65 + optIdx)})</span>
-                              <Input value={opt} onChange={(e) => { const o = [...q.options]; o[optIdx] = e.target.value; updateGenQuestion(idx, 'options', o) }} className="text-sm h-8" />
-                            </div>
-                          ))}
-                          <div className="space-y-1">
-                            <Label className="text-xs">Gabarito</Label>
-                            <Input value={q.correct_answer} onChange={(e) => updateGenQuestion(idx, 'correct_answer', e.target.value)} className="text-sm h-8" />
-                          </div>
+                          <Label className="text-xs text-muted-foreground">Clique na alternativa correta para marcar o gabarito:</Label>
+                          {q.options.map((opt, optIdx) => {
+                            const isCorrect = opt === q.correct_answer
+                            return (
+                              <div key={optIdx} className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => updateGenQuestion(idx, 'correct_answer', opt)}
+                                  className={cn(
+                                    'shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all',
+                                    isCorrect
+                                      ? 'border-green-500 bg-green-500 text-white'
+                                      : 'border-muted-foreground/30 text-muted-foreground hover:border-green-400'
+                                  )}
+                                >
+                                  {String.fromCharCode(65 + optIdx)}
+                                </button>
+                                <Input
+                                  value={opt}
+                                  onChange={(e) => {
+                                    const wasCorrect = opt === q.correct_answer
+                                    const o = [...q.options]; o[optIdx] = e.target.value; updateGenQuestion(idx, 'options', o)
+                                    if (wasCorrect) updateGenQuestion(idx, 'correct_answer', e.target.value)
+                                  }}
+                                  className={cn('text-sm h-8 flex-1', isCorrect && 'border-green-400 bg-green-50 dark:bg-green-950/20')}
+                                />
+                              </div>
+                            )
+                          })}
                           <div className="space-y-1">
                             <Label className="text-xs">Explicacao</Label>
                             <Textarea value={q.explanation} onChange={(e) => updateGenQuestion(idx, 'explanation', e.target.value)} rows={2} className="text-sm" />
@@ -979,8 +998,13 @@ function SortableLessonItem({
                           {q.options.length > 0 && (
                             <ul className="space-y-1">
                               {q.options.map((opt, optIdx) => (
-                                <li key={optIdx} className={`text-xs flex gap-1 ${opt === q.correct_answer ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}>
-                                  <span className="font-mono">{String.fromCharCode(65 + optIdx)})</span>
+                                <li key={optIdx} className={`text-xs flex items-center gap-1.5 ${opt === q.correct_answer ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}>
+                                  <span className={cn(
+                                    'inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold shrink-0',
+                                    opt === q.correct_answer ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'
+                                  )}>
+                                    {String.fromCharCode(65 + optIdx)}
+                                  </span>
                                   <span>{opt}</span>
                                 </li>
                               ))}
