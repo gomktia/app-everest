@@ -243,7 +243,16 @@ export default function LoginPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-semibold">Senha</FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel className="text-sm font-semibold">Senha</FormLabel>
+                          <a
+                            href="/reset-password"
+                            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                            tabIndex={-1}
+                          >
+                            Esqueceu a senha?
+                          </a>
+                        </div>
                         <FormControl>
                           <div className="relative">
                             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

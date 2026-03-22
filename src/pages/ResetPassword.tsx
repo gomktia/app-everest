@@ -55,43 +55,64 @@ export default function ResetPasswordPage() {
     const accessToken = hashParams.get('access_token')
     const type = hashParams.get('type')
 
-    // Listen for PASSWORD_RECOVERY event
+    let resolved = false
+
+    // Listen for PASSWORD_RECOVERY event (fired by Supabase after code exchange)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
+        resolved = true
         setPageState('form')
       }
     })
 
     const validateAndShowForm = async () => {
       if (accessToken && type === 'recovery') {
-        // Hash-based recovery flow
+        // Hash-based recovery flow (legacy)
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: hashParams.get('refresh_token') || '',
         })
         setPageState(error ? 'expired' : 'form')
-      } else if (code) {
-        // PKCE recovery flow — exchange code for session
+        return
+      }
+
+      if (code) {
+        // PKCE recovery flow
+        // detectSessionInUrl may have already started exchanging the code.
+        // Try exchangeCodeForSession — if it fails (code already consumed or
+        // opened in different browser without code_verifier), fall back to
+        // checking for an existing valid session.
         const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) {
-          // Code invalid/expired or opened in different browser (no code_verifier)
-          // Validate existing session against server (not localStorage cache)
-          const { error: userError } = await supabase.auth.getUser()
-          setPageState(userError ? 'expired' : 'form')
-        } else {
-          setPageState('form')
+        if (!error) {
+          // Exchange succeeded — wait briefly for PASSWORD_RECOVERY event
+          await new Promise((r) => setTimeout(r, 200))
+          if (!resolved) setPageState('form')
+          return
         }
+
+        // Exchange failed — code may have been consumed by detectSessionInUrl,
+        // or this is a different browser. Wait for the auto-exchange to complete
+        // then check for a valid session.
+        await new Promise((r) => setTimeout(r, 1500))
+        if (resolved) return // PASSWORD_RECOVERY event already handled it
+
+        const { error: userError } = await supabase.auth.getUser()
+        if (!userError) {
+          setPageState('form')
+        } else {
+          setPageState('expired')
+        }
+        return
+      }
+
+      // No code in URL — check for existing valid session
+      const { error } = await supabase.auth.getUser()
+      if (error) {
+        setPageState('request-link')
       } else {
-        // No code — validate session against server
-        const { error } = await supabase.auth.getUser()
-        if (error) {
-          // No valid session — show "request new link" form
-          setPageState('request-link')
-        } else {
-          setPageState('form')
-        }
+        setPageState('form')
       }
     }
 
@@ -123,12 +144,19 @@ export default function ResetPasswordPage() {
 
     const { error } = await updateUserPassword(data.password)
     if (error) {
+      const msg = error.message?.toLowerCase() || ''
       let description = error.message
-      if (error.message?.includes('same password') || error.message?.includes('different')) {
+
+      if (msg.includes('same password') || msg.includes('different') || msg.includes('same_password')) {
         description = 'A nova senha não pode ser igual à senha atual.'
-      } else if (error.message?.includes('least') || error.message?.includes('short')) {
-        description = 'A senha não atende aos requisitos mínimos.'
-      } else if (error.message?.includes('session') || error.message?.includes('token') || error.message?.includes('JWT')) {
+      } else if (msg.includes('hibp') || msg.includes('pwned') || msg.includes('breach') || msg.includes('compromised')) {
+        description = 'Esta senha foi encontrada em vazamentos de dados. Escolha uma senha diferente e mais segura.'
+      } else if (msg.includes('least') || msg.includes('short') || msg.includes('too_short') || msg.includes('characters')) {
+        description = 'A senha deve ter pelo menos 12 caracteres.'
+      } else if (msg.includes('reauthentication') || msg.includes('reauthenticate')) {
+        description = 'Sessão expirada. Solicite um novo link abaixo.'
+        setPageState('request-link')
+      } else if (msg.includes('session') || msg.includes('token') || msg.includes('jwt') || msg.includes('not authorized')) {
         description = 'Sessão expirada. Solicite um novo link abaixo.'
         setPageState('request-link')
       }
@@ -139,9 +167,11 @@ export default function ResetPasswordPage() {
         variant: 'destructive',
       })
     } else {
+      // Sign out after successful password change to force fresh login
+      await supabase.auth.signOut()
       toast({
         title: 'Senha redefinida com sucesso!',
-        description: 'Você já pode fazer login com sua nova senha.',
+        description: 'Faça login com sua nova senha.',
       })
       navigate('/login')
     }
@@ -200,7 +230,7 @@ export default function ResetPasswordPage() {
             </div>
             <CardTitle>Link Expirado</CardTitle>
             <CardDescription>
-              Este link de redefinição expirou ou já foi utilizado.
+              Este link de redefinição expirou, já foi utilizado, ou foi aberto em um navegador diferente do que solicitou o link.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -281,10 +311,15 @@ export default function ResetPasswordPage() {
             <CardDescription>
               Enviamos um link de redefinição para{' '}
               <span className="font-semibold text-foreground">{sentEmail}</span>.
-              Abra o link <strong>no mesmo navegador</strong>.
+              Abra o link <strong>no mesmo navegador</strong> que você está usando agora.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
+              <p className="text-xs text-amber-800 dark:text-amber-200">
+                <strong>Importante:</strong> O link deve ser aberto no mesmo navegador (Chrome, Safari, etc.) onde você fez a solicitação. Se abrir em outro, o link não funcionará.
+              </p>
+            </div>
             <Button variant="ghost" className="w-full" onClick={() => navigate('/login')}>
               Voltar ao Login
             </Button>

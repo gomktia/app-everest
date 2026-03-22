@@ -396,14 +396,14 @@ export const UserManagement = ({ isTeacher = false, teacherStudentIds = [], onDa
           <>
           <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/50">
             <CardHeader className="pb-3">
-              <CardDescription className="text-amber-700 dark:text-amber-400">Aguardando Aprovação</CardDescription>
+              <CardDescription className="text-amber-700 dark:text-amber-400">Em Degustação</CardDescription>
               <CardTitle className="text-3xl text-amber-900 dark:text-amber-300">
                 {tastingCount}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                Alunos na turma Degustação
+                Alunos com acesso de teste
               </p>
               <Button
                 variant="outline"
