@@ -96,12 +96,25 @@ export const getAllQuestions = async () => {
       correct_answer,
       explanation,
       points,
+      needs_review,
       topics (
         id,
         name,
         subjects (
           id,
           name
+        )
+      ),
+      quizzes (
+        id,
+        title,
+        topics (
+          id,
+          name,
+          subjects (
+            id,
+            name
+          )
         )
       )
     `)
@@ -111,7 +124,12 @@ export const getAllQuestions = async () => {
     logger.error('Error fetching questions:', error)
     throw error
   }
-  return data
+
+  // Normalize: use direct topic if available, otherwise fall back to quiz's topic
+  return data.map((q: any) => ({
+    ...q,
+    topics: q.topics || q.quizzes?.topics || null,
+  }))
 }
 
 export const createQuiz = async (
