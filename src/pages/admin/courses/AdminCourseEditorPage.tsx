@@ -10,6 +10,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { SectionLoader } from '@/components/SectionLoader'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
+import { aiAssistantService } from '@/services/ai/aiAssistantService'
+import { extractTextFromPDFWithLimit } from '@/lib/pdfTextExtractor'
 import { PandaVideoPickerModal } from '@/components/admin/courses/PandaVideoPickerModal'
 import { type PandaVideo } from '@/services/pandaVideo'
 import { cn } from '@/lib/utils'
@@ -50,6 +56,8 @@ import {
   X,
   AlertTriangle,
   CheckCircle,
+  Sparkles,
+  Edit,
 } from 'lucide-react'
 
 /* ------------------------------------------------------------------ */
@@ -437,6 +445,89 @@ function SortableLessonItem({
     return ''
   })
 
+  // AI Quiz Generation state
+  const [isQuizGenOpen, setIsQuizGenOpen] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [isSavingQuiz, setIsSavingQuiz] = useState(false)
+  const [numQuestions, setNumQuestions] = useState('5')
+  const [difficulty, setDifficulty] = useState('medium')
+  const [questionType, setQuestionType] = useState('multiple_choice')
+  const [generatedQuestions, setGeneratedQuestions] = useState<Array<{
+    question_text: string; question_type: string; options: string[]
+    correct_answer: string; explanation: string; difficulty: number; tags: string[]
+    edited?: boolean
+  }>>([])
+  const [editingQIdx, setEditingQIdx] = useState<number | null>(null)
+
+  const pdfAttachments = lesson.attachments.filter(
+    (a) => a.file_type?.includes('pdf') || a.file_name.endsWith('.pdf')
+  )
+
+  const handleGenerateQuiz = async () => {
+    const firstPdf = pdfAttachments[0]
+    if (!firstPdf?.file_url) return
+
+    setIsGenerating(true)
+    setGeneratedQuestions([])
+    try {
+      const text = await extractTextFromPDFWithLimit(firstPdf.file_url)
+      if (!text.trim()) {
+        toast({ title: 'PDF sem texto', description: 'Não foi possível extrair texto do PDF. Pode ser uma imagem escaneada.', variant: 'destructive' })
+        return
+      }
+      const result = await aiAssistantService.generateQuiz({
+        content_text: text,
+        num_questions: parseInt(numQuestions),
+        difficulty: difficulty as any,
+        gen_question_type: questionType as any,
+      })
+      setGeneratedQuestions(result.questions)
+    } catch (err) {
+      logger.error('Erro ao gerar quiz:', err)
+      toast({ title: 'Erro ao gerar quiz', description: err instanceof Error ? err.message : 'Tente novamente.', variant: 'destructive' })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleSaveGeneratedQuestions = async () => {
+    if (generatedQuestions.length === 0) return
+    setIsSavingQuiz(true)
+    try {
+      const sourceExam = `IA - ${lesson.title || 'Aula'}`
+      const rows = generatedQuestions.map((q) => ({
+        quiz_id: lesson.quiz_id ?? null,
+        question_text: q.question_text,
+        question_type: q.question_type,
+        options: q.options,
+        correct_answer: q.correct_answer,
+        explanation: q.explanation,
+        points: 1,
+        difficulty: q.difficulty,
+        tags: q.tags,
+        source_type: 'ai_generated',
+        source_exam: sourceExam,
+        source_banca: null,
+      }))
+      const { error } = await supabase.from('quiz_questions').insert(rows)
+      if (error) throw error
+      toast({ title: 'Questões salvas', description: `${rows.length} questão(ões) adicionadas ao Banco de Questões.` })
+      setIsQuizGenOpen(false)
+      setGeneratedQuestions([])
+    } catch (err) {
+      logger.error('Erro ao salvar questões:', err)
+      toast({ title: 'Erro ao salvar', description: err instanceof Error ? err.message : 'Tente novamente.', variant: 'destructive' })
+    } finally {
+      setIsSavingQuiz(false)
+    }
+  }
+
+  const updateGenQuestion = (idx: number, field: string, value: string | string[]) => {
+    setGeneratedQuestions((prev) => prev.map((q, i) => i === idx ? { ...q, [field]: value, edited: true } : q))
+  }
+
+  const { toast } = useToast()
+
   const {
     attributes,
     listeners,
@@ -721,16 +812,173 @@ function SortableLessonItem({
                 e.target.value = ''
               }}
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-border rounded-md text-[11px] text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
-            >
-              <Upload className="h-3 w-3" />
-              Adicionar arquivo
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-border rounded-md text-[11px] text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+              >
+                <Upload className="h-3 w-3" />
+                Adicionar arquivo
+              </button>
+              {pdfAttachments.length > 0 && (
+                <button
+                  onClick={() => { setGeneratedQuestions([]); setIsQuizGenOpen(true) }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-purple-300 dark:border-purple-800 rounded-md text-[11px] text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/30 hover:text-purple-700 transition-colors"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Gerar Quiz com IA
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
+
+      {/* AI Quiz Generation Dialog */}
+      <Dialog open={isQuizGenOpen} onOpenChange={setIsQuizGenOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-500" />
+              Gerar Quiz com IA
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {pdfAttachments[0] && (
+              <div className="flex items-center gap-2 p-2 bg-muted rounded-md text-sm">
+                <FileText className="h-4 w-4 text-red-400" />
+                <span className="font-medium text-muted-foreground">PDF:</span>
+                <span className="truncate">{pdfAttachments[0].file_name}</span>
+                {pdfAttachments.length > 1 && (
+                  <Badge variant="secondary" className="text-[10px]">+{pdfAttachments.length - 1}</Badge>
+                )}
+              </div>
+            )}
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs">Questões</Label>
+                <Select value={numQuestions} onValueChange={setNumQuestions}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="15">15</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Dificuldade</Label>
+                <Select value={difficulty} onValueChange={setDifficulty}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Facil</SelectItem>
+                    <SelectItem value="medium">Medio</SelectItem>
+                    <SelectItem value="hard">Dificil</SelectItem>
+                    <SelectItem value="mixed">Misto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Tipo</Label>
+                <Select value={questionType} onValueChange={setQuestionType}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="multiple_choice">Multipla escolha</SelectItem>
+                    <SelectItem value="true_false">Certo-Errado</SelectItem>
+                    <SelectItem value="mixed">Misto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Button type="button" onClick={handleGenerateQuiz} disabled={isGenerating} className="w-full">
+              {isGenerating ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Extraindo PDF e gerando questoes...</>
+              ) : (
+                <><Sparkles className="mr-2 h-4 w-4" />Gerar</>
+              )}
+            </Button>
+
+            {generatedQuestions.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-medium">{generatedQuestions.length} questao(oes) gerada(s)</span>
+                </div>
+
+                {generatedQuestions.map((q, idx) => (
+                  <Card key={idx} className={q.edited ? 'border-blue-400' : ''}>
+                    <CardContent className="pt-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex gap-2 flex-wrap">
+                          <Badge variant="secondary" className="text-[10px]">
+                            {q.question_type === 'multiple_choice' ? 'Multipla escolha' : 'Certo-Errado'}
+                          </Badge>
+                          <Badge variant="outline" className="text-[10px]">
+                            {q.difficulty === 1 ? 'Facil' : q.difficulty === 3 ? 'Dificil' : 'Medio'}
+                          </Badge>
+                          {q.edited && <Badge variant="outline" className="text-[10px] text-blue-500 border-blue-400">Editada</Badge>}
+                        </div>
+                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7"
+                          onClick={() => setEditingQIdx(editingQIdx === idx ? null : idx)}>
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
+                      {editingQIdx === idx ? (
+                        <div className="space-y-2">
+                          <Textarea value={q.question_text} onChange={(e) => updateGenQuestion(idx, 'question_text', e.target.value)} rows={3} className="text-sm" />
+                          {q.options.map((opt, optIdx) => (
+                            <div key={optIdx} className="flex items-center gap-2">
+                              <span className="text-xs font-mono text-muted-foreground w-5">{String.fromCharCode(65 + optIdx)})</span>
+                              <Input value={opt} onChange={(e) => { const o = [...q.options]; o[optIdx] = e.target.value; updateGenQuestion(idx, 'options', o) }} className="text-sm h-8" />
+                            </div>
+                          ))}
+                          <div className="space-y-1">
+                            <Label className="text-xs">Gabarito</Label>
+                            <Input value={q.correct_answer} onChange={(e) => updateGenQuestion(idx, 'correct_answer', e.target.value)} className="text-sm h-8" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Explicacao</Label>
+                            <Textarea value={q.explanation} onChange={(e) => updateGenQuestion(idx, 'explanation', e.target.value)} rows={2} className="text-sm" />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm">{q.question_text}</p>
+                          {q.options.length > 0 && (
+                            <ul className="space-y-1">
+                              {q.options.map((opt, optIdx) => (
+                                <li key={optIdx} className={`text-xs flex gap-1 ${opt === q.correct_answer ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}>
+                                  <span className="font-mono">{String.fromCharCode(65 + optIdx)})</span>
+                                  <span>{opt}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {q.explanation && <p className="text-xs text-muted-foreground italic border-t pt-1">{q.explanation}</p>}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button type="button" variant="outline" onClick={() => setIsQuizGenOpen(false)}>Cancelar</Button>
+            {generatedQuestions.length > 0 && (
+              <Button type="button" onClick={handleSaveGeneratedQuestions} disabled={isSavingQuiz}>
+                {isSavingQuiz ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Salvando...</> : <><CheckCircle className="mr-2 h-4 w-4" />Salvar no Banco de Questoes</>}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
