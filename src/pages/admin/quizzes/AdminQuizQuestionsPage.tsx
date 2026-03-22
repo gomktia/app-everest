@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft, Trash, Upload, Download, Loader2, BookOpen, Plus, Pencil, Search } from 'lucide-react'
+import { ArrowLeft, Trash, Upload, Download, Loader2, BookOpen, Plus, Pencil, Search, ArrowRightLeft, AlertTriangle } from 'lucide-react'
 import { useRef, useState, useEffect } from 'react'
 import { useToast } from '@/components/ui/use-toast'
 import {
@@ -37,6 +37,8 @@ import {
   updateReadingText,
   deleteReadingText,
   getAllQuestions,
+  moveQuestionToQuiz,
+  getQuizzesForMove,
   type ReadingText
 } from '@/services/adminQuizService'
 import { supabase } from '@/lib/supabase/client'
@@ -53,6 +55,7 @@ const questionSchema = z.object({
   explanation: z.string().optional(),
   points: z.coerce.number().default(1),
   reading_text_id: z.string().optional().nullable(),
+  needs_review: z.boolean().optional(),
 })
 
 const quizQuestionsSchema = z.object({
@@ -90,6 +93,15 @@ export default function AdminQuizQuestionsPage() {
   const [textFormTitle, setTextFormTitle] = useState('')
   const [textFormContent, setTextFormContent] = useState('')
 
+  // Move question state
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false)
+  const [moveQuestionIndex, setMoveQuestionIndex] = useState<number | null>(null)
+  const [moveQuizzes, setMoveQuizzes] = useState<Array<{ id: string; title: string; topic_id: string; topics: { name: string; subject_id: string; subjects: { name: string } } | null }>>([])
+  const [moveFilterSubject, setMoveFilterSubject] = useState('all')
+  const [moveLoading, setMoveLoading] = useState(false)
+  const [moveTargetQuizId, setMoveTargetQuizId] = useState('')
+  const [showOnlyReview, setShowOnlyReview] = useState(false)
+
   const form = useForm<QuizQuestionsFormValues>({
     resolver: zodResolver(quizQuestionsSchema),
     defaultValues: {
@@ -125,7 +137,8 @@ export default function AdminQuizQuestionsPage() {
         correct_answer: q.correct_answer,
         explanation: q.explanation || '',
         points: q.points,
-        reading_text_id: q.reading_text_id
+        reading_text_id: q.reading_text_id,
+        needs_review: q.needs_review || false,
       }))
       form.reset({ questions: formatted })
     } catch (error) {
@@ -239,6 +252,52 @@ export default function AdminQuizQuestionsPage() {
     toast({ title: msg })
     setBankOpen(false)
   }
+
+  const openMoveDialog = async (index: number) => {
+    setMoveQuestionIndex(index)
+    setMoveTargetQuizId('')
+    setMoveFilterSubject('all')
+    setMoveDialogOpen(true)
+    if (moveQuizzes.length > 0) return
+    try {
+      setMoveLoading(true)
+      const quizzes = await getQuizzesForMove()
+      setMoveQuizzes(quizzes.filter(q => q.id !== quizId))
+    } catch {
+      toast({ title: 'Erro ao carregar quizzes', variant: 'destructive' })
+    } finally {
+      setMoveLoading(false)
+    }
+  }
+
+  const handleMoveQuestion = async () => {
+    if (moveQuestionIndex === null || !moveTargetQuizId) return
+    const question = form.getValues(`questions.${moveQuestionIndex}`)
+    if (!question.id) {
+      toast({ title: 'Salve a questão antes de mover', variant: 'destructive' })
+      return
+    }
+    try {
+      await moveQuestionToQuiz(question.id, moveTargetQuizId)
+      remove(moveQuestionIndex)
+      const targetQuiz = moveQuizzes.find(q => q.id === moveTargetQuizId)
+      toast({ title: `Questão movida para "${targetQuiz?.title || 'outro quiz'}"` })
+      setMoveDialogOpen(false)
+    } catch {
+      toast({ title: 'Erro ao mover questão', variant: 'destructive' })
+    }
+  }
+
+  const moveSubjects = [...new Map(
+    moveQuizzes
+      .filter(q => q.topics?.subjects)
+      .map(q => [q.topics!.subjects.name, q.topics!.subjects.name])
+  ).values()].sort()
+
+  const filteredMoveQuizzes = moveQuizzes.filter(q => {
+    if (moveFilterSubject === 'all') return true
+    return q.topics?.subjects?.name === moveFilterSubject
+  })
 
   const onSubmit = async (data: QuizQuestionsFormValues) => {
     if (!quizId) return
@@ -433,18 +492,60 @@ export default function AdminQuizQuestionsPage() {
               </Button>
             </div>
           </div>
-          {fields.map((field, index) => (
-            <Card key={field.id}>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Questão {index + 1}</CardTitle>
+          {(() => {
+            const reviewCount = fields.filter((_, i) => form.getValues(`questions.${i}.needs_review`)).length
+            if (reviewCount === 0) return null
+            return (
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <span className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>{reviewCount}</strong> questões precisam de verificação de tópico
+                </span>
                 <Button
                   type="button"
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => remove(index)}
+                  variant={showOnlyReview ? 'default' : 'outline'}
+                  size="sm"
+                  className="ml-auto"
+                  onClick={() => setShowOnlyReview(!showOnlyReview)}
                 >
-                  <Trash className="h-4 w-4" />
+                  {showOnlyReview ? 'Mostrar Todas' : 'Filtrar: Verificar Tópico'}
                 </Button>
+              </div>
+            )
+          })()}
+          {fields.map((field, index) => {
+            const needsReview = form.getValues(`questions.${index}.needs_review`)
+            if (showOnlyReview && !needsReview) return null
+            return (
+            <Card key={field.id} className={needsReview ? 'border-amber-300 dark:border-amber-800' : ''}>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CardTitle>Questão {index + 1}</CardTitle>
+                  {needsReview && (
+                    <Badge variant="outline" className="border-amber-400 text-amber-700 dark:text-amber-300 text-[10px]">
+                      Verificar Tópico
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    title="Mover para outro quiz"
+                    onClick={() => openMoveDialog(index)}
+                  >
+                    <ArrowRightLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -542,7 +643,8 @@ export default function AdminQuizQuestionsPage() {
                 />
               </CardContent>
             </Card>
-          ))}
+            )
+          })}
           <Button
             type="button"
             variant="outline"
@@ -560,6 +662,64 @@ export default function AdminQuizQuestionsPage() {
           </Button>
         </form>
       </Form>
+
+      {/* Move Question Dialog */}
+      <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Mover Questão para Outro Quiz</DialogTitle>
+          </DialogHeader>
+          {moveQuestionIndex !== null && (
+            <div className="bg-muted/50 p-3 rounded-lg mb-3">
+              <p className="text-sm text-muted-foreground mb-1">Questão {moveQuestionIndex + 1}:</p>
+              <p className="text-sm line-clamp-2">{form.getValues(`questions.${moveQuestionIndex}.question_text`)}</p>
+            </div>
+          )}
+          <div className="flex gap-3 mb-3">
+            <Select value={moveFilterSubject} onValueChange={setMoveFilterSubject}>
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="Filtrar por matéria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Matérias</SelectItem>
+                {moveSubjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
+            {moveLoading ? (
+              <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+            ) : filteredMoveQuizzes.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">Nenhum quiz encontrado.</div>
+            ) : (
+              filteredMoveQuizzes.map(q => (
+                <div
+                  key={q.id}
+                  onClick={() => setMoveTargetQuizId(q.id)}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    moveTargetQuizId === q.id ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                  }`}
+                >
+                  <input type="radio" checked={moveTargetQuizId === q.id} readOnly className="accent-primary" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{q.title}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {q.topics?.subjects?.name} &middot; {q.topics?.name}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-3 border-t">
+            <Button variant="outline" onClick={() => setMoveDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleMoveQuestion} disabled={!moveTargetQuizId}>
+              <ArrowRightLeft className="mr-2 h-4 w-4" />
+              Mover Questão
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Bank Import Dialog */}
       <Dialog open={bankOpen} onOpenChange={setBankOpen}>

@@ -438,6 +438,38 @@ export const deleteReadingText = async (id: string): Promise<void> => {
   }
 }
 
+export const moveQuestionToQuiz = async (questionId: string, targetQuizId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('quiz_questions')
+    .update({ quiz_id: targetQuizId })
+    .eq('id', questionId)
+
+  if (error) {
+    logger.error('Error moving question:', error)
+    throw error
+  }
+}
+
+export const getQuizzesForMove = async () => {
+  const { data, error } = await supabase
+    .from('quizzes')
+    .select('id, title, topic_id, topics ( name, subject_id, subjects ( name ) )')
+    .or('type.eq.quiz,type.is.null')
+    .order('title')
+
+  if (error) {
+    logger.error('Error fetching quizzes for move:', error)
+    throw error
+  }
+
+  return data as Array<{
+    id: string
+    title: string
+    topic_id: string
+    topics: { name: string; subject_id: string; subjects: { name: string } } | null
+  }>
+}
+
 export const saveQuizQuestions = async (
   quizId: string,
   questions: QuestionUpsert[],
