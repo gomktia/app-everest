@@ -34,7 +34,9 @@ import {
   BarChart2,
   Upload,
   Sparkles,
+  Search,
 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 import { getAdminQuizzes, deleteQuiz, type AdminQuiz } from '@/services/adminQuizService'
 import { SectionLoader } from '@/components/SectionLoader'
 import { useToast } from '@/components/ui/use-toast'
@@ -47,6 +49,7 @@ export default function AdminQuizzesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [importTarget, setImportTarget] = useState<{ id: string; title: string } | null>(null)
   const [auditOpen, setAuditOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const { toast } = useToast()
 
   const loadQuizzes = () => {
@@ -121,6 +124,15 @@ export default function AdminQuizzesPage() {
         </div>
       </CardHeader>
       <CardContent>
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por título ou tópico..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -134,14 +146,23 @@ export default function AdminQuizzesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {quizzes.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  Nenhum quiz encontrado. Crie o primeiro quiz.
-                </TableCell>
-              </TableRow>
-            )}
-            {quizzes.map((quiz) => (
+            {(() => {
+              const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+              const term = normalize(search)
+              const filtered = search
+                ? quizzes.filter(q =>
+                    normalize(q.title).includes(term) ||
+                    normalize(q.topics?.name || '').includes(term)
+                  )
+                : quizzes
+              if (filtered.length === 0) return (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    {search ? 'Nenhum quiz encontrado para essa busca.' : 'Nenhum quiz encontrado. Crie o primeiro quiz.'}
+                  </TableCell>
+                </TableRow>
+              )
+              return filtered.map((quiz) => (
               <TableRow key={quiz.id}>
                 <TableCell className="font-medium">{quiz.title}</TableCell>
                 <TableCell>{quiz.topics?.name || 'N/A'}</TableCell>
@@ -195,7 +216,7 @@ export default function AdminQuizzesPage() {
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
+            ))})()}
           </TableBody>
         </Table>
       </CardContent>
