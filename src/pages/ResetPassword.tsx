@@ -47,22 +47,38 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const url = new URL(window.location.href)
     const code = url.searchParams.get('code')
+    // Also check for hash-based params (older Supabase flows)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1))
+    const accessToken = hashParams.get('access_token')
+    const type = hashParams.get('type')
 
-    // Listen for PASSWORD_RECOVERY event (works for hash-based redirects)
+    // Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+      if (event === 'PASSWORD_RECOVERY') {
         setSessionReady(true)
       }
     })
 
-    if (code) {
-      // Exchange the PKCE code from the email link for a valid session
+    if (accessToken && type === 'recovery') {
+      // Hash-based recovery flow (older Supabase config)
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: hashParams.get('refresh_token') || '',
+      }).then(({ error }) => {
+        if (error) {
+          setExchangeError(true)
+        } else {
+          setSessionReady(true)
+        }
+      })
+    } else if (code) {
+      // PKCE recovery flow
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
         if (error) {
-          // PKCE code_verifier missing (different browser) or code expired
-          // Check if already has a valid session (e.g. user is already logged in)
+          // code_verifier missing (different browser) or code already used
+          // Still allow if user has a valid session already
           supabase.auth.getSession().then(({ data }) => {
             if (data.session) {
               setSessionReady(true)
@@ -75,9 +91,11 @@ export default function ResetPasswordPage() {
         }
       })
     } else {
-      // No code param — check if already has session (direct navigation)
+      // No code/token — check for existing session
       supabase.auth.getSession().then(({ data }) => {
-        if (data.session) setSessionReady(true)
+        if (data.session) {
+          setSessionReady(true)
+        }
       })
     }
 
@@ -91,11 +109,34 @@ export default function ResetPasswordPage() {
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true)
+
+    // Verify we still have a valid session before attempting update
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      toast({
+        title: 'Sessão expirada',
+        description: 'Solicite um novo link de redefinição na tela de login.',
+        variant: 'destructive',
+      })
+      setIsLoading(false)
+      return
+    }
+
     const { error } = await updateUserPassword(data.password)
     if (error) {
+      // Map common Supabase auth errors to PT-BR
+      let description = error.message
+      if (error.message?.includes('same password')) {
+        description = 'A nova senha não pode ser igual à senha atual.'
+      } else if (error.message?.includes('least')) {
+        description = 'A senha não atende aos requisitos mínimos do servidor.'
+      } else if (error.message?.includes('session') || error.message?.includes('token')) {
+        description = 'Sessão expirada. Solicite um novo link de redefinição.'
+      }
+
       toast({
         title: 'Erro ao redefinir senha',
-        description: 'O link pode ter expirado. Por favor, tente novamente.',
+        description,
         variant: 'destructive',
       })
     } else {
