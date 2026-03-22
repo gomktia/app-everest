@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { aiAssistantService } from '@/services/ai/aiAssistantService'
 import { extractTextFromPDFWithLimit } from '@/lib/pdfTextExtractor'
+import { createQuiz, saveQuizQuestions } from '@/services/adminQuizService'
 import { PandaVideoPickerModal } from '@/components/admin/courses/PandaVideoPickerModal'
 import { type PandaVideo } from '@/services/pandaVideo'
 import { cn } from '@/lib/utils'
@@ -494,24 +495,50 @@ function SortableLessonItem({
     if (generatedQuestions.length === 0) return
     setIsSavingQuiz(true)
     try {
+      let quizId = lesson.quiz_id
+
+      // If lesson has no quiz, create one (requires topic_id)
+      if (!quizId) {
+        if (!lesson.topic_id) {
+          toast({ title: 'Selecione um conteudo primeiro', description: 'A aula precisa ter Materia e Conteudo selecionados para criar o quiz.', variant: 'destructive' })
+          setIsSavingQuiz(false)
+          return
+        }
+        const newQuiz = await createQuiz({
+          title: `Quiz - ${lesson.title || 'Aula'}`,
+          topic_id: lesson.topic_id,
+          description: `Quiz gerado por IA a partir do PDF da aula "${lesson.title}"`,
+          status: 'active',
+          shuffle_questions: true,
+          shuffle_options: true,
+          show_results_immediately: true,
+          allow_review: true,
+        })
+        if (!newQuiz) throw new Error('Falha ao criar quiz')
+        quizId = newQuiz.id
+        // Link quiz to lesson
+        onUpdate('quiz_id', quizId)
+      }
+
+      // Use saveQuizQuestions which auto-generates flashcards
       const sourceExam = `IA - ${lesson.title || 'Aula'}`
-      const rows = generatedQuestions.map((q) => ({
-        quiz_id: lesson.quiz_id ?? null,
+      const questions = generatedQuestions.map((q) => ({
+        quiz_id: quizId!,
         question_text: q.question_text,
         question_type: q.question_type,
-        options: q.options,
+        options: q.options as any,
         correct_answer: q.correct_answer,
         explanation: q.explanation,
         points: 1,
         difficulty: q.difficulty,
-        tags: q.tags,
+        tags: q.tags as any,
         source_type: 'ai_generated',
         source_exam: sourceExam,
-        source_banca: null,
       }))
-      const { error } = await supabase.from('quiz_questions').insert(rows)
-      if (error) throw error
-      toast({ title: 'Questões salvas', description: `${rows.length} questão(ões) adicionadas ao Banco de Questões.` })
+
+      await saveQuizQuestions(quizId!, questions)
+
+      toast({ title: 'Quiz salvo com sucesso!', description: `${questions.length} questao(oes) salvas no Quiz + Banco de Questoes. Flashcards gerados automaticamente.` })
       setIsQuizGenOpen(false)
       setGeneratedQuestions([])
     } catch (err) {
