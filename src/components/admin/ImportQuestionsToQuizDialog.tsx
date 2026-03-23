@@ -105,7 +105,10 @@ export const ImportQuestionsToQuizDialog = ({
         onClose={() => setIsErrorDialogOpen(false)}
       />
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent>
+        <DialogContent
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>Importar Questões</DialogTitle>
             <DialogDescription>
@@ -158,18 +161,23 @@ POINTS: 1`}
 
             {/* File upload */}
             <div className="space-y-2">
-              <Label htmlFor="quiz-file-upload">Arquivo de Questões (.txt)</Label>
+              <Label>Arquivo de Questões (.txt)</Label>
               <input
-                id="quiz-file-upload"
                 type="file"
                 accept=".txt"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium cursor-pointer"
+                className="hidden"
               />
-              {file && (
-                <p className="text-sm text-muted-foreground">Arquivo selecionado: <strong>{file.name}</strong></p>
-              )}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center justify-center gap-2 h-20 w-full rounded-md border-2 border-dashed border-input bg-muted/20 hover:bg-muted/40 cursor-pointer transition-colors"
+              >
+                <Upload className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {file ? file.name : 'Clique para selecionar um arquivo .txt'}
+                </span>
+              </div>
             </div>
           </div>
 
