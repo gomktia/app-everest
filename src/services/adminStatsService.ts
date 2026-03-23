@@ -16,14 +16,22 @@ export interface SystemStats {
   completionRate: number
 }
 
+// Cache stats for 10 minutes to reduce DB load
+let _statsCache: { data: SystemStats; at: number } | null = null
+const STATS_CACHE_TTL = 10 * 60 * 1000
+
 export async function getSystemStats(): Promise<SystemStats> {
+  if (_statsCache && Date.now() - _statsCache.at < STATS_CACHE_TTL) {
+    return _statsCache.data
+  }
+
   try {
     // Try RPC first (1 query instead of 12)
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_system_stats')
 
     if (!rpcError && rpcData) {
       const d = rpcData as any
-      return {
+      const result: SystemStats = {
         totalUsers: d.total_users || 0,
         totalStudents: d.total_students || 0,
         totalTeachers: d.total_teachers || 0,
@@ -37,6 +45,8 @@ export async function getSystemStats(): Promise<SystemStats> {
         activeUsers: d.active_users || 0,
         completionRate: d.completion_rate || 0,
       }
+      _statsCache = { data: result, at: Date.now() }
+      return result
     }
 
     // Fallback: consolidated parallel queries

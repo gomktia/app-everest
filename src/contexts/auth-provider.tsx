@@ -53,6 +53,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Profile cache in localStorage for instant F5 reload
 const PROFILE_CACHE_KEY = 'everest-profile-cache'
+const LAST_SEEN_KEY = 'everest-last-seen-at'
+const LAST_SEEN_DEBOUNCE_MS = 5 * 60 * 1000 // 5 minutes
+
+/** Debounced update_last_seen — max 1 call per 5 minutes */
+function debouncedUpdateLastSeen(userId: string) {
+  try {
+    const lastCall = sessionStorage.getItem(LAST_SEEN_KEY)
+    if (lastCall && Date.now() - parseInt(lastCall) < LAST_SEEN_DEBOUNCE_MS) return
+    sessionStorage.setItem(LAST_SEEN_KEY, String(Date.now()))
+    supabase.rpc('update_last_seen', { p_user_id: userId }).then(() => {}, () => {})
+  } catch {}
+}
 
 function getCachedProfile(): UserProfile | null {
   try {
@@ -274,7 +286,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           Sentry.setUser({ id: userProfile.id, email: userProfile.email, username: `${userProfile.first_name} ${userProfile.last_name}`.trim() })
           Sentry.setTag('user_role', userProfile.role)
           // Track last seen (5-min debounce in DB)
-          supabase.rpc('update_last_seen', { p_user_id: userProfile.id }).then(() => {}, () => {})
+          debouncedUpdateLastSeen(userProfile.id)
         }
       } catch (error) {
         logger.error('Failed to fetch profile in handleSessionChange:', error)
@@ -330,7 +342,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setProfileFetchAttempted(true)
 
           // Track last seen on cached init
-          supabase.rpc('update_last_seen', { p_user_id: cached.id }).then(() => {}, () => {})
+          debouncedUpdateLastSeen(cached.id)
 
           // Refresh both in background (non-blocking)
           supabase.auth.getSession().then(({ data }) => {
@@ -509,7 +521,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else if (profileRef.current) {
           // Update last_seen on tab focus (5-min debounce in DB)
-          supabase.rpc('update_last_seen', { p_user_id: profileRef.current.id }).then(() => {}, () => {})
+          debouncedUpdateLastSeen(profileRef.current.id)
         }
       } catch {
         // Ignore network errors on visibility check
