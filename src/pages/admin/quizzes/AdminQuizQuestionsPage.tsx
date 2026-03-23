@@ -50,7 +50,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 const questionSchema = z.object({
   id: z.string().optional(),
   question_text: z.string().min(1, 'A pergunta é obrigatória.'),
-  options: z.array(z.string().min(1)).length(4, 'Deve haver 4 opções.'),
+  options: z.array(z.string().min(1)).min(2, 'Mínimo 2 opções.').max(6, 'Máximo 6 opções.'),
   correct_answer: z.string().min(1, 'Selecione a resposta correta.'),
   explanation: z.string().optional(),
   points: z.coerce.number().default(1),
@@ -606,7 +606,7 @@ export default function AdminQuizQuestionsPage() {
                         value={radioField.value}
                         className="space-y-2"
                       >
-                        {[0, 1, 2, 3].map((optIndex) => (
+                        {(form.getValues(`questions.${index}.options`) || []).map((_: string, optIndex: number) => (
                           <FormField
                             key={optIndex}
                             control={form.control}
