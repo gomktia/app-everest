@@ -26,6 +26,11 @@ export async function getYouTubeVideos(params?: {
   pageToken?: string
 }): Promise<{ videos: YouTubeVideo[]; nextPageToken?: string }> {
   try {
+    if (!YOUTUBE_API_KEY || !CHANNEL_ID) {
+      logger.warn('YouTube API key or Channel ID not configured')
+      return { videos: [] }
+    }
+
     // Step 1: Search for videos
     const searchParams = new URLSearchParams({
       key: YOUTUBE_API_KEY,
