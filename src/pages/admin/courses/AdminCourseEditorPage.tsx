@@ -1162,7 +1162,7 @@ export default function AdminCourseEditorPage() {
               duration_seconds, is_active, is_preview, order_index,
               accompanying_pdf_attachment_id, topic_id, quiz_id,
               quiz_required, quiz_min_percentage,
-              lesson_attachments ( id, file_url, file_name, file_type )
+              lesson_attachments!lesson_attachments_lesson_id_fkey ( id, file_url, file_name, file_type )
             )
           `)
           .eq('course_id', courseId!)
