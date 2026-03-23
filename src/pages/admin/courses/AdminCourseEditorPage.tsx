@@ -1677,8 +1677,9 @@ export default function AdminCourseEditorPage() {
   const handleVideoSelect = useCallback((video: PandaVideo) => {
     if (!videoPickerTarget) return
     const { moduleIndex, lessonIndex } = videoPickerTarget
+    const isYouTube = (video as any)._source === 'youtube'
     const videoData = {
-      video_source_type: 'panda_video' as const,
+      video_source_type: isYouTube ? 'youtube' : 'panda_video',
       video_source_id: video.id,
       duration_seconds: video.duration,
       title: video.title,
