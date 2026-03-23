@@ -7,7 +7,14 @@ import { logger } from '@/lib/logger'
 function parseOptionsToArray(options: unknown): string[] {
   if (Array.isArray(options)) return options.map(String)
   if (typeof options === 'string') {
-    try { return JSON.parse(options) } catch { return [] }
+    try {
+      const parsed = JSON.parse(options)
+      if (Array.isArray(parsed)) return parsed.map(String)
+      return []
+    } catch {
+      logger.error('Failed to parse quiz options:', options)
+      return []
+    }
   }
   if (typeof options === 'object' && options !== null) {
     return Object.values(options).map(String)

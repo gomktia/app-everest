@@ -170,7 +170,8 @@ export const parseQuizQuestionsFromFile = (
       continue
     }
 
-    for (let j = 1; j <= 4; j++) {
+    // Parse options O1: through O5: (supports 4 or 5 options)
+    for (let j = 1; j <= 5; j++) {
       const optionPrefix = `O${j}: `
       if (i < lines.length && lines[i].startsWith(optionPrefix)) {
         const optionText = lines[i].substring(optionPrefix.length).trim()
@@ -180,7 +181,8 @@ export const parseQuizQuestionsFromFile = (
         }
         options.push(optionText)
         i++
-      } else {
+      } else if (j <= 4) {
+        // O1-O4 are required, O5 is optional
         errors.push({
           line: i + 1,
           message: `Esperava a opção ${j} (começando com "${optionPrefix}").`,

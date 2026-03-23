@@ -99,13 +99,22 @@ export default function QuizResultSummaryPage() {
     )
   }
 
+  // Normalize true/false correct_answer to PT-BR labels
+  const normalizeTF = (val: string, type?: string) => {
+    if (type === 'true_false' || val === 'true' || val === 'false') {
+      if (val === 'true' || val === 'Certo') return 'Certo'
+      if (val === 'false' || val === 'Errado') return 'Errado'
+    }
+    return val
+  }
+
   // Transformar quiz para o formato esperado pelo QuizResult
   const topic = {
     title: quiz.title,
     questions: quiz.questions.map(q => ({
       id: q.id,
       question: q.question_text,
-      correctAnswer: q.correct_answer,
+      correctAnswer: normalizeTF(q.correct_answer, q.question_type),
       options: q.options,
       explanation: q.explanation,
     }))
