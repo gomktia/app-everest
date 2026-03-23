@@ -104,10 +104,11 @@ export const ImportQuestionsToQuizDialog = ({
         isOpen={isErrorDialogOpen}
         onClose={() => setIsErrorDialogOpen(false)}
       />
-      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
         <DialogContent
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
+          onFocusOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
             <DialogTitle>Importar Questões</DialogTitle>
