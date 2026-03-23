@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger'
 
-const YOUTUBE_API_KEY = 'AIzaSyDTtF12ZfeYDPhAfmxgwgq_nWd_dhzBlA8'
-const CHANNEL_ID = 'UCCaE6LiUMlgVCPPUJyZozuA'
+const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY || ''
+const CHANNEL_ID = import.meta.env.VITE_YOUTUBE_CHANNEL_ID || ''
 
 export interface YouTubeVideo {
   id: string
