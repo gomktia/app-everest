@@ -82,7 +82,7 @@ export const lessonInteractionService = {
 
       return topLevel
     } catch (error) {
-      logger.error('Error fetching comments:', error)
+      logger.warn('Error fetching comments:', error)
       return []
     }
   },
@@ -147,7 +147,7 @@ export const lessonInteractionService = {
 
       return { average: Math.round(average * 10) / 10, total, userRating }
     } catch (error) {
-      logger.error('Error fetching ratings:', error)
+      logger.warn('Error fetching ratings:', error)
       return { average: 0, total: 0, userRating: null }
     }
   },
@@ -187,7 +187,7 @@ export const lessonInteractionService = {
         drawingData: (data as any)?.drawing_data || null,
       }
     } catch (error) {
-      logger.error('Error fetching note:', error)
+      logger.warn('Error fetching note:', error)
       return { content: '', drawingData: null }
     }
   },

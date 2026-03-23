@@ -87,7 +87,7 @@ export default function MyNotesPage() {
 
         setNotes(enriched)
       } catch (err) {
-        logger.error('Error fetching notes:', err)
+        logger.warn('Error fetching notes:', err)
       } finally {
         setLoading(false)
       }

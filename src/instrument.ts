@@ -60,5 +60,7 @@ Sentry.init({
     'you can only request this after',
     // Edge Function errors — operational, UI already shows toast
     'Edge Function returned a non-2xx status code',
+    // Generic fetch failures — network issues, not code bugs
+    /^TypeError: Failed to fetch/,
   ],
 })

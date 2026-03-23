@@ -199,7 +199,7 @@ export const getTopicWithCards = async (topicId: string): Promise<TopicWithSubje
       })) || []
     }
   } catch (error) {
-    logger.error('Erro ao buscar tópico com flashcards:', error)
+    logger.warn('Erro ao buscar tópico com flashcards:', error)
     return null
   }
 }
@@ -767,7 +767,7 @@ export const flashcardService = {
         })) || []
       }
     } catch (error) {
-      logger.error('Erro ao buscar tópico com flashcards:', error)
+      logger.warn('Erro ao buscar tópico com flashcards:', error)
       return null
     }
   },

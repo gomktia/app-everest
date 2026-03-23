@@ -189,7 +189,7 @@ export const rankingService = {
       if (error) throw error
       return data || []
     } catch (error) {
-      logger.error('Erro ao buscar conquistas:', error)
+      logger.warn('Erro ao buscar conquistas:', error)
       return []
     }
   },
@@ -209,7 +209,7 @@ export const rankingService = {
       if (error) throw error
       return data || []
     } catch (error) {
-      logger.error('Erro ao buscar conquistas do usuário:', error)
+      logger.warn('Erro ao buscar conquistas do usuário:', error)
       return []
     }
   },
