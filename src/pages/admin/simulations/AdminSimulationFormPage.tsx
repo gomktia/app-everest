@@ -809,21 +809,20 @@ export default function AdminSimulationFormPage() {
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileImport}
-              accept=".txt"
-              className="hidden"
-            />
             <Button type="button" variant="outline" size="sm" onClick={openBankDialog} className="gap-2">
               <Search className="h-4 w-4" />
               Banco de Questões
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="gap-2">
+            <label className="inline-flex items-center gap-2 h-8 px-3 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
               <Upload className="h-4 w-4" />
               Importar TXT
-            </Button>
+              <input
+                type="file"
+                onChange={handleFileImport}
+                accept=".txt"
+                className="hidden"
+              />
+            </label>
             <Button type="button" variant="outline" size="sm" onClick={addQuestion} className="gap-2">
               <Plus className="h-4 w-4" />
               Questão
