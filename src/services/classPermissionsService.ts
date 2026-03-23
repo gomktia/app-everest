@@ -76,7 +76,7 @@ export const getUserAllowedFeatures = async (
       .eq('user_id', userId)
 
     if (classError) {
-      logger.error('❌ Erro ao buscar turmas do aluno:', classError)
+      logger.warn('Erro ao buscar turmas do aluno:', classError)
       return []
     }
 

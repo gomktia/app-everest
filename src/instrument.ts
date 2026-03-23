@@ -54,5 +54,9 @@ Sentry.init({
     'Missing VITE_SUPABASE_URL',
     // PWA service worker registration failures (benign)
     /^Rejected$/,
+    // Profile fetch timeout — transient network issue, already retries
+    'Profile fetch timeout',
+    // Auth rate limiting — expected when user clicks too fast
+    'you can only request this after',
   ],
 })

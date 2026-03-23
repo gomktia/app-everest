@@ -48,7 +48,7 @@ export function useAccessExpiration(): AccessExpirationState {
           .eq('user_id', session.user.id)
 
         if (error) {
-          logger.error('Error checking access expiration:', error)
+          logger.warn('Error checking access expiration:', error)
           setState({ expired: false, expirationLoading: false, nearestExpiration: null, daysRemaining: null })
           return
         }

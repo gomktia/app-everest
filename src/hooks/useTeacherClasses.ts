@@ -59,7 +59,7 @@ export function useTeacherClasses(): TeacherContext {
           .single()
 
         if (!teacher) {
-          logger.error('Teacher record not found for user:', profile.id)
+          logger.warn('Teacher record not found for user:', profile.id)
           setError('Registro de professor não encontrado. Peça ao administrador para configurar seu perfil de professor.')
           setLoading(false)
           return

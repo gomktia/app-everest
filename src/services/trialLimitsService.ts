@@ -121,7 +121,7 @@ export const getTrialAllowedContent = async (userId: string): Promise<TrialAllow
       .eq('class_id', studentClass.class_id)
 
     if (error || !allowedContent) {
-      logger.error('❌ Erro ao buscar conteúdo liberado:', error)
+      logger.warn('Erro ao buscar conteúdo liberado:', error)
       return { subjects: [], topics: [], quizzes: [], flashcardSets: [] }
     }
 

@@ -208,7 +208,7 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
     }
 
     // For other errors, log and return null
-    logger.error('Profile fetch error:', fetchError)
+    logger.warn('Profile fetch error:', fetchError)
     return null
 
   } catch (error) {

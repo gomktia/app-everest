@@ -208,7 +208,8 @@ class OfflineStorage {
 
     const tx = this.db.transaction(STORES.FLASHCARD_PROGRESS, 'readonly')
     const index = tx.objectStore(STORES.FLASHCARD_PROGRESS).index('synced')
-    return await index.getAll(false)
+    // IDBIndex.getAll() requires a valid IDBKey — use 0 instead of boolean false
+    return await index.getAll(0)
   }
 
   async markFlashcardProgressSynced(
