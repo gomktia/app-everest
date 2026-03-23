@@ -89,6 +89,7 @@ interface LessonData {
   quiz_id: string | null
   quiz_required: boolean
   quiz_min_percentage: number
+  show_flashcards: boolean
   isNew?: boolean
   isModified?: boolean
 }
@@ -771,6 +772,15 @@ function SortableLessonItem({
               )
             })()}
             <p className="text-[10px] text-muted-foreground">Selecione matéria → conteúdo → quiz. Flashcards são gerados automaticamente.</p>
+            <div className="flex items-center gap-4 flex-wrap">
+              <label className="flex items-center gap-1.5 text-[11px] cursor-pointer">
+                <Switch
+                  checked={lesson.show_flashcards ?? true}
+                  onCheckedChange={(v) => onUpdate('show_flashcards', v)}
+                />
+                Mostrar Flashcards
+              </label>
+            </div>
             {lesson.quiz_id && (
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-1.5 text-[11px] cursor-pointer">
@@ -1161,7 +1171,7 @@ export default function AdminCourseEditorPage() {
               id, title, description, video_source_type, video_source_id,
               duration_seconds, is_active, is_preview, order_index,
               accompanying_pdf_attachment_id, topic_id, quiz_id,
-              quiz_required, quiz_min_percentage,
+              quiz_required, quiz_min_percentage, show_flashcards,
               lesson_attachments!lesson_attachments_lesson_id_fkey ( id, file_url, file_name, file_type )
             )
           `)
@@ -1335,7 +1345,7 @@ export default function AdminCourseEditorPage() {
             video_source_type: null, video_source_id: null, duration_seconds: null,
             is_active: true, is_preview: false, order_index: c.lessons.length,
             attachments: [], accompanying_pdf_attachment_id: null,
-            topic_id: null, quiz_id: null, quiz_required: false, quiz_min_percentage: 70,
+            topic_id: null, quiz_id: null, quiz_required: false, quiz_min_percentage: 70, show_flashcards: true,
             isNew: true,
           }
           return { ...c, lessons: [...c.lessons, newLesson] }
@@ -1811,7 +1821,7 @@ export default function AdminCourseEditorPage() {
               duration_seconds: lesson.duration_seconds || null, is_active: lesson.is_active, is_preview: lesson.is_preview,
               order_index: li, accompanying_pdf_attachment_id: pdfId || null,
               topic_id: lesson.topic_id || null, quiz_id: lesson.quiz_id || null,
-              quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage,
+              quiz_required: lesson.quiz_required, quiz_min_percentage: lesson.quiz_min_percentage, show_flashcards: lesson.show_flashcards ?? true,
             }).select('id').single()
           if (error) throw error
           savedLessonId = newLesson.id

@@ -414,7 +414,7 @@ export const courseService = {
             video_lessons (
               id, title, description, order_index, duration_seconds,
               video_source_type, video_source_id, is_preview, is_active,
-              quiz_id, quiz_required, quiz_min_percentage, topic_id
+              quiz_id, quiz_required, quiz_min_percentage, topic_id, show_flashcards
             )
           )
         `)

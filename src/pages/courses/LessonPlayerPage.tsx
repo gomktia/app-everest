@@ -1237,7 +1237,7 @@ export default function LessonPlayerPage() {
                       Quiz
                     </button>
                   )}
-                  {lessonData?.topic_id && topicFlashcardCount > 0 && topicSubjectId && (
+                  {lessonData?.topic_id && topicFlashcardCount > 0 && topicSubjectId && (lessonData as any).show_flashcards !== false && (
                     <button
                       onClick={() => navigate(`/flashcards/${topicSubjectId}/${lessonData.topic_id}/study?returnTo=${encodeURIComponent(`/courses/${courseId}/lessons/${lessonId}`)}`)}
                       className="flex items-center gap-2 h-10 sm:h-9 px-4 rounded-lg text-xs font-medium transition-all border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-primary"
