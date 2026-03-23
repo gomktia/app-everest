@@ -516,8 +516,11 @@ function SortableLessonItem({
         })
         if (!newQuiz) throw new Error('Falha ao criar quiz')
         quizId = newQuiz.id
-        // Link quiz to lesson
+        // Link quiz to lesson (state + persist directly to DB)
         onUpdate('quiz_id', quizId)
+        if (!lesson.isNew && lesson.id) {
+          await supabase.from('video_lessons').update({ quiz_id: quizId }).eq('id', lesson.id)
+        }
       }
 
       // Use saveQuizQuestions which auto-generates flashcards
