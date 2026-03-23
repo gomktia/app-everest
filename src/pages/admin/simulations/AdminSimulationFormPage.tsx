@@ -564,6 +564,15 @@ export default function AdminSimulationFormPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Hidden file input at root level for TXT import */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileImport}
+        accept=".txt"
+        className="sr-only"
+        tabIndex={-1}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -813,16 +822,10 @@ export default function AdminSimulationFormPage() {
               <Search className="h-4 w-4" />
               Banco de Questões
             </Button>
-            <label className="inline-flex items-center gap-2 h-8 px-3 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
+            <Button type="button" variant="outline" size="sm" onClick={() => { fileInputRef.current?.click() }} className="gap-2">
               <Upload className="h-4 w-4" />
               Importar TXT
-              <input
-                type="file"
-                onChange={handleFileImport}
-                accept=".txt"
-                className="hidden"
-              />
-            </label>
+            </Button>
             <Button type="button" variant="outline" size="sm" onClick={addQuestion} className="gap-2">
               <Plus className="h-4 w-4" />
               Questão
