@@ -132,7 +132,7 @@ export default function LessonPlayerPage() {
   const { courseId, lessonId } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, effectiveUserId, viewingAsStudent } = useAuth()
   const { isTrialUser: isTrialUserGlobal } = useTrialLimits()
   const [isTrialForThisCourse, setIsTrialForThisCourse] = useState(false)
   const isTrialUser = isTrialForThisCourse
@@ -261,6 +261,7 @@ export default function LessonPlayerPage() {
       navigate('/login')
       return
     }
+    const queryUserId = effectiveUserId || user.id
     const fetchData = async () => {
       if (!courseId || !lessonId) return
       try {
@@ -275,7 +276,7 @@ export default function LessonPlayerPage() {
         const { data: enrollment } = await supabase
           .from('student_classes')
           .select('id, class_id, enrollment_date, classes!inner(class_type, class_courses!inner(course_id))')
-          .eq('user_id', user.id)
+          .eq('user_id', queryUserId)
 
         const enrolledCourseIds = (enrollment || []).flatMap((sc: any) =>
           sc.classes?.class_courses?.map((cc: any) => cc.course_id) || []
@@ -342,7 +343,7 @@ export default function LessonPlayerPage() {
         setBlockedLessonIds(blockedLessons)
         setFreeLessonIds(freeLessons)
 
-        const course = await courseService.getCourseWithModulesAndProgress(courseId, user.id)
+        const course = await courseService.getCourseWithModulesAndProgress(courseId, queryUserId)
         if (!course) {
           toast({ title: 'Curso não encontrado', variant: 'destructive' })
           navigate('/courses')
@@ -401,11 +402,11 @@ export default function LessonPlayerPage() {
           setTopicSubjectId(topicData?.subject_id || null)
 
           // Check if student passed the linked quiz
-          if (foundLesson.quiz_required && foundLesson.quiz_id && user?.id) {
+          if (foundLesson.quiz_required && foundLesson.quiz_id && queryUserId) {
             const { data: attempts } = await supabase
               .from('quiz_attempts')
               .select('percentage')
-              .eq('user_id', user.id)
+              .eq('user_id', queryUserId)
               .eq('quiz_id', foundLesson.quiz_id)
             const minPct = foundLesson.quiz_min_percentage || 70
             const passed = (attempts || []).some(a => (a.percentage || 0) >= minPct)
@@ -431,8 +432,8 @@ export default function LessonPlayerPage() {
         // Fetch comments, ratings, and notes
         const [commentsData, ratingsData, noteData] = await Promise.all([
           lessonInteractionService.getComments(lessonId),
-          lessonInteractionService.getRatingStats(lessonId, user.id),
-          lessonInteractionService.getNote(lessonId, user.id),
+          lessonInteractionService.getRatingStats(lessonId, queryUserId),
+          lessonInteractionService.getNote(lessonId, queryUserId),
         ])
         setComments(commentsData)
         setRatingStats(ratingsData)
@@ -447,7 +448,7 @@ export default function LessonPlayerPage() {
       }
     }
     fetchData()
-  }, [courseId, lessonId, user?.id, authLoading, navigate, toast])
+  }, [courseId, lessonId, user?.id, effectiveUserId, authLoading, navigate, toast])
 
   /* ---- scroll to top when lesson changes ---- */
   useEffect(() => {
@@ -493,29 +494,33 @@ export default function LessonPlayerPage() {
   /* ---- mark complete ---- */
   const [isMarkingComplete, setIsMarkingComplete] = useState(false)
   const handleMarkComplete = useCallback(async () => {
-    if (!user?.id || !lessonId || !lessonData || lessonData.completed || isMarkingComplete) return
+    const actionUserId = effectiveUserId || user?.id
+    if (!actionUserId || !lessonId || !lessonData || lessonData.completed || isMarkingComplete) return
     setIsMarkingComplete(true)
     try {
       const { error } = await supabase.from('video_progress').upsert({
-        user_id: user.id, lesson_id: lessonId,
+        user_id: actionUserId, lesson_id: lessonId,
         progress_percentage: 100, is_completed: true,
         current_time_seconds: lessonData.duration_seconds || 0,
       })
       if (error) throw error
 
       // Award XP only if not already completed (check DB to prevent double XP)
-      const { data: existing } = await supabase.from('scores')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('activity_type', 'video_lesson')
-        .eq('activity_id', lessonId)
-        .limit(1)
+      // Skip XP when admin is impersonating to avoid affecting real student data
+      if (!viewingAsStudent) {
+        const { data: existing } = await supabase.from('scores')
+          .select('id')
+          .eq('user_id', actionUserId)
+          .eq('activity_type', 'video_lesson')
+          .eq('activity_id', lessonId)
+          .limit(1)
 
-      if (!existing || existing.length === 0) {
-        await rankingService.addUserScore(user.id, 'video_lesson', 10, lessonId)
-        rankingService.checkAndGrantAchievements(user.id).catch(() => {})
-        setShowXpAnimation(true)
-        setTimeout(() => setShowXpAnimation(false), 2000)
+        if (!existing || existing.length === 0) {
+          await rankingService.addUserScore(actionUserId, 'video_lesson', 10, lessonId)
+          rankingService.checkAndGrantAchievements(actionUserId).catch(() => {})
+          setShowXpAnimation(true)
+          setTimeout(() => setShowXpAnimation(false), 2000)
+        }
       }
 
       setLessonData({ ...lessonData, completed: true, progress: 100 })
@@ -535,20 +540,22 @@ export default function LessonPlayerPage() {
     } finally {
       setIsMarkingComplete(false)
     }
-  }, [user?.id, lessonId, lessonData, toast, nextLesson, courseId, navigate, isMarkingComplete])
+  }, [user?.id, effectiveUserId, viewingAsStudent, lessonId, lessonData, toast, nextLesson, courseId, navigate, isMarkingComplete])
 
   /* ---- comment & rating handlers ---- */
   const handleSubmitComment = useCallback(async (parentId?: string) => {
-    if (!user?.id || !lessonId) return
+    const actionUserId = effectiveUserId || user?.id
+    if (!actionUserId || !lessonId) return
     const text = parentId ? replyText : commentText
     if (!text.trim()) return
 
     setSubmittingComment(true)
     try {
-      const newComment = await lessonInteractionService.addComment(lessonId, user.id, text.trim(), parentId)
+      const newComment = await lessonInteractionService.addComment(lessonId, actionUserId, text.trim(), parentId)
       if (newComment) {
-        // Award XP for commenting (achievements checked on Achievements/Ranking pages)
-        await rankingService.addUserScore(user.id, 'lesson_comment', 5, lessonId)
+        if (!viewingAsStudent) {
+          await rankingService.addUserScore(actionUserId, 'lesson_comment', 5, lessonId)
+        }
         // Refresh comments
         const updated = await lessonInteractionService.getComments(lessonId)
         setComments(updated)
@@ -563,34 +570,35 @@ export default function LessonPlayerPage() {
     } finally {
       setSubmittingComment(false)
     }
-  }, [user?.id, lessonId, commentText, replyText, toast])
+  }, [user?.id, effectiveUserId, viewingAsStudent, lessonId, commentText, replyText, toast])
 
   const handleDeleteComment = useCallback(async (commentId: string) => {
-    if (!user?.id || !lessonId) return
-    const ok = await lessonInteractionService.deleteComment(commentId, user.id)
+    const actionUserId = effectiveUserId || user?.id
+    if (!actionUserId || !lessonId) return
+    const ok = await lessonInteractionService.deleteComment(commentId, actionUserId)
     if (ok) {
       const updated = await lessonInteractionService.getComments(lessonId)
       setComments(updated)
       toast({ title: 'Comentario removido' })
     }
-  }, [user?.id, lessonId, toast])
+  }, [user?.id, effectiveUserId, lessonId, toast])
 
   const handleRate = useCallback(async (rating: number) => {
-    if (!user?.id || !lessonId) return
-    const ok = await lessonInteractionService.rateLesson(lessonId, user.id, rating)
+    const actionUserId = effectiveUserId || user?.id
+    if (!actionUserId || !lessonId) return
+    const ok = await lessonInteractionService.rateLesson(lessonId, actionUserId, rating)
     if (ok) {
-      // Award XP for first rating only
-      if (!ratingStats.userRating) {
-        await rankingService.addUserScore(user.id, 'lesson_rating', 3, lessonId)
-        rankingService.checkAndGrantAchievements(user.id).catch(() => {})
+      if (!ratingStats.userRating && !viewingAsStudent) {
+        await rankingService.addUserScore(actionUserId, 'lesson_rating', 3, lessonId)
+        rankingService.checkAndGrantAchievements(actionUserId).catch(() => {})
         toast({ title: `Avaliacao registrada! +3 XP` })
       } else {
         toast({ title: 'Avaliacao atualizada!' })
       }
-      const updated = await lessonInteractionService.getRatingStats(lessonId, user.id)
+      const updated = await lessonInteractionService.getRatingStats(lessonId, actionUserId)
       setRatingStats(updated)
     }
-  }, [user?.id, lessonId, ratingStats.userRating, toast])
+  }, [user?.id, effectiveUserId, viewingAsStudent, lessonId, ratingStats.userRating, toast])
 
   /* ---- notes auto-save (debounced) ---- */
   const handleNoteChange = useCallback((value: string) => {
@@ -598,8 +606,9 @@ export default function LessonPlayerPage() {
     setNoteLastSaved('Salvando...')
     if (noteTimerRef.current) clearTimeout(noteTimerRef.current)
     noteTimerRef.current = setTimeout(async () => {
-      if (!user?.id || !lessonId) return
-      const ok = await lessonInteractionService.saveNote(lessonId, user.id, value)
+      const uid = effectiveUserId || user?.id
+      if (!uid || !lessonId) return
+      const ok = await lessonInteractionService.saveNote(lessonId, uid, value)
       setNoteLastSaved(ok ? 'Salvo' : 'Erro ao salvar')
     }, 1500)
   }, [user?.id, lessonId])
@@ -610,8 +619,9 @@ export default function LessonPlayerPage() {
     setNoteLastSaved('Salvando...')
     if (drawingTimerRef.current) clearTimeout(drawingTimerRef.current)
     drawingTimerRef.current = setTimeout(async () => {
-      if (!user?.id || !lessonId) return
-      const ok = await lessonInteractionService.saveDrawing(lessonId, user.id, data)
+      const uid = effectiveUserId || user?.id
+      if (!uid || !lessonId) return
+      const ok = await lessonInteractionService.saveDrawing(lessonId, uid, data)
       setNoteLastSaved(ok ? 'Salvo' : 'Erro ao salvar')
     }, 1500)
   }, [user?.id, lessonId])
@@ -622,39 +632,40 @@ export default function LessonPlayerPage() {
     prevLessonIdRef.current = lessonId
 
     // If lesson changed, flush any pending debounced saves for the OLD lesson
-    if (prevLesson && prevLesson !== lessonId && user?.id) {
+    const flushUserId = effectiveUserId || user?.id
+    if (prevLesson && prevLesson !== lessonId && flushUserId) {
       if (noteTimerRef.current) {
         clearTimeout(noteTimerRef.current)
         noteTimerRef.current = null
-        lessonInteractionService.saveNote(prevLesson, user.id, noteContentRef.current)
+        lessonInteractionService.saveNote(prevLesson, flushUserId, noteContentRef.current)
       }
       if (drawingTimerRef.current) {
         clearTimeout(drawingTimerRef.current)
         drawingTimerRef.current = null
         if (drawingDataRef.current) {
-          lessonInteractionService.saveDrawing(prevLesson, user.id, drawingDataRef.current)
+          lessonInteractionService.saveDrawing(prevLesson, flushUserId, drawingDataRef.current)
         }
       }
     }
 
     return () => {
-      // Flush any pending debounced saves on unmount to prevent data loss
+      const uid = effectiveUserId || user?.id
       if (noteTimerRef.current) {
         clearTimeout(noteTimerRef.current)
         noteTimerRef.current = null
-        if (user?.id && lessonId) {
-          lessonInteractionService.saveNote(lessonId, user.id, noteContentRef.current)
+        if (uid && lessonId) {
+          lessonInteractionService.saveNote(lessonId, uid, noteContentRef.current)
         }
       }
       if (drawingTimerRef.current) {
         clearTimeout(drawingTimerRef.current)
         drawingTimerRef.current = null
-        if (user?.id && lessonId && drawingDataRef.current) {
-          lessonInteractionService.saveDrawing(lessonId, user.id, drawingDataRef.current)
+        if (uid && lessonId && drawingDataRef.current) {
+          lessonInteractionService.saveDrawing(lessonId, uid, drawingDataRef.current)
         }
       }
     }
-  }, [lessonId, user?.id])
+  }, [lessonId, user?.id, effectiveUserId])
 
   /* ---- auto-play toggle ---- */
   const toggleAutoPlay = useCallback(() => {
