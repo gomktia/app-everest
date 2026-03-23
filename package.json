@@ -56,6 +56,7 @@
     "@tiptap/extension-underline": "^3.6.3",
     "@tiptap/react": "^3.6.3",
     "@tiptap/starter-kit": "^3.6.3",
+    "@xyflow/react": "^12.10.1",
     "caniuse-lite": "^1.0.30001743",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

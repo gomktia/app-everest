@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SectionLoader } from '@/components/SectionLoader'
-import { MindMapViewer } from '@/components/mind-maps/MindMapViewer'
+import { MindMapVisual } from '@/components/mind-maps/MindMapVisual'
 import { mindMapService, type MindMap } from '@/services/mindMapService'
 import { cn } from '@/lib/utils'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -237,17 +237,14 @@ export default function MindMapsPage() {
         </div>
       )}
 
-      {/* Viewer Dialog */}
+      {/* Visual Mind Map Dialog */}
       <Dialog open={!!openMap} onOpenChange={open => { if (!open) setOpenMap(null) }}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <Network className="h-5 w-5 text-primary" />
-              {openMap?.title}
-            </DialogTitle>
+        <DialogContent className="max-w-[95vw] w-full max-h-[95vh] p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{openMap?.title}</DialogTitle>
           </DialogHeader>
           {openMap && (
-            <MindMapViewer
+            <MindMapVisual
               title={openMap.title}
               subject={openMap.subject}
               color={getSubjectTwColour(openMap.subject, subjects)}
