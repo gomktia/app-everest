@@ -8,10 +8,10 @@ import './main.css'
 // Register PWA Service Worker
 import { registerSW } from 'virtual:pwa-register'
 
-const updateSW = registerSW({
+registerSW({
   onNeedRefresh() {
-    // Auto-update without asking — prevents stale chunks on deploy
-    updateSW(true)
+    // Don't auto-reload — let PWAUpdatePrompt show a dialog to the user
+    // Auto-reloading causes the page to "blink" during deploys
   },
   onOfflineReady() {
     // App pronto para funcionar offline
