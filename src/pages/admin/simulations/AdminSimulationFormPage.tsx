@@ -47,7 +47,13 @@ import {
   Copy,
   ImagePlus,
   Search,
+  Upload,
 } from 'lucide-react'
+import {
+  parseQuizQuestionsFromFile,
+  type ImportError,
+} from '@/lib/importExport'
+import { ImportErrorsDialog } from '@/components/admin/ImportErrorsDialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
@@ -172,6 +178,11 @@ export default function AdminSimulationFormPage() {
   // Questions
   const [questions, setQuestions] = useState<QuestionFormData[]>([])
   const [expandedQ, setExpandedQ] = useState<number | null>(null)
+
+  // TXT import
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importErrors, setImportErrors] = useState<ImportError[]>([])
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)
 
   // Import from bank
   const [bankDialogOpen, setBankDialogOpen] = useState(false)
@@ -302,6 +313,42 @@ export default function AdminSimulationFormPage() {
     const q = newQuestion(questions.length + 1)
     setQuestions((prev) => [...prev, q])
     setExpandedQ(questions.length)
+  }
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const content = e.target?.result as string
+      const result = parseQuizQuestionsFromFile(content)
+
+      if (result.errors) {
+        setImportErrors(result.errors)
+        setIsErrorDialogOpen(true)
+      } else if (result.data && result.data.length > 0) {
+        const imported: QuestionFormData[] = result.data.map((q, i) => ({
+          question_text: q.question,
+          question_format: 'multiple_choice' as QuestionFormat,
+          options: q.options,
+          correct_answer: q.correctAnswer,
+          explanation: '',
+          difficulty: 'medium',
+          points: 1,
+          question_image_url: '',
+          reading_text_id: null,
+          display_order: questions.length + i + 1,
+        }))
+        setQuestions(prev => [...prev, ...imported])
+        toast({
+          title: 'Importação concluída',
+          description: `${imported.length} questões importadas do arquivo.`,
+        })
+      }
+    }
+    reader.readAsText(file)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const openBankDialog = async () => {
@@ -762,9 +809,20 @@ export default function AdminSimulationFormPage() {
             </CardDescription>
           </div>
           <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileImport}
+              accept=".txt"
+              className="hidden"
+            />
             <Button type="button" variant="outline" size="sm" onClick={openBankDialog} className="gap-2">
               <Search className="h-4 w-4" />
               Banco de Questões
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="gap-2">
+              <Upload className="h-4 w-4" />
+              Importar TXT
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={addQuestion} className="gap-2">
               <Plus className="h-4 w-4" />
@@ -1149,6 +1207,12 @@ export default function AdminSimulationFormPage() {
           </Button>
         </div>
       </div>
+      {/* ─── TXT Import Errors Dialog ────────────────────────────────── */}
+      <ImportErrorsDialog
+        errors={importErrors}
+        isOpen={isErrorDialogOpen}
+        onClose={() => setIsErrorDialogOpen(false)}
+      />
       {/* ─── Bank Import Dialog ─────────────────────────────────────── */}
       <Dialog open={bankDialogOpen} onOpenChange={setBankDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
