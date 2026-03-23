@@ -522,25 +522,38 @@ export default function AdminSimulationFormPage() {
         })
       )
 
-      // 3. Save questions — delete existing, then batch insert
+      // 3. Map temporary reading_text_id (_new_X) to real IDs from savedTexts
+      const textIdMap = new Map<string, string>()
+      savedTexts.forEach((t, i) => {
+        if (t.id) textIdMap.set(`_new_${i}`, t.id)
+      })
+
+      // 4. Save questions — delete existing, then batch insert
       if (isEditing) {
         await supabase.from('quiz_questions').delete().eq('quiz_id', quizId!)
       }
 
-      const questionsToInsert = questions.map((q, i) => ({
-        quiz_id: quizId!,
-        question_text: q.question_text,
-        question_type: q.question_format === 'essay' ? 'open' : 'closed',
-        question_format: q.question_format,
-        options: q.question_format === 'multiple_choice' ? q.options : null,
-        correct_answer: q.correct_answer,
-        explanation: q.explanation || null,
-        difficulty: q.difficulty || 'medium',
-        points: q.points || 1,
-        question_image_url: q.question_image_url || null,
-        reading_text_id: q.reading_text_id || null,
-        display_order: i + 1,
-      }))
+      const questionsToInsert = questions.map((q, i) => {
+        let rtId = q.reading_text_id
+        // Resolve temporary IDs to real ones
+        if (rtId && rtId.startsWith('_new_')) {
+          rtId = textIdMap.get(rtId) || null
+        }
+        return {
+          quiz_id: quizId!,
+          question_text: q.question_text,
+          question_type: q.question_format === 'essay' ? 'open' : 'closed',
+          question_format: q.question_format,
+          options: q.question_format === 'multiple_choice' ? q.options : null,
+          correct_answer: q.correct_answer,
+          explanation: q.explanation || null,
+          difficulty: q.difficulty || 'medium',
+          points: q.points || 1,
+          question_image_url: q.question_image_url || null,
+          reading_text_id: rtId || null,
+          display_order: i + 1,
+        }
+      })
 
       // Batch insert in chunks of 50
       for (let i = 0; i < questionsToInsert.length; i += 50) {
@@ -1025,20 +1038,13 @@ export default function AdminSimulationFormPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="_none">Nenhum</SelectItem>
-                            {readingTexts
-                              .filter((t) => t.id)
-                              .map((t, tIdx) => (
-                                <SelectItem key={t.id} value={t.id!}>
-                                  Texto {tIdx + 1}: {t.title || 'Sem título'}
-                                </SelectItem>
-                              ))}
+                            {readingTexts.map((t, tIdx) => (
+                              <SelectItem key={t.id || `new-${tIdx}`} value={t.id || `_new_${tIdx}`}>
+                                Texto {tIdx + 1}: {t.title || 'Sem título'}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
-                        {!readingTexts.some((t) => t.id) && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Salve o simulado primeiro para vincular textos às questões.
-                          </p>
-                        )}
                       </div>
                     )}
 
