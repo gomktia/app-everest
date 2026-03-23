@@ -20,6 +20,7 @@ export interface SimulationQuestion {
   correct_answers?: string[]
   explanation?: string
   explanation_html?: string
+  reading_text_id?: string | null
   difficulty?: string
   points?: number
   time_limit_seconds?: number
@@ -28,12 +29,21 @@ export interface SimulationQuestion {
   subject?: string
 }
 
+export interface ReadingText {
+  id: string
+  title: string
+  content: string
+  author?: string
+  source?: string
+}
+
 export interface Simulation {
   id: string
   title: string
   description?: string
   duration_minutes?: number
   questions: SimulationQuestion[]
+  readingTexts: ReadingText[]
 }
 
 export async function getSimulation(quizId: string): Promise<Simulation | null> {
@@ -48,12 +58,11 @@ export async function getSimulation(quizId: string): Promise<Simulation | null> 
     if (quizError) throw quizError
     if (!quiz) return null
 
-    // Buscar questões do quiz
-    const { data: questions, error: questionsError } = await supabase
-      .from('quiz_questions')
-      .select('*')
-      .eq('quiz_id', quizId)
-      .order('created_at', { ascending: true })
+    // Buscar questões e textos de apoio em paralelo
+    const [{ data: questions, error: questionsError }, { data: texts, error: textsError }] = await Promise.all([
+      supabase.from('quiz_questions').select('*').eq('quiz_id', quizId).order('display_order', { ascending: true }),
+      supabase.from('quiz_reading_texts').select('id, title, content, author, source').eq('quiz_id', quizId).order('display_order', { ascending: true }),
+    ])
 
     if (questionsError) throw questionsError
 
@@ -71,7 +80,8 @@ export async function getSimulation(quizId: string): Promise<Simulation | null> 
       }
       return {
         ...q,
-        question_format: (q as any).question_type || 'multiple_choice',
+        question_format: (q as any).question_type || (q as any).question_format || 'multiple_choice',
+        reading_text_id: q.reading_text_id,
         options: opts,
       }
     }) as unknown as SimulationQuestion[]
@@ -82,6 +92,7 @@ export async function getSimulation(quizId: string): Promise<Simulation | null> 
       description: quiz.description || '',
       duration_minutes: quiz.duration_minutes || 0,
       questions: formattedQuestions || [],
+      readingTexts: (texts || []) as ReadingText[],
     }
   } catch (error) {
     logger.error('Error fetching simulation:', error)

@@ -286,6 +286,28 @@ export default function SimulationExamPage() {
             </Badge>
           </div>
 
+          {/* Reading Text (Texto de Apoio) */}
+          {(() => {
+            const rtId = (question as any).reading_text_id
+            const rt = rtId ? simulation.readingTexts?.find(t => t.id === rtId) : null
+            if (!rt) return null
+            return (
+              <div className="mb-4 p-4 rounded-xl bg-muted/30 border border-border/60 space-y-2">
+                {rt.title && (
+                  <h4 className="font-semibold text-sm text-foreground">{rt.title}</h4>
+                )}
+                <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{rt.content}</p>
+                {(rt.author || rt.source) && (
+                  <p className="text-xs text-muted-foreground italic">
+                    {rt.author && <span>{rt.author}</span>}
+                    {rt.author && rt.source && <span> — </span>}
+                    {rt.source && <span>{rt.source}</span>}
+                  </p>
+                )}
+              </div>
+            )
+          })()}
+
           {/* Question Content */}
           <QuestionRenderer
             question={question}
