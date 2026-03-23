@@ -1119,18 +1119,8 @@ export default function AdminCourseEditorPage() {
           .eq('id', courseId!)
           .single()
 
-        if (courseError) {
-          // Fallback: columns may not exist yet
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('video_courses')
-            .select('*')
-            .eq('id', courseId!)
-            .single()
-          if (fallbackError) throw fallbackError
-          setCourse({ ...fallbackData, evercast_enabled: false, sales_url: fallbackData.sales_url || null, kiwify_product_id: null, show_in_storefront: fallbackData.show_in_storefront ?? false })
-        } else {
-          setCourse({ ...courseData, evercast_enabled: courseData.evercast_enabled ?? false, sales_url: courseData.sales_url || null, kiwify_product_id: null, show_in_storefront: courseData.show_in_storefront ?? false })
-        }
+        if (courseError) throw courseError
+        setCourse({ ...courseData, evercast_enabled: courseData.evercast_enabled ?? false, sales_url: courseData.sales_url || null, kiwify_product_id: null, show_in_storefront: courseData.show_in_storefront ?? false })
 
         // Fetch Kiwify product mapping
         if (courseId) {
@@ -1162,46 +1152,42 @@ export default function AdminCourseEditorPage() {
           }
         }
 
-        // Fetch modules with lessons and attachments
+        // Fetch modules with lessons and attachments in ONE nested query
         const { data: modulesData, error: modulesError } = await supabase
           .from('video_modules')
-          .select('id, name, is_active, order_index, parent_module_id')
+          .select(`
+            id, name, is_active, order_index, parent_module_id,
+            video_lessons (
+              id, title, description, video_source_type, video_source_id,
+              duration_seconds, is_active, is_preview, order_index,
+              accompanying_pdf_attachment_id, topic_id, quiz_id,
+              quiz_required, quiz_min_percentage,
+              lesson_attachments ( id, file_url, file_name, file_type )
+            )
+          `)
           .eq('course_id', courseId!)
           .order('order_index')
 
         if (modulesError) throw modulesError
 
-        const allModulesFlat: ModuleData[] = await Promise.all(
-          (modulesData || []).map(async (mod) => {
-            const { data: lessonsData } = await supabase
-              .from('video_lessons')
-              .select('id, title, description, video_source_type, video_source_id, duration_seconds, is_active, is_preview, order_index, accompanying_pdf_attachment_id, topic_id, quiz_id, quiz_required, quiz_min_percentage')
-              .eq('module_id', mod.id)
-              .order('order_index')
+        const allModulesFlat: ModuleData[] = (modulesData || []).map((mod: any) => {
+          const lessons: LessonData[] = ((mod.video_lessons || []) as any[])
+            .sort((a: any, b: any) => a.order_index - b.order_index)
+            .map((lesson: any) => ({
+              ...lesson,
+              description: lesson.description || '',
+              attachments: (lesson.lesson_attachments || []) as AttachmentData[],
+              lesson_attachments: undefined,
+            }))
 
-            const lessons: LessonData[] = await Promise.all(
-              (lessonsData || []).map(async (lesson) => {
-                const { data: atts } = await supabase
-                  .from('lesson_attachments')
-                  .select('id, file_url, file_name, file_type')
-                  .eq('lesson_id', lesson.id)
-
-                return {
-                  ...lesson,
-                  description: lesson.description || '',
-                  attachments: (atts || []) as AttachmentData[],
-                }
-              })
-            )
-
-            return {
-              ...mod,
-              parent_module_id: mod.parent_module_id || null,
-              lessons,
-              children: [],
-            }
-          })
-        )
+          return {
+            ...mod,
+            video_lessons: undefined,
+            parent_module_id: mod.parent_module_id || null,
+            lessons,
+            children: [],
+          }
+        })
 
         // Build tree: root modules with children
         const rootModules = allModulesFlat.filter(m => !m.parent_module_id)
@@ -1828,7 +1814,7 @@ export default function AdminCourseEditorPage() {
             }).select('id').single()
           if (error) throw error
           savedLessonId = newLesson.id
-        } else {
+        } else if (lesson.isModified) {
           const pdfIdForUpdate = lesson.accompanying_pdf_attachment_id?.startsWith('temp_') ? null : lesson.accompanying_pdf_attachment_id
           const { error } = await supabase.from('video_lessons').update({
             title: lesson.title, description: lesson.description || null,
@@ -1840,6 +1826,7 @@ export default function AdminCourseEditorPage() {
           }).eq('id', savedLessonId)
           if (error) throw error
         }
+        // Skip DB operation for unchanged lessons (not isNew and not isModified)
 
         // Save new attachments (parallel)
         const newAtts = lesson.attachments.filter(a => a.isNew)
@@ -1896,7 +1883,7 @@ export default function AdminCourseEditorPage() {
             .single()
           if (error) throw error
           savedModuleId = newMod.id
-        } else {
+        } else if (mod.isModified) {
           const { error } = await supabase
             .from('video_modules')
             .update({
@@ -1931,7 +1918,7 @@ export default function AdminCourseEditorPage() {
               .single()
             if (error) throw error
             savedChildId = newChild.id
-          } else {
+          } else if (child.isModified) {
             const { error } = await supabase
               .from('video_modules')
               .update({
