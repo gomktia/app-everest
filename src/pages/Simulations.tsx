@@ -149,7 +149,7 @@ export default function SimulationsPage() {
         best: sheetAttempts.length > 0 ? Math.round(sheetAttempts.reduce((m, a) => Math.max(m, a.percentage || 0), 0)) : 0,
       })
     } catch (error: any) {
-      logger.error('Erro ao carregar simulados:', error)
+      logger.warn('Erro ao carregar simulados:', error)
       toast({ title: 'Erro ao carregar dados', description: error.message, variant: 'destructive' })
     } finally {
       setLoading(false)

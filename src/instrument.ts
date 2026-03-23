@@ -62,5 +62,7 @@ Sentry.init({
     'Edge Function returned a non-2xx status code',
     // Generic fetch failures — network issues, not code bugs
     /^TypeError: Failed to fetch/,
+    // File read errors — user picked a file then it became unavailable
+    'NotReadableError',
   ],
 })

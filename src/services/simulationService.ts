@@ -105,7 +105,7 @@ export async function getAvailableSimulations() {
     if (error) throw error
     return data
   } catch (error) {
-    logger.error('Error fetching simulations:', error)
+    logger.warn('Error fetching simulations:', error)
     throw error
   }
 }

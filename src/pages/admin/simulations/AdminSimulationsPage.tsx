@@ -45,7 +45,7 @@ export default function AdminSimulationsPage() {
       const data = await getAllSimulations()
       setSimulations(data)
     } catch (error) {
-      logger.error('Erro ao carregar simulados:', error)
+      logger.warn('Erro ao carregar simulados:', error)
       toast({
         title: 'Erro ao carregar',
         description: 'Não foi possível carregar os simulados.',

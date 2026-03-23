@@ -37,7 +37,7 @@ export const getAllSimulations = async (): Promise<AdminSimulation[]> => {
     .order('created_at', { ascending: false })
 
   if (error) {
-    logger.error('Error fetching simulations:', error)
+    logger.warn('Error fetching simulations:', error)
     throw error
   }
 
