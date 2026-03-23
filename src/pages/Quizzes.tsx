@@ -157,6 +157,7 @@ export default function QuizzesPage() {
             const subjectQuestions = subjectTopics.reduce((sum, t) => sum + t.questionCount, 0)
             const subjectQuizzes = subjectTopics.reduce((sum, t) => sum + t.quizzes.length, 0)
             const lockedTopics = subjectTopics.filter((t: any) => t._locked).length
+            const allLocked = lockedTopics > 0 && lockedTopics === subjectTopics.length
             const previewTopics = subjectTopics.slice(0, 4)
             const colors = getCategoryColor(idx)
 
@@ -166,7 +167,8 @@ export default function QuizzesPage() {
                 key={subject.id}
                 className={cn(
                   'group relative flex flex-col rounded-xl border bg-card p-5 transition-all duration-200 shadow-sm hover:shadow-lg',
-                  colors.border, colors.hoverBorder
+                  colors.border, colors.hoverBorder,
+                  allLocked && 'opacity-50 grayscale-[30%]'
                 )}
               >
                 {/* Badge flutuante */}

@@ -687,13 +687,14 @@ function ModuleCardView({
         const moduleProgress =
           totalInModule > 0 ? Math.round((completedInModule / totalInModule) * 100) : 0
         const previewLessons = module.lessons.slice(0, 4)
+        const moduleLocked = (module as any)._locked
 
         return (
           <div
             key={module.id}
             className={cn(
               'group relative flex flex-col rounded-xl border border-border bg-card p-5 transition-all duration-200 shadow-sm',
-              'hover:border-primary/30 hover:shadow-lg'
+              moduleLocked ? 'opacity-50 grayscale-[30%]' : 'hover:border-primary/30 hover:shadow-lg'
             )}
           >
             {/* Module number badge */}

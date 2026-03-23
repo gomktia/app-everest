@@ -118,7 +118,7 @@ export default function FlashcardTopicsPage() {
               className={cn(
                 'group relative flex flex-col rounded-xl border bg-card p-5 transition-all duration-200 shadow-sm hover:shadow-lg',
                 colors.border, colors.hoverBorder,
-                topicLocked && 'opacity-50'
+                topicLocked && 'opacity-50 grayscale-[30%]'
               )}
             >
               {/* Badge flutuante */}

@@ -157,7 +157,7 @@ export default function QuizTopicsPage() {
               key={topic.id}
               className={cn(
                 'group relative flex flex-col rounded-xl border bg-card p-5 transition-all duration-200 shadow-sm',
-                topicLocked ? 'opacity-60' : 'hover:shadow-lg',
+                topicLocked ? 'opacity-50 grayscale-[30%]' : 'hover:shadow-lg',
                 colors.border, !topicLocked && colors.hoverBorder
               )}
             >

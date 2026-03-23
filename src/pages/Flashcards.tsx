@@ -197,6 +197,8 @@ export default function FlashcardsPage() {
             const subjectCards = subjectTopics.reduce((sum, topic) => sum + (topic.flashcard_count || 0), 0)
             const progress = subject.progress || 0
             const allDone = progress === 100
+            const lockedTopics = subjectTopics.filter((t: any) => t._locked).length
+            const allLocked = lockedTopics > 0 && lockedTopics === subjectTopics.length
             const previewTopics = subjectTopics.slice(0, 4)
             const colors = getCategoryColor(idx)
 
@@ -207,7 +209,8 @@ export default function FlashcardsPage() {
                 {...(idx === 0 ? { 'data-tour': 'flashcards-subject' } : {})}
                 className={cn(
                   'group relative flex flex-col rounded-xl border bg-card p-5 transition-all duration-200 shadow-sm hover:shadow-lg',
-                  colors.border, colors.hoverBorder
+                  colors.border, colors.hoverBorder,
+                  allLocked && 'opacity-50 grayscale-[30%]'
                 )}
               >
                 {/* Badge flutuante */}
