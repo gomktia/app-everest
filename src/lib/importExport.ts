@@ -251,6 +251,22 @@ export const parseQuestionBankFromFile = (
     return { data: [], errors: null }
   }
 
+  // Auto-detect format: if file starts with "Q: " use simple format, otherwise use QUESTION: format
+  const trimmed = fileContent.trim()
+  if (trimmed.startsWith('Q: ') || trimmed.startsWith('Q:')) {
+    // Simple format: Q:/O1:/O2:/O3:/O4:/A:
+    const simpleResult = parseQuizQuestionsFromFile(fileContent)
+    if (simpleResult.errors) return { data: null, errors: simpleResult.errors }
+    const converted: QuestionBankData[] = (simpleResult.data || []).map(q => ({
+      question: q.question,
+      options: q.options,
+      answer: q.correctAnswer,
+      points: 1,
+      type: 'multiple_choice',
+    }))
+    return { data: converted, errors: null }
+  }
+
   const questions: QuestionBankData[] = []
   const errors: ImportError[] = []
   const blocks = fileContent

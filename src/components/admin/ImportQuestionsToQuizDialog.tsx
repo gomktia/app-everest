@@ -119,9 +119,18 @@ export const ImportQuestionsToQuizDialog = ({
               <div className="flex items-start gap-3">
                 <FileText className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <p className="font-medium text-foreground">Formato do arquivo</p>
-                  <p>Cada questão deve seguir o formato abaixo, separadas por <code className="bg-muted px-1 rounded">---</code></p>
-                  <pre className="text-xs bg-muted p-2 rounded mt-2 whitespace-pre-wrap">
+                  <p className="font-medium text-foreground">Formatos aceitos</p>
+                  <p className="font-medium text-foreground text-xs mt-2">Formato simples:</p>
+                  <pre className="text-xs bg-muted p-2 rounded mt-1 whitespace-pre-wrap">
+{`Q: Texto da pergunta
+O1: Opção 1
+O2: Opção 2
+O3: Opção 3
+O4: Opção 4
+A: Opção 3`}
+                  </pre>
+                  <p className="font-medium text-foreground text-xs mt-2">Formato completo (separado por ---):</p>
+                  <pre className="text-xs bg-muted p-2 rounded mt-1 whitespace-pre-wrap">
 {`QUESTION: Texto da pergunta
 TYPE: multiple_choice
 OPTIONS:
