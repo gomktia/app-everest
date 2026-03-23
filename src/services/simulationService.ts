@@ -80,7 +80,13 @@ export async function getSimulation(quizId: string): Promise<Simulation | null> 
       }
       return {
         ...q,
-        question_format: (q as any).question_type || (q as any).question_format || 'multiple_choice',
+        question_format: (() => {
+          const fmt = (q as any).question_format || (q as any).question_type || 'multiple_choice'
+          // Normalize legacy types: 'closed' → 'multiple_choice', 'open' → 'essay'
+          if (fmt === 'closed') return 'multiple_choice'
+          if (fmt === 'open') return 'essay'
+          return fmt
+        })(),
         reading_text_id: q.reading_text_id,
         options: opts,
       }
