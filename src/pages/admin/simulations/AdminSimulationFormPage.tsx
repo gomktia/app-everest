@@ -1018,7 +1018,8 @@ export default function AdminSimulationFormPage() {
                           type="number"
                           value={q.points}
                           onChange={(e) => updateQ(idx, 'points', Number(e.target.value))}
-                          min={1}
+                          min={0.1}
+                          step={0.5}
                         />
                       </div>
                     </div>
