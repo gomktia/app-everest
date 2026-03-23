@@ -159,13 +159,17 @@ POINTS: 1`}
             {/* File upload */}
             <div className="space-y-2">
               <Label htmlFor="quiz-file-upload">Arquivo de Questões (.txt)</Label>
-              <Input
+              <input
                 id="quiz-file-upload"
                 type="file"
                 accept=".txt"
                 ref={fileInputRef}
                 onChange={handleFileChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium cursor-pointer"
               />
+              {file && (
+                <p className="text-sm text-muted-foreground">Arquivo selecionado: <strong>{file.name}</strong></p>
+              )}
             </div>
           </div>
 
